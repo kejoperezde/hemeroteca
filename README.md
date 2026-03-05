@@ -1,4 +1,4 @@
-# Proyecto DGAIIC
+# Proyecto Hemeroteca
 
 **Dirección General de Análisis de Información e Inteligencia Criminal**  
 Fiscalía del Estado de Nayarit
