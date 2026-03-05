@@ -53,26 +53,24 @@ El sistema es un sistema web institucional de respaldo digital que permite a los
 
 ### Historias de Usuario
 
-#### Desarrollo
-
-- **HU-01**: Yo como desarrollador quiero diseñar la base de datos.
-- **HU-02**: Yo como desarrollador quiero diseñar la interfaz de usuario para que sea más interactiva y fácil de usar.
-- **HU-03**: Yo como desarrollador quiero diseñar la arquitectura lógica del sistema.
-- **HU-04**: Yo como desarrollador quiero configurar el proyecto en Laravel.
-- **HU-05**: Yo como desarrollador quiero crear seeds con datos de prueba para todas las tablas.
-- **HU-06**: Yo como desarrollador quiero desarrollar el CRUD completo de fuentes.
-- **HU-12**: Yo como desarrollador quiero hacer pruebas.
-- **HU-13**: Yo como desarrollador quiero implementar manejo global de errores.
-
-#### Funcionalidad para Analistas
-
-- **HU-07**: Yo como analista, quiero registrar una URL como fuente para que el sistema la guarde automáticamente y preserve su contenido antes de que sea modificado o eliminado.
-- **HU-08**: Yo como analista quiero filtrar los resultados de la búsqueda para poder acortar mi búsqueda.
-- **HU-09**: Yo como analista, quiero buscar fácilmente entre las fuentes para ahorrar tiempo.
-- **HU-10**: Yo como analista, quiero exportar datos automáticamente de las tablas para que sea más fácil la interacción.
-- **HU-11**: Yo como analista quiero implementar el sistema de filtros.
+- Yo como desarrollador quiero diseñar la base de datos.
+- Yo como desarrollador quiero diseñar la interfaz de usuario para que sea más interactiva y fácil de usar.
+- Yo como desarrollador quiero diseñar la arquitectura lógica del sistema.
+- Yo como desarrollador quiero configurar el proyecto en Laravel.
+- Yo como desarrollador quiero crear seeds con datos de prueba para todas las tablas.
+- Yo como desarrollador quiero desarrollar el CRUD completo de fuentes.
+- Yo como analista, quiero registrar una URL como fuente para que el sistema la guarde automáticamente y preserve su contenido antes de que sea modificado o eliminado.
+- Yo como analista quiero filtrar los resultados de la búsqueda para poder acortar mi búsqueda.
+- Yo como analista, quiero buscar fácilmente entre las fuentes para ahorrar tiempo.
+- Yo como analista, quiero exportar datos automáticamente de las tablas para que sea más fácil la interacción.
+- Yo como analista quiero implementar el sistema de filtros.
+- Yo como desarrollador quiero hacer pruebas.
+- Yo como desarrollador quiero implementar manejo global de errores.
 
 ---
+## Cronograma
+
+![Cronograma](Imagenes/cronograma.png)
 
 ## Diseño
 
@@ -98,7 +96,3 @@ El diseño de esta plataforma será sencillo a la interacción para su uso, ya q
 ### Registro de Fuente
 
 ![RegistrodeFuente](Imagenes/2.png)
-
-## Cronograma
-
-![Cronograma](Imagenes/cronograma.png)
