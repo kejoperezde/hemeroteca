@@ -57,4 +57,41 @@ git pull origin <nombre-rama>
 git fetch
 ```
 
+## Manejo de Conflictos
+
+```bash
+# Ver el estado de los archivos con conflictos
+git status
+
+# Ver qué archivos tienen conflictos
+git diff --name-only --diff-filter=U
+
+# Ver los conflictos en un archivo específico
+git diff <archivo>
+
+# Aceptar la versión actual (nuestra)
+git checkout --ours <archivo>
+
+# Aceptar la versión entrante (de ellos)
+git checkout --theirs <archivo>
+
+# Después de resolver manualmente los conflictos
+git add <archivo>
+
+# Continuar con el merge después de resolver conflictos
+git commit
+
+# Abortar el merge y volver al estado anterior
+git merge --abort
+
+# Abortar un rebase
+git rebase --abort
+
+# Continuar un rebase después de resolver conflictos
+git rebase --continue
+
+# Usar una herramienta de merge visual
+git mergetool
+```
+
 
