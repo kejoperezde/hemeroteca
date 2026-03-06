@@ -1,59 +1,101 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Proyecto Hemeroteca
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Dirección General de Análisis de Información e Inteligencia Criminal**  
+Fiscalía del Estado de Nayarit
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Alcance
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+El proyecto contempla la implementación de un módulo institucional de archivado digital automatizado orientado a la recolección, preservación, almacenamiento estructurado y consulta de información proveniente de fuentes abiertas haciendo uso de técnicas de web scraping.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Objetivos
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Objetivo General
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Desarrollar un módulo automatizado para la captura, almacenamiento íntegro y consulta estructurada de contenido proveniente de fuentes abiertas, con el propósito de preservar evidencia digital ante su modificación o eliminación, fortaleciendo los procesos de análisis de información de la Dirección General de Análisis, Información e Inteligencia Criminal de la Fiscalía del Estado de Nayarit.
 
-## Laravel Sponsors
+### Objetivos Específicos
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Definir e implementar un esquema de base de datos.
+- Diseñar un sistema de registro.
+- Diseñar un sistema de administración de fuentes.
+- Incorporar una función de búsqueda.
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Justificación
 
-## Contributing
+El contenido publicado en fuentes abiertas puede ser modificado o eliminado en cualquier momento, lo que representa un problema para la preservación de información relevante en los procesos de análisis e inteligencia criminal. Actualmente, la DGAIIC no cuenta con un mecanismo que garantice la captura y resguardo íntegro de dicho contenido.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+El desarrollo de este módulo busca resolver esa problemática dotando a la Dirección de una herramienta que preserve el contenido digital, reduzca los tiempos de búsqueda y recuperación de información, y permita identificar relaciones entre contenidos archivados de distintas fuentes. Todo esto con el propósito de fortalecer las capacidades institucionales de análisis e inteligencia de la Fiscalía del Estado de Nayarit.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Análisis
 
-## Security Vulnerabilities
+### Descripción General del Sistema
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+El sistema es un sistema web institucional de respaldo digital que permite a los analistas de la DGAIIC capturar, preservar y consultar contenido proveniente de fuentes abiertas para prevenir que dicho contenido sea modificado o eliminado.
 
-## License
+### Requisitos Funcionales
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- El sistema debe permitir registrar fuentes abiertas mediante URL, con nombre, descripción y fecha de captura.
+- Incluir un sistema de etiquetado para una mejor identificación de las fuentes.
+- El sistema ejecutará una captura del sitio web haciendo uso de web scraping.
+- El sistema debe almacenar el contenido íntegro (HTML, texto plano, imágenes).
+- El sistema debe ofrecer búsqueda de texto completo sobre el contenido archivado.
+- El sistema debe permitir filtrar resultados por fuente, rango de fechas, tipo y etiquetas.
+- El sistema debe gestionar usuarios con roles diferenciados (administrador y analista).
+- Agregar tablas para visualización de las fuentes más relevantes.
+
+### Historias de Usuario
+
+#### Desarrollo
+
+- Yo como desarrollador quiero diseñar la base de datos.
+- Yo como desarrollador quiero diseñar la interfaz de usuario para que sea más interactiva y fácil de usar.
+- Yo como desarrollador quiero diseñar la arquitectura lógica del sistema.
+- Yo como desarrollador quiero configurar el proyecto en Laravel.
+- Yo como desarrollador quiero crear seeds con datos de prueba para todas las tablas.
+- Yo como desarrollador quiero desarrollar el CRUD completo de fuentes.
+- Yo como analista, quiero registrar una URL como fuente para que el sistema la guarde automáticamente y preserve su contenido antes de que sea modificado o eliminado.
+- Yo como analista quiero filtrar los resultados de la búsqueda para poder acortar mi búsqueda.
+- Yo como analista, quiero buscar fácilmente entre las fuentes para ahorrar tiempo.
+- Yo como analista, quiero exportar datos automáticamente de las tablas para que sea más fácil la interacción.
+- Yo como analista quiero implementar el sistema de filtros.
+- Yo como desarrollador quiero hacer pruebas.
+- Yo como desarrollador quiero implementar manejo global de errores.
+---
+
+
+## Cronograma
+
+![Cronograma](Imagenes/cronograma.png)
+
+## Diseño
+
+### Stack de Tecnologías
+
+| Componente | Tecnología |
+|-----------|-----------|
+| Backend | Laravel |
+| Frontend | React |
+| CSS Framework | Tailwind CSS |
+| UI Components | Shadcn |
+| Web Scraping | Playwright |
+| Base de Datos | MySQL |
+
+### Descripción del Diseño
+
+El diseño de esta plataforma será sencillo a la interacción para su uso, ya que permite guardar mediante la URL de las páginas y realizar el guardado de ellas. Posteriormente a realizar el guardado, se podrá buscar por fecha, por etiquetado para su fácil búsqueda de alguna URL guardada y así tener un mejor control de la información.
+
+### Página Principal
+
+![PaginaPrincial](Imagenes/1.png)
+
+### Registro de Fuente
+
+![RegistrodeFuente](Imagenes/2.png)
