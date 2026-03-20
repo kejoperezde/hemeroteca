@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,10 +17,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CloudUpload, Link as LinkIcon, Plus, X } from 'lucide-react';
 
-type RegisterSourceModalProps = {
-    suggestedTags: string[];
-};
-
 type FlashProps = {
     flash?: {
         status?: 'success' | 'error' | null;
@@ -28,24 +24,20 @@ type FlashProps = {
     };
 };
 
-export function RegisterSourceModal({ suggestedTags }: RegisterSourceModalProps) {
+export function RegisterSourceModal() {
     const { flash } = usePage<FlashProps>().props;
     const lastFlashMessageRef = useRef<string | null>(null);
-    const initialTags = suggestedTags.length > 0 ? [suggestedTags[0]] : [];
 
     const [open, setOpen] = useState(false);
     const [url, setUrl] = useState('');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [tagInput, setTagInput] = useState('');
-    const [tags, setTags] = useState<string[]>(initialTags);
+    const [tags, setTags] = useState<string[]>([]);
+    const [isRequestLetter, setIsRequestLetter] = useState(false);
+    const [requestLetterNumber, setRequestLetterNumber] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-    const availableSuggestions = useMemo(
-        () => suggestedTags.filter((item) => !tags.includes(item)),
-        [suggestedTags, tags],
-    );
 
     useEffect(() => {
         if (!flash?.message || lastFlashMessageRef.current === flash.message) {
@@ -89,7 +81,9 @@ export function RegisterSourceModal({ suggestedTags }: RegisterSourceModalProps)
         setName('');
         setDescription('');
         setTagInput('');
-        setTags(initialTags);
+        setTags([]);
+        setIsRequestLetter(false);
+        setRequestLetterNumber('');
         setErrorMessage(null);
     };
 
@@ -104,6 +98,11 @@ export function RegisterSourceModal({ suggestedTags }: RegisterSourceModalProps)
             return;
         }
 
+        if (isRequestLetter && !requestLetterNumber.trim()) {
+            setErrorMessage('El numero de oficio es obligatorio cuando corresponde a oficio de peticion.');
+            return;
+        }
+
         setIsSaving(true);
         setErrorMessage(null);
 
@@ -114,6 +113,8 @@ export function RegisterSourceModal({ suggestedTags }: RegisterSourceModalProps)
                 name: name.trim(),
                 description: description.trim() || null,
                 tags,
+                isRequestLetter,
+                oficioNumber: requestLetterNumber.trim() || null,
             },
             {
                 preserveScroll: true,
@@ -230,21 +231,44 @@ export function RegisterSourceModal({ suggestedTags }: RegisterSourceModalProps)
                                 className="h-8 min-w-[220px] flex-1 border-0 px-1 py-0 shadow-none focus-visible:ring-0"
                             />
                         </div>
+                    </div>
 
-                        <div className="flex flex-wrap items-center gap-2 pt-1">
-                            <p className="text-muted-foreground text-xs font-medium">Sugerencias:</p>
-                            {availableSuggestions.map((tag) => (
-                                <Button
-                                    key={tag}
-                                    variant="secondary"
-                                    size="sm"
-                                    className="h-6 rounded-full px-2.5 text-xs"
-                                    onClick={() => addTag(tag)}
-                                >
-                                    {tag}
-                                </Button>
-                            ))}
-                        </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="source-request-letter" className="text-sm font-semibold">
+                            Oficio de peticion
+                        </Label>
+                        <label htmlFor="source-request-letter" className="flex items-center gap-2 text-sm text-foreground">
+                            <input
+                                id="source-request-letter"
+                                type="checkbox"
+                                checked={isRequestLetter}
+                                onChange={(event) => {
+                                    const nextValue = event.target.checked;
+                                    setIsRequestLetter(nextValue);
+
+                                    if (!nextValue) {
+                                        setRequestLetterNumber('');
+                                    }
+                                }}
+                                className="h-4 w-4 rounded border-input"
+                            />
+                            Marcar si corresponde a oficio de peticion
+                        </label>
+
+                        {isRequestLetter ? (
+                            <div className="space-y-2 pt-1">
+                                <Label htmlFor="source-request-letter-number" className="text-sm font-semibold">
+                                    Numero de oficio <span className="text-destructive">*</span>
+                                </Label>
+                                <Input
+                                    id="source-request-letter-number"
+                                    value={requestLetterNumber}
+                                    onChange={(event) => setRequestLetterNumber(event.target.value)}
+                                    placeholder="Ejemplo: 123-2026"
+                                    className="h-10"
+                                />
+                            </div>
+                        ) : null}
                     </div>
 
                     {errorMessage ? (

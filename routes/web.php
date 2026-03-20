@@ -17,6 +17,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('hemeroteca/sources/{sourceId}/backup/download', [HemerotecaController::class, 'downloadBackup'])
         ->whereNumber('sourceId')
         ->name('hemeroteca.sources.backup.download');
+    Route::get('hemeroteca/sources/{sourceId}/backup/thumbnail', [HemerotecaController::class, 'thumbnailBackup'])
+        ->whereNumber('sourceId')
+        ->name('hemeroteca.sources.backup.thumbnail');
 });
 
 require __DIR__.'/settings.php';

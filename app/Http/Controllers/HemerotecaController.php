@@ -55,6 +55,25 @@ class HemerotecaController extends Controller
         return response()->download($absolutePath, "respaldo_fuente_{$sourceId}.html");
     }
 
+    public function thumbnailBackup(int $sourceId): BinaryFileResponse
+    {
+        $source = DB::table('fuentes')
+            ->select('id', 'ruta_archivo')
+            ->where('id', $sourceId)
+            ->first();
+
+        abort_unless($source && $source->ruta_archivo, 404);
+
+        $htmlAbsolutePath = $this->resolveBackupAbsolutePath((string) $source->ruta_archivo);
+        $thumbnailAbsolutePath = dirname($htmlAbsolutePath).DIRECTORY_SEPARATOR.'page.png';
+        abort_unless(File::exists($thumbnailAbsolutePath), 404);
+
+        return response()->file($thumbnailAbsolutePath, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'private, max-age=300',
+        ]);
+    }
+
     private function resolveBackupAbsolutePath(string $storedPath): string
     {
         $normalizedPath = str_replace('\\', '/', trim($storedPath));
@@ -80,6 +99,8 @@ class HemerotecaController extends Controller
             'description' => ['nullable', 'string'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:100'],
+            'isRequestLetter' => ['nullable', 'boolean'],
+            'oficioNumber' => ['nullable', 'string', 'max:255', 'required_if:isRequestLetter,true'],
         ]);
 
         $sourceId = DB::transaction(function () use ($request, $validated): int {
@@ -114,6 +135,20 @@ class HemerotecaController extends Controller
                 DB::table('etiqueta_fuente')->insertOrIgnore([
                     'fuente_id' => $createdSourceId,
                     'etiqueta_id' => $tagId,
+                ]);
+            }
+
+            if (!empty($validated['isRequestLetter'])) {
+                $oficioId = DB::table('libro_oficios')->insertGetId([
+                    'oficio_peticion' => trim((string) ($validated['oficioNumber'] ?? '1')),
+                    'fecha_oficio' => now()->toDateString(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('fuente_oficio')->insertOrIgnore([
+                    'fuente_id' => $createdSourceId,
+                    'oficio_id' => $oficioId,
                 ]);
             }
 
@@ -239,6 +274,8 @@ class HemerotecaController extends Controller
             ->leftJoin('users', 'fuentes.user_id', '=', 'users.id')
             ->leftJoin('etiqueta_fuente', 'fuentes.id', '=', 'etiqueta_fuente.fuente_id')
             ->leftJoin('etiquetas', 'etiqueta_fuente.etiqueta_id', '=', 'etiquetas.id')
+            ->leftJoin('fuente_oficio', 'fuentes.id', '=', 'fuente_oficio.fuente_id')
+            ->leftJoin('libro_oficios', 'fuente_oficio.oficio_id', '=', 'libro_oficios.id')
             ->select(
                 'fuentes.id',
                 'fuentes.url',
@@ -248,6 +285,7 @@ class HemerotecaController extends Controller
                 'fuentes.capturado_en',
                 'users.name as captured_by',
                 DB::raw("GROUP_CONCAT(DISTINCT etiquetas.nombre ORDER BY etiquetas.nombre SEPARATOR '||') AS tags"),
+                DB::raw('MAX(libro_oficios.oficio_peticion) AS oficio_number'),
             )
             ->groupBy(
                 'fuentes.id',
@@ -278,6 +316,7 @@ class HemerotecaController extends Controller
                     'date' => $capturedAt ? $capturedAt->locale('es')->translatedFormat('d/m/Y H:i') : $capturedAtLabel,
                     'capturedAt' => $capturedAt?->format('Y-m-d'),
                     'capturedBy' => $source->captured_by ?: 'Sin usuario',
+                    'oficioNumber' => $source->oficio_number ? (string) $source->oficio_number : null,
                 ];
             })
             ->values();

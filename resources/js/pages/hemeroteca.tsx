@@ -39,6 +39,7 @@ type Source = {
     date: string;
     capturedAt: string | null;
     capturedBy: string;
+    oficioNumber: string | null;
 };
 
 type HemerotecaProps = {
@@ -272,21 +273,21 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
                 <header className="flex flex-col gap-4 border-b pb-6 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-1.5">
                         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                            Fuentes Abiertas
+                            Hemeroteca
                         </h1>
                         <p className="text-base text-muted-foreground">
-                            Gestione, busque y explore el archivo digital.
+                            Archivo digital
                         </p>
                     </div>
                     <div className="shrink-0">
-                        <RegisterSourceModal suggestedTags={suggestedTags} />
+                        <RegisterSourceModal />
                     </div>
                 </header>
 
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
                     {/* Fixed Sidebar for Filters / Desktop */}
                     <Card className="w-full shrink-0 border-slate-200 bg-slate-50/50 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 lg:w-72">
-                        <CardContent className="p-5 space-y-6">
+                        <CardContent className="px-5 pb-5 pt-0 space-y-6">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-sm font-semibold tracking-tight text-foreground">Filtros</h2>
                                 <Button

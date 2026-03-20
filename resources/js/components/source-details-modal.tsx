@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ type SourceDetails = {
     date: string;
     capturedAt: string | null;
     capturedBy: string;
+    oficioNumber: string | null;
 };
 
 type SourceDetailsModalProps = {
@@ -22,6 +23,8 @@ type SourceDetailsModalProps = {
 };
 
 export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModalProps) {
+    const [thumbnailUnavailable, setThumbnailUnavailable] = useState(false);
+
     useEffect(() => {
         if (!open) {
             return;
@@ -43,6 +46,10 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
         };
     }, [open, onClose]);
 
+    useEffect(() => {
+        setThumbnailUnavailable(false);
+    }, [open, source?.id]);
+
     if (!open || !source) {
         return null;
     }
@@ -50,6 +57,8 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
     const formattedCapturedAt = source.capturedAt
         ? source.capturedAt.split('-').reverse().join('/')
         : 'Sin captura';
+    const canShowThumbnail = Boolean(source.backupPath) && !thumbnailUnavailable;
+    const thumbnailUrl = `/hemeroteca/sources/${source.id}/backup/thumbnail`;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
@@ -80,6 +89,25 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
                 </div>
 
                 <div className="mt-4 space-y-5">
+                    <div className="space-y-2">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Miniatura</p>
+                        <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-900/40">
+                            {canShowThumbnail ? (
+                                <img
+                                    src={thumbnailUrl}
+                                    alt={`Miniatura de ${source.name}`}
+                                    className="h-52 w-full object-cover object-top sm:h-64"
+                                    loading="lazy"
+                                    onError={() => setThumbnailUnavailable(true)}
+                                />
+                            ) : (
+                                <div className="flex h-52 items-center justify-center px-4 text-center text-sm text-muted-foreground sm:h-64">
+                                    No hay miniatura disponible para esta fuente.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="flex flex-wrap gap-2">
                         <Button asChild size="sm" className="h-9">
                             <a
@@ -120,6 +148,12 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
                             <p className="text-xs uppercase tracking-wide text-muted-foreground">Formato captura</p>
                             <p className="mt-1 font-medium">{formattedCapturedAt}</p>
                         </div>
+                        {source.oficioNumber ? (
+                            <div>
+                                <p className="text-xs uppercase tracking-wide text-muted-foreground">Numero de oficio</p>
+                                <p className="mt-1 font-medium">{source.oficioNumber}</p>
+                            </div>
+                        ) : null}
                     </div>
 
                     <div className="space-y-2">
