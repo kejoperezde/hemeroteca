@@ -1,6 +1,9 @@
+/* global process */
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import puppeteer from 'puppeteer';
+import { createWorker } from 'tesseract.js';
 
 const [, , targetUrl, outputDir] = process.argv;
 
@@ -15,6 +18,10 @@ const ensureDir = async (dir) => {
 
 const writeJson = async (filePath, value) => {
     await fs.writeFile(filePath, JSON.stringify(value, null, 2), 'utf8');
+};
+
+const writeText = async (filePath, value) => {
+    await fs.writeFile(filePath, value, 'utf8');
 };
 
 const autoScroll = async (page) => {
@@ -37,93 +44,18 @@ const autoScroll = async (page) => {
     });
 };
 
-const preparePortableHtml = async (page, baseUrl) => {
-    return page.evaluate((targetBaseUrl) => {
-        const toAbsolute = (rawValue) => {
-            if (!rawValue || rawValue.startsWith('data:') || rawValue.startsWith('blob:') || rawValue.startsWith('#')) {
-                return rawValue;
-            }
+const extractTextFromImage = async (imagePath) => {
+    const worker = await createWorker('spa+eng');
 
-            try {
-                return new URL(rawValue, window.location.href).href;
-            } catch {
-                return rawValue;
-            }
-        };
+    try {
+        const {
+            data: { text },
+        } = await worker.recognize(imagePath);
 
-        const absolutizeSrcset = (srcsetValue) => {
-            if (!srcsetValue) {
-                return srcsetValue;
-            }
-
-            return srcsetValue
-                .split(',')
-                .map((candidate) => {
-                    const trimmed = candidate.trim();
-                    if (!trimmed) {
-                        return trimmed;
-                    }
-
-                    const parts = trimmed.split(/\s+/);
-                    const urlPart = parts.shift();
-                    const descriptor = parts.join(' ');
-                    const absolute = toAbsolute(urlPart ?? '');
-
-                    return descriptor ? `${absolute} ${descriptor}` : absolute;
-                })
-                .join(', ');
-        };
-
-        const head = document.head;
-        if (head) {
-            let base = head.querySelector('base[data-hemeroteca-backup="1"]');
-            if (!base) {
-                base = document.createElement('base');
-                base.setAttribute('data-hemeroteca-backup', '1');
-                head.prepend(base);
-            }
-            base.setAttribute('href', targetBaseUrl);
-
-            head.querySelectorAll('meta[http-equiv]').forEach((meta) => {
-                const httpEquiv = (meta.getAttribute('http-equiv') || '').toLowerCase();
-                if (httpEquiv === 'content-security-policy' || httpEquiv === 'x-content-security-policy') {
-                    meta.remove();
-                }
-            });
-        }
-
-        document.querySelectorAll('[src]').forEach((element) => {
-            element.setAttribute('src', toAbsolute(element.getAttribute('src') || ''));
-        });
-
-        document.querySelectorAll('[href]').forEach((element) => {
-            element.setAttribute('href', toAbsolute(element.getAttribute('href') || ''));
-        });
-
-        document.querySelectorAll('img[srcset], source[srcset]').forEach((element) => {
-            element.setAttribute('srcset', absolutizeSrcset(element.getAttribute('srcset') || ''));
-        });
-
-        document.querySelectorAll('[poster]').forEach((element) => {
-            element.setAttribute('poster', toAbsolute(element.getAttribute('poster') || ''));
-        });
-
-        document.querySelectorAll('[style]').forEach((element) => {
-            const styleText = element.getAttribute('style') || '';
-            const rewritten = styleText.replace(/url\(([^)]+)\)/gi, (_, urlToken) => {
-                const cleaned = urlToken.trim().replace(/^['"]|['"]$/g, '');
-                const absolute = toAbsolute(cleaned);
-                return `url("${absolute}")`;
-            });
-            element.setAttribute('style', rewritten);
-        });
-
-        const doctype = document.doctype
-            ? `<!DOCTYPE ${document.doctype.name}>`
-            : '<!DOCTYPE html>';
-
-        return `${doctype}\n${document.documentElement.outerHTML}`;
-    }, baseUrl);
+        return (text ?? '').trim();
+    } finally {
+        await worker.terminate();
+    }
 };
 
 let browser;
@@ -143,12 +75,9 @@ try {
     await autoScroll(page);
     await new Promise((resolve) => setTimeout(resolve, 1200));
 
-    const htmlPath = path.join(outputDir, 'page.html');
     const screenshotPath = path.join(outputDir, 'page.png');
+    const ocrPath = path.join(outputDir, 'ocr.txt');
     const metadataPath = path.join(outputDir, 'metadata.json');
-
-    const html = await preparePortableHtml(page, targetUrl);
-    await fs.writeFile(htmlPath, html, 'utf8');
 
     await page.screenshot({
         path: screenshotPath,
@@ -156,13 +85,17 @@ try {
         type: 'png',
     });
 
+    const ocrText = await extractTextFromImage(screenshotPath);
+    await writeText(ocrPath, ocrText);
+
     const metadata = {
         url: targetUrl,
         capturedAt: new Date().toISOString(),
-        htmlPath,
         screenshotPath,
+        ocrPath,
         title: await page.title(),
         finalUrl: page.url(),
+        ocrCharacters: ocrText.length,
         userAgent: await page.evaluate(() => navigator.userAgent),
     };
 
@@ -170,8 +103,8 @@ try {
 
     process.stdout.write(
         JSON.stringify({
-            htmlPath,
             screenshotPath,
+            ocrPath,
             metadataPath,
         }),
     );
@@ -203,6 +136,7 @@ try {
             ),
         );
     }
+
     process.exit(1);
 } finally {
     if (browser) {

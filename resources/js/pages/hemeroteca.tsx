@@ -35,6 +35,7 @@ type Source = {
     description: string;
     url: string;
     backupPath: string | null;
+    ocrText: string | null;
     tags: string[];
     date: string;
     capturedAt: string | null;
@@ -93,7 +94,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
 
         return sources.filter((source) => {
             if (search) {
-                const searchableText = [source.name, source.description, ...source.tags]
+                const searchableText = [source.name, source.description, source.ocrText ?? '', ...source.tags]
                     .join(' ')
                     .toLowerCase();
 
@@ -264,6 +265,68 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
 
     const handleOpenSourceDetails = (source: Source) => {
         setSelectedSource(source);
+    };
+
+    const showSearchResultColumn = searchTerm.trim().length > 0;
+
+    const getSearchResultParts = (source: Source) => {
+        const term = searchTerm.trim();
+
+        if (!term) {
+            return null;
+        }
+
+        const search = term.toLowerCase();
+        const candidates = [source.name, source.description, source.ocrText ?? '', source.tags.join(', ')];
+
+        for (const candidate of candidates) {
+            const normalizedCandidate = candidate.replace(/\s+/g, ' ').trim();
+
+            if (!normalizedCandidate) {
+                continue;
+            }
+
+            const index = normalizedCandidate.toLowerCase().indexOf(search);
+
+            if (index === -1) {
+                continue;
+            }
+
+            const contextSize = 10;
+            const matchEnd = index + term.length;
+            const sliceStart = Math.max(0, index - contextSize);
+            const sliceEnd = Math.min(normalizedCandidate.length, matchEnd + contextSize);
+            const beforePrefix = sliceStart > 0 ? '... ' : '';
+            const afterSuffix = sliceEnd < normalizedCandidate.length ? ' ...' : '';
+
+            return {
+                before: `${beforePrefix}${normalizedCandidate.slice(sliceStart, index)}`,
+                match: normalizedCandidate.slice(index, matchEnd),
+                after: `${normalizedCandidate.slice(matchEnd, sliceEnd)}${afterSuffix}`,
+            };
+        }
+
+        return null;
+    };
+
+    const renderCapturedByCell = (source: Source) => {
+        if (!showSearchResultColumn) {
+            return source.capturedBy;
+        }
+
+        const parts = getSearchResultParts(source);
+
+        if (!parts) {
+            return source.capturedBy;
+        }
+
+        return (
+            <span className="block line-clamp-2 max-w-full overflow-hidden text-ellipsis text-foreground">
+                <span className="font-normal">{parts.before}</span>
+                <strong className="font-semibold">{parts.match}</strong>
+                <span className="font-normal">{parts.after}</span>
+            </span>
+        );
     };
 
     return (
@@ -508,7 +571,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
                                                         onClick={() => handleSort('capturedBy')}
                                                         className="inline-flex items-center gap-1 hover:text-foreground"
                                                     >
-                                                        Capturado por
+                                                        {showSearchResultColumn ? 'Resultado' : 'Capturado por'}
                                                         <ChevronDown className={getSortIconClassName('capturedBy')} />
                                                     </button>
                                                 </th>
@@ -538,7 +601,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
                                                         <p className="line-clamp-2 leading-relaxed">{source.description}</p>
                                                     </td>
                                                     <td className="p-4 align-top text-muted-foreground">
-                                                        {source.capturedBy}
+                                                        {renderCapturedByCell(source)}
                                                     </td>
                                                     <td className="p-4 align-top text-muted-foreground whitespace-nowrap">
                                                         {source.date}

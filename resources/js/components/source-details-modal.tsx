@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -24,6 +24,10 @@ type SourceDetailsModalProps = {
 
 export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModalProps) {
     const [thumbnailUnavailable, setThumbnailUnavailable] = useState(false);
+    const [ocrText, setOcrText] = useState('');
+    const [ocrError, setOcrError] = useState<string | null>(null);
+    const [ocrLoading, setOcrLoading] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         if (!open) {
@@ -50,6 +54,65 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
         setThumbnailUnavailable(false);
     }, [open, source?.id]);
 
+    useEffect(() => {
+        if (!open || !source?.backupPath) {
+            setOcrText('');
+            setOcrError(null);
+            setOcrLoading(false);
+            setCopied(false);
+
+            return;
+        }
+
+        let active = true;
+        const controller = new AbortController();
+
+        const loadOcr = async () => {
+            setOcrLoading(true);
+            setOcrError(null);
+            setCopied(false);
+
+            try {
+                const response = await fetch(`/hemeroteca/sources/${source.id}/backup/ocr`, {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Request failed with status ${response.status}`);
+                }
+
+                const payload = (await response.json()) as { text?: string };
+
+                if (!active) {
+                    return;
+                }
+
+                setOcrText(typeof payload.text === 'string' ? payload.text : '');
+            } catch (error) {
+                if (!active || (error instanceof DOMException && error.name === 'AbortError')) {
+                    return;
+                }
+
+                setOcrText('');
+                setOcrError('No se pudo cargar el texto OCR de esta captura.');
+            } finally {
+                if (active) {
+                    setOcrLoading(false);
+                }
+            }
+        };
+
+        loadOcr();
+
+        return () => {
+            active = false;
+            controller.abort();
+        };
+    }, [open, source?.id, source?.backupPath]);
+
     if (!open || !source) {
         return null;
     }
@@ -59,6 +122,21 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
         : 'Sin captura';
     const canShowThumbnail = Boolean(source.backupPath) && !thumbnailUnavailable;
     const thumbnailUrl = `/hemeroteca/sources/${source.id}/backup/thumbnail`;
+
+    const handleCopyOcr = async () => {
+        if (!ocrText.trim()) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(ocrText);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        } catch {
+            setCopied(false);
+            setOcrError('No se pudo copiar el texto OCR al portapapeles.');
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
@@ -117,7 +195,7 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
                                 aria-disabled={!source.backupPath}
                                 className={!source.backupPath ? 'pointer-events-none opacity-50' : ''}
                             >
-                                Abrir respaldo
+                                Abrir captura
                             </a>
                         </Button>
                         <Button asChild size="sm" variant="outline" className="h-9">
@@ -126,9 +204,36 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
                                 aria-disabled={!source.backupPath}
                                 className={!source.backupPath ? 'pointer-events-none opacity-50' : ''}
                             >
-                                Descargar respaldo
+                                Descargar captura
                             </a>
                         </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">Texto OCR</p>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-8"
+                                onClick={handleCopyOcr}
+                                disabled={ocrLoading || !ocrText.trim()}
+                            >
+                                {copied ? 'Copiado' : 'Copiar OCR'}
+                            </Button>
+                        </div>
+                        <div className="max-h-56 overflow-auto rounded-lg border border-slate-200/80 bg-white p-4 text-sm leading-relaxed dark:border-slate-800 dark:bg-slate-950">
+                            {ocrLoading ? (
+                                <p className="text-muted-foreground">Extrayendo texto de la captura...</p>
+                            ) : ocrError ? (
+                                <p className="text-destructive">{ocrError}</p>
+                            ) : ocrText.trim().length > 0 ? (
+                                <pre className="whitespace-pre-wrap font-sans text-sm text-foreground">{ocrText}</pre>
+                            ) : (
+                                <p className="text-muted-foreground">No se detecto texto en la captura.</p>
+                            )}
+                        </div>
                     </div>
 
                     <div className="grid gap-3 rounded-lg border border-slate-200/80 bg-slate-50/60 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/40 sm:grid-cols-2">

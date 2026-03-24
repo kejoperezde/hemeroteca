@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -25,7 +26,7 @@ class HemerotecaController extends Controller
             : $value;
     }
 
-    public function openBackup(int $sourceId): HttpResponse
+    public function openBackup(int $sourceId): HttpResponse|BinaryFileResponse
     {
         $source = DB::table('fuentes')
             ->select('id', 'ruta_archivo')
@@ -34,10 +35,17 @@ class HemerotecaController extends Controller
 
         abort_unless($source && $source->ruta_archivo, 404);
 
-        $absolutePath = $this->resolveBackupAbsolutePath((string) $source->ruta_archivo);
+        $absolutePath = $this->resolveStoredCaptureAbsolutePath((string) $source->ruta_archivo);
         abort_unless(File::exists($absolutePath), 404);
 
-        return response(File::get($absolutePath), 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+        if (strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION)) === 'html') {
+            return response(File::get($absolutePath), 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+        }
+
+        return response()->file($absolutePath, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'private, max-age=300',
+        ]);
     }
 
     public function downloadBackup(int $sourceId): BinaryFileResponse
@@ -49,10 +57,14 @@ class HemerotecaController extends Controller
 
         abort_unless($source && $source->ruta_archivo, 404);
 
-        $absolutePath = $this->resolveBackupAbsolutePath((string) $source->ruta_archivo);
+        $absolutePath = $this->resolveStoredCaptureAbsolutePath((string) $source->ruta_archivo);
         abort_unless(File::exists($absolutePath), 404);
 
-        return response()->download($absolutePath, "respaldo_fuente_{$sourceId}.html");
+        if (strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION)) === 'html') {
+            return response()->download($absolutePath, "respaldo_fuente_{$sourceId}.html");
+        }
+
+        return response()->download($absolutePath, "captura_fuente_{$sourceId}.png");
     }
 
     public function thumbnailBackup(int $sourceId): BinaryFileResponse
@@ -64,8 +76,7 @@ class HemerotecaController extends Controller
 
         abort_unless($source && $source->ruta_archivo, 404);
 
-        $htmlAbsolutePath = $this->resolveBackupAbsolutePath((string) $source->ruta_archivo);
-        $thumbnailAbsolutePath = dirname($htmlAbsolutePath).DIRECTORY_SEPARATOR.'page.png';
+        $thumbnailAbsolutePath = $this->resolveScreenshotAbsolutePath((string) $source->ruta_archivo);
         abort_unless(File::exists($thumbnailAbsolutePath), 404);
 
         return response()->file($thumbnailAbsolutePath, [
@@ -74,7 +85,24 @@ class HemerotecaController extends Controller
         ]);
     }
 
-    private function resolveBackupAbsolutePath(string $storedPath): string
+    public function backupOcr(int $sourceId): JsonResponse
+    {
+        $source = DB::table('fuentes')
+            ->select('id', 'ruta_archivo')
+            ->where('id', $sourceId)
+            ->first();
+
+        abort_unless($source && $source->ruta_archivo, 404);
+
+        $ocrAbsolutePath = $this->resolveOcrAbsolutePath((string) $source->ruta_archivo);
+        abort_unless(File::exists($ocrAbsolutePath), 404);
+
+        return response()->json([
+            'text' => File::get($ocrAbsolutePath),
+        ]);
+    }
+
+    private function resolveStoredCaptureAbsolutePath(string $storedPath): string
     {
         $normalizedPath = str_replace('\\', '/', trim($storedPath));
         $privateRoot = str_replace('\\', '/', storage_path('app/private'));
@@ -89,6 +117,39 @@ class HemerotecaController extends Controller
 
         $relative = ltrim($normalizedPath, '/');
         return storage_path('app/private/'.$relative);
+    }
+
+    private function resolveScreenshotAbsolutePath(string $storedPath): string
+    {
+        $storedAbsolutePath = $this->resolveStoredCaptureAbsolutePath($storedPath);
+
+        if (strtolower(pathinfo($storedAbsolutePath, PATHINFO_EXTENSION)) === 'html') {
+            return dirname($storedAbsolutePath).DIRECTORY_SEPARATOR.'page.png';
+        }
+
+        return $storedAbsolutePath;
+    }
+
+    private function resolveOcrAbsolutePath(string $storedPath): string
+    {
+        $screenshotAbsolutePath = $this->resolveScreenshotAbsolutePath($storedPath);
+
+        return dirname($screenshotAbsolutePath).DIRECTORY_SEPARATOR.'ocr.txt';
+    }
+
+    private function readOcrTextFromStoredPath(?string $storedPath): ?string
+    {
+        if (!$storedPath) {
+            return null;
+        }
+
+        $ocrAbsolutePath = $this->resolveOcrAbsolutePath($storedPath);
+
+        if (!File::exists($ocrAbsolutePath)) {
+            return null;
+        }
+
+        return trim(File::get($ocrAbsolutePath));
     }
 
     public function store(Request $request): RedirectResponse
@@ -179,7 +240,7 @@ class HemerotecaController extends Controller
             ]);
             $process->setTimeout(180);
 
-            Log::info('Iniciando captura de respaldo con Puppeteer.', [
+            Log::info('Iniciando captura con OCR usando Puppeteer.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
                 'node_binary' => $nodeBinary,
@@ -190,23 +251,24 @@ class HemerotecaController extends Controller
 
             $process->mustRun();
 
-            json_decode($process->getOutput(), true, 512, JSON_THROW_ON_ERROR);
+            $captureOutput = json_decode($process->getOutput(), true, 512, JSON_THROW_ON_ERROR);
 
             DB::table('fuentes')
                 ->where('id', $sourceId)
                 ->update([
-                    'ruta_archivo' => "{$relativeCaptureDir}/page.html",
+                    'ruta_archivo' => "{$relativeCaptureDir}/page.png",
                     'estado_captura' => 'capturada',
                     'capturado_en' => now(),
                     'updated_at' => now(),
                 ]);
 
-            Log::info('Captura de respaldo finalizada correctamente.', [
+            Log::info('Captura y OCR finalizados correctamente.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
-                'html_exists' => File::exists("{$absoluteCaptureDir}/page.html"),
+                'ocr_exists' => File::exists("{$absoluteCaptureDir}/ocr.txt"),
                 'png_exists' => File::exists("{$absoluteCaptureDir}/page.png"),
                 'metadata_exists' => File::exists("{$absoluteCaptureDir}/metadata.json"),
+                'capture_output' => $captureOutput,
                 'stdout' => $this->truncateLogValue($process->getOutput()),
                 'stderr' => $this->truncateLogValue($process->getErrorOutput()),
             ]);
@@ -233,7 +295,7 @@ class HemerotecaController extends Controller
                 'exit_text' => $failedProcess->getExitCodeText(),
                 'stdout' => $this->truncateLogValue($failedProcess->getOutput()),
                 'stderr' => $this->truncateLogValue($failedProcess->getErrorOutput()),
-                'html_exists' => File::exists("{$absoluteCaptureDir}/page.html"),
+                'ocr_exists' => File::exists("{$absoluteCaptureDir}/ocr.txt"),
                 'png_exists' => File::exists("{$absoluteCaptureDir}/page.png"),
                 'metadata_exists' => File::exists("{$absoluteCaptureDir}/metadata.json"),
             ]);
@@ -251,7 +313,7 @@ class HemerotecaController extends Controller
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
                 'message' => $exception->getMessage(),
-                'html_exists' => File::exists("{$absoluteCaptureDir}/page.html"),
+                'ocr_exists' => File::exists("{$absoluteCaptureDir}/ocr.txt"),
                 'png_exists' => File::exists("{$absoluteCaptureDir}/page.png"),
                 'metadata_exists' => File::exists("{$absoluteCaptureDir}/metadata.json"),
             ]);
@@ -263,13 +325,19 @@ class HemerotecaController extends Controller
             ->with(
                 'message',
                 $captureSucceeded
-                    ? 'Respaldo capturado y guardado correctamente.'
-                    : 'La fuente se guardo, pero fallo la captura del respaldo.',
+                    ? 'Captura y OCR guardados correctamente.'
+                    : 'La fuente se guardo, pero fallo la captura con OCR.',
             );
     }
 
     public function __invoke(): Response
     {
+        $driver = DB::connection()->getDriverName();
+        $tagSeparator = $driver === 'sqlite' ? ',' : '||';
+        $tagsAggregate = $driver === 'sqlite'
+            ? 'GROUP_CONCAT(DISTINCT etiquetas.nombre) AS tags'
+            : "GROUP_CONCAT(DISTINCT etiquetas.nombre ORDER BY etiquetas.nombre SEPARATOR '||') AS tags";
+
         $sources = DB::table('fuentes')
             ->leftJoin('users', 'fuentes.user_id', '=', 'users.id')
             ->leftJoin('etiqueta_fuente', 'fuentes.id', '=', 'etiqueta_fuente.fuente_id')
@@ -284,7 +352,7 @@ class HemerotecaController extends Controller
                 'fuentes.ruta_archivo',
                 'fuentes.capturado_en',
                 'users.name as captured_by',
-                DB::raw("GROUP_CONCAT(DISTINCT etiquetas.nombre ORDER BY etiquetas.nombre SEPARATOR '||') AS tags"),
+                DB::raw($tagsAggregate),
                 DB::raw('MAX(libro_oficios.oficio_peticion) AS oficio_number'),
             )
             ->groupBy(
@@ -299,8 +367,8 @@ class HemerotecaController extends Controller
             ->orderByDesc('fuentes.capturado_en')
             ->orderByDesc('fuentes.id')
             ->get()
-            ->map(function (object $source): array {
-                $tagList = $source->tags ? explode('||', (string) $source->tags) : [];
+            ->map(function (object $source) use ($tagSeparator): array {
+                $tagList = $source->tags ? explode($tagSeparator, (string) $source->tags) : [];
                 $capturedAt = $source->capturado_en ? Carbon::parse($source->capturado_en) : null;
                 $capturedAtLabel = $capturedAt
                     ? $capturedAt->locale('es')->translatedFormat('j M Y')
@@ -312,6 +380,7 @@ class HemerotecaController extends Controller
                     'description' => $source->descripcion ?: 'Sin descripcion.',
                     'url' => (string) $source->url,
                     'backupPath' => $source->ruta_archivo ?: null,
+                    'ocrText' => $this->readOcrTextFromStoredPath($source->ruta_archivo),
                     'tags' => array_values(array_filter($tagList)),
                     'date' => $capturedAt ? $capturedAt->locale('es')->translatedFormat('d/m/Y H:i') : $capturedAtLabel,
                     'capturedAt' => $capturedAt?->format('Y-m-d'),
