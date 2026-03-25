@@ -165,6 +165,7 @@ class HemerotecaController extends Controller
 
         try {
             $nodeBinary = env('NODE_BINARY', 'node');
+            $captureTimeout = (int) env('CAPTURE_PROCESS_TIMEOUT', 420);
             $process = new Process([
                 $nodeBinary,
                 base_path('scripts/capture-page.mjs'),
@@ -177,12 +178,13 @@ class HemerotecaController extends Controller
                 'TMP' => env('TMP', $tmpDir),
                 'PATH' => env('PATH', getenv('PATH') ?: ''),
             ]);
-            $process->setTimeout(180);
+            $process->setTimeout($captureTimeout);
 
             Log::info('Iniciando captura de respaldo con Puppeteer.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
                 'node_binary' => $nodeBinary,
+                'timeout_seconds' => $captureTimeout,
                 'capture_dir' => $absoluteCaptureDir,
                 'tmp_dir' => $tmpDir,
                 'command' => $process->getCommandLine(),
@@ -229,6 +231,7 @@ class HemerotecaController extends Controller
                 'url' => $validated['url'],
                 'message' => $exception->getMessage(),
                 'command' => $failedProcess->getCommandLine(),
+                'timeout_seconds' => $captureTimeout,
                 'exit_code' => $failedProcess->getExitCode(),
                 'exit_text' => $failedProcess->getExitCodeText(),
                 'stdout' => $this->truncateLogValue($failedProcess->getOutput()),
