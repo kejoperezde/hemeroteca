@@ -44,6 +44,8 @@ const autoScroll = async (page) => {
     });
 };
 
+
+
 const extractTextFromImage = async (imagePath) => {
     const worker = await createWorker('spa+eng');
 
