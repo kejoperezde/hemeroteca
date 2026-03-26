@@ -5,12 +5,23 @@ import laravel from 'laravel-vite-plugin';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    server: {
+        host: '0.0.0.0',
+        port: 3000,
+        cors: {
+            origin: '*',
+        },
+        hmr: {
+            host: '10.16.16.110'
+        }
+    },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             ssr: 'resources/js/ssr.tsx',
             refresh: true,
         }),
+
         react({
             babel: {
                 plugins: ['babel-plugin-react-compiler'],
@@ -20,5 +31,6 @@ export default defineConfig({
         wayfinder({
             formVariants: true,
         }),
+
     ],
 });
