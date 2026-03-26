@@ -1,0 +1,528 @@
+[DEBUG 2026-03-26T17:32:58.707Z] Starting capture for URL: https://www.msn.com/es-mx/noticias/mundo/destroz%C3%B3-a-una-familia-esposo-de-maestra-asesinada-en-michoac%C3%A1n-reacciona-tras-el-ataque/ar-AA1ZoVL1?ocid=hpmsn&cvid=69c56d9f9d6c47aa94b1105df6618ff0&ei=22
+[DEBUG 2026-03-26T17:32:58.712Z] Ensuring output directory exists: C:\laragon\www\hemeroteca\storage\app/private/capturas/fuente_69
+[DEBUG 2026-03-26T17:32:58.714Z] Launching Puppeteer browser...
+[DEBUG 2026-03-26T17:32:59.305Z] Creating new page...
+[DEBUG 2026-03-26T17:32:59.346Z] Navigating to URL...
+[DEBUG 2026-03-26T17:33:01.879Z] [WEB CONSOLE] INFO: AST library loaded: 1.10.78
+[DEBUG 2026-03-26T17:33:02.225Z] [WEB REQUEST FAILED] https://assets.msn.com/statics/icons/favicon.ico - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:02.525Z] [WEB REQUEST FAILED] https://api.msn.com/msn/v0/pages/LiveRamp/getLiveRampId?apikey=0QfOX3Vn51YCzitbLaRkTTBadtWpgTN8NZLW0C1SEM&activityId=69c56dcc-6dab-42f7-8834-401c88e42722&ocid=peregrine&cm=es-mx&it=web&user=m-0C2710EB808C61FB1DE507C381C26003&scn=ANON - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:06.510Z] [WEB CONSOLE] WARN: An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+[DEBUG 2026-03-26T17:33:07.331Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:07.393Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:07.538Z] [WEB CONSOLE] WARN: VIDEOJS: WARN: A plugin named "qualityLevels" already exists. You may want to avoid re-registering plugins!
+[DEBUG 2026-03-26T17:33:07.546Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:07.548Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:07.641Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:07.644Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:07.645Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:07.699Z] [WEB CONSOLE] ERROR: Failed to load resource: the server responded with a status of 404 ()
+[DEBUG 2026-03-26T17:33:07.732Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:07.737Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:10.461Z] [WEB CONSOLE] ERROR: {"id":20166,"severity":0,"pb":{"build":"20260325.190","appType":"views","pcsVersion":"20260320.3","pcsEnv":"prod","buildAlias":"latest","shouldDelayUntilLoadTime":false,"shouldSampleErrorsForTreatement1":true,"isVisible":true,"networkStatus":"connected","customMessage":"pageType: webcompar, status: 0, StatusText: , StartTime: 2026-03-26T17:33:07.439Z, EndTime: 2026-03-26T17:33:10.467Z, url: https://srtb.msn.com/auction","w":1},"message":"Timeout calling SAMRTB Ajax"}
+[DEBUG 2026-03-26T17:33:10.461Z] [WEB CONSOLE] ERROR: This App error Id: 20166 will not be sent due to app error sampling!
+[DEBUG 2026-03-26T17:33:10.465Z] [WEB REQUEST FAILED] https://srtb.msn.com/auction - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:10.702Z] [WEB REQUEST FAILED] https://api.btloader.com/exd?tid=IQSxwfKlnj-st52qQNRT-9d2b34fe0d&sid=ZkXqBlnU5-pR7PcMvEE-9d2b34fe0d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:11.292Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=IQSxwfKlnj-st52qQNRT-9d2b34fe0d&sid=ZkXqBlnU5-pR7PcMvEE-9d2b34fe0d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:11.963Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:11.964Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:11.967Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:11.969Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:11.970Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:11.976Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:11.977Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:13.947Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:13.948Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:14.039Z] [WEB CONSOLE] INFO: BSSO Telemetry: {"result":"Error","error":"NoExtension","type":"ChromeSsoTelemetry","data":{},"traces":["BrowserSSO Initialized","Creating ChromeBrowserCore provider","Sending message for method CreateProviderAsync","Received message for method CreateProviderAsync","Error: ChromeBrowserCore error NoExtension: Extension is not installed."]}
+[DEBUG 2026-03-26T17:33:15.549Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:15.550Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:15.716Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:15.717Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:15.732Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:15.732Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:15.766Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:15.766Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:16.209Z] [WEB CONSOLE] LOG: true
+[DEBUG 2026-03-26T17:33:16.209Z] [WEB CONSOLE] LOG: Storage access: true
+[DEBUG 2026-03-26T17:33:16.323Z] [WEB CONSOLE] WARN: An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+[DEBUG 2026-03-26T17:33:16.805Z] [WEB REQUEST FAILED] https://video.twimg.com/amplify_video/2036828310252986368/aud/mp4a/0/3000/32000/ZsJhL39CaXuJqWz-.m4s - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:18.384Z] Scrolling page to trigger lazy loading...
+[DEBUG 2026-03-26T17:33:18.386Z] Executing autoScroll script within page...
+[DEBUG 2026-03-26T17:33:19.347Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=Oi11QF0Gl6-x3Yw36XfhR-9d2b352fca&sid=ZkXqBlnU5-pR7PcMvEE-9d2b34fe0d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:19.913Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:20.076Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:20.103Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:20.103Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:20.104Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:20.104Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:20.105Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:20.105Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:20.395Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus002/3ebb3ce9-c525-44f9-8bcc-68638b647615/9803338c-8056-42a0-bb65-4227fd399be9_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:20.424Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=7ZvdvQMXRe-gfXihhVRkM-9d2b35338b&sid=ZkXqBlnU5-pR7PcMvEE-9d2b34fe0d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:20.942Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:21.173Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=MIJzc6sX-nvRsCDOoa-9d2b3536a5&sid=ZkXqBlnU5-pR7PcMvEE-9d2b34fe0d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:21.192Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus005/8404e1e5-6169-450d-a49c-1232be94559b/fef42172-bbb1-4bd8-a622-6956ce1b4629_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:22.073Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus004/d958c72b-cb20-442a-b87d-132857a5d5f8/e4f68bf1-0200-4801-8834-10c7264551ae_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:22.095Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=mgsgDYwd-XRicKRctRt-9d2b353983&sid=ZkXqBlnU5-pR7PcMvEE-9d2b34fe0d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:22.442Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:22.498Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:22.498Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:22.499Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:22.499Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:22.500Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:22.500Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:23.074Z] autoScroll finished.
+[DEBUG 2026-03-26T17:33:23.972Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=ywTsfC7cnr-yFDLk6MRTk-9d2b353ffb&sid=ZkXqBlnU5-pR7PcMvEE-9d2b34fe0d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:24.279Z] Taking screenshot to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_69\page.png
+[DEBUG 2026-03-26T17:33:24.567Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:24.568Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:24.569Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:24.570Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:24.570Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:24.571Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:24.572Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:24.574Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:24.577Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:24.579Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:33:27.323Z] Initializing scribe.js-ocr...
+[DEBUG 2026-03-26T17:33:27.370Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus005/8404e1e5-6169-450d-a49c-1232be94559b/fef42172-bbb1-4bd8-a622-6956ce1b4629_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:33:27.838Z] Importing file to scribe: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_69\page.png
+[DEBUG 2026-03-26T17:33:27.867Z] Running OCR (Language: spa+eng)...
+[DEBUG 2026-03-26T17:43:03.364Z] Starting capture for URL: https://www.msn.com/es-mx/noticias/mundo/destroz%C3%B3-a-una-familia-esposo-de-maestra-asesinada-en-michoac%C3%A1n-reacciona-tras-el-ataque/ar-AA1ZoVL1?ocid=hpmsn&cvid=69c56d9f9d6c47aa94b1105df6618ff0&ei=22
+[DEBUG 2026-03-26T17:43:03.381Z] Ensuring output directory exists: C:\laragon\www\hemeroteca\storage\app/private/capturas/fuente_72
+[DEBUG 2026-03-26T17:43:03.412Z] Launching Puppeteer browser...
+[DEBUG 2026-03-26T17:43:04.141Z] Creating new page...
+[DEBUG 2026-03-26T17:43:04.256Z] Navigating to URL...
+[DEBUG 2026-03-26T17:43:05.576Z] [WEB CONSOLE] INFO: AST library loaded: 1.10.78
+[DEBUG 2026-03-26T17:43:06.062Z] [WEB REQUEST FAILED] https://assets.msn.com/statics/icons/favicon.ico - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:43:06.361Z] [WEB REQUEST FAILED] https://api.msn.com/msn/v0/pages/LiveRamp/getLiveRampId?apikey=0QfOX3Vn51YCzitbLaRkTTBadtWpgTN8NZLW0C1SEM&activityId=69c57028-2bd8-450c-a142-6463b2bd18eb&ocid=peregrine&cm=es-mx&it=web&user=m-08839A64ADDF6B2B39EE8D4CAC556A3F&scn=ANON - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:43:07.527Z] [WEB CONSOLE] WARN: An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+[DEBUG 2026-03-26T17:43:07.896Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:43:08.202Z] [WEB REQUEST FAILED] https://api.btloader.com/exd?tid=Q57APQGVqQ-z4gloSpeG-9d2b3e292e&sid=14dm4XzK-4eDjNwqI-9d2b3e292e&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:43:08.384Z] Unhandled exception occurred: TimeoutError: Timed out after waiting 3500ms
+    at file:///C:/laragon/www/hemeroteca/node_modules/puppeteer-core/lib/esm/puppeteer/common/util.js:225:19
+    at file:///C:/laragon/www/hemeroteca/node_modules/puppeteer-core/lib/esm/third_party/rxjs/rxjs.js:1944:31
+    at OperatorSubscriber2._this._next (file:///C:/laragon/www/hemeroteca/node_modules/puppeteer-core/lib/esm/third_party/rxjs/rxjs.js:1001:9)
+    at Subscriber2.next (file:///C:/laragon/www/hemeroteca/node_modules/puppeteer-core/lib/esm/third_party/rxjs/rxjs.js:704:12)
+    at AsyncAction2.<anonymous> (file:///C:/laragon/www/hemeroteca/node_modules/puppeteer-core/lib/esm/third_party/rxjs/rxjs.js:2288:20)
+    at AsyncAction2._execute (file:///C:/laragon/www/hemeroteca/node_modules/puppeteer-core/lib/esm/third_party/rxjs/rxjs.js:1368:12)
+    at AsyncAction2.execute (file:///C:/laragon/www/hemeroteca/node_modules/puppeteer-core/lib/esm/third_party/rxjs/rxjs.js:1357:22)
+    at AsyncScheduler2.flush (file:///C:/laragon/www/hemeroteca/node_modules/puppeteer-core/lib/esm/third_party/rxjs/rxjs.js:1435:26)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7)
+[DEBUG 2026-03-26T17:43:48.427Z] Starting capture for URL: https://www.msn.com/es-mx/noticias/mexico/colosio-riojas-igual-que-l%C3%B3pez-obrador/ar-AA1ZshKm?ocid=hpmsn&cvid=69c56d9f9d6c47aa94b1105df6618ff0&ei=12
+[DEBUG 2026-03-26T17:43:48.439Z] Ensuring output directory exists: C:\laragon\www\hemeroteca\storage\app/private/capturas/fuente_73
+[DEBUG 2026-03-26T17:43:48.473Z] Launching Puppeteer browser...
+[DEBUG 2026-03-26T17:43:49.038Z] Creating new page...
+[DEBUG 2026-03-26T17:43:49.142Z] Navigating to URL...
+[DEBUG 2026-03-26T17:43:50.416Z] [WEB CONSOLE] INFO: AST library loaded: 1.10.78
+[DEBUG 2026-03-26T17:43:50.928Z] [WEB REQUEST FAILED] https://assets.msn.com/statics/icons/favicon.ico - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:43:51.327Z] [WEB CONSOLE] ERROR: Thu Mar 26 2026 10:43:51 GMT-0700 (hora estándar del Pacífico de México): 1774547031327 {"id":91005,"severity":0,"pb":{"build":"20260325.190","appType":"views","pcsVersion":"20260320.3","pcsEnv":"prod","buildAlias":"latest","shouldDelayUntilLoadTime":false,"shouldSampleErrorsForTreatement1":false,"isVisible":true,"networkStatus":"connected","pcsMuid":"notfound","oneServiceMuid":"2451fb5e401b67610ecaec7641a066d3","pcsFlightBlobVersion":"53582299","oneServiceFlightBlobVersion":"53582299","oneServiceDebugId":"507ed1d6-730a-41c6-abc3-f33bb1ad518f|2026-03-26T17:43:51.2214865Z|fabric_msn|WUS2-A|News_818","w":1},"message":"Muid mismatch between PCS and 1S"}
+[DEBUG 2026-03-26T17:43:51.330Z] [WEB CONSOLE] ERROR: Thu Mar 26 2026 10:43:51 GMT-0700 (hora estándar del Pacífico de México): 1774547031331 {"id":91002,"severity":0,"pb":{"build":"20260325.190","appType":"views","pcsVersion":"20260320.3","pcsEnv":"prod","buildAlias":"latest","shouldDelayUntilLoadTime":false,"shouldSampleErrorsForTreatement1":false,"isVisible":true,"networkStatus":"connected","missingIn1S":"prg-cg-notf-landing-c","missingInPCS":"prg-1sw-ntf-rel,prg-c-hp-erp,prg-msnasgptcl3,prg-pr2-cgwidv2,prg-pr2-cgwidv2c,prg-views-c-stage","commonProps":{"pcsMuid":"notfound","oneServiceMuid":"2451fb5e401b67610ecaec7641a066d3","pcsFlightBlobVersion":"53582299","oneServiceFlightBlobVersion":"53582299","oneServiceDebugId":"507ed1d6-730a-41c6-abc3-f33bb1ad518f|2026-03-26T17:43:51.2214865Z|fabric_msn|WUS2-A|News_818"},"w":1},"message":"Flight mismatch between PCS and 1S"}
+[DEBUG 2026-03-26T17:43:55.932Z] [WEB REQUEST FAILED] https://api.msn.com/msn/v0/pages/LiveRamp/getLiveRampId?apikey=0QfOX3Vn51YCzitbLaRkTTBadtWpgTN8NZLW0C1SEM&activityId=69c57055-4c47-4824-86a9-6dccd305f90a&ocid=peregrine&cm=es-mx&it=web&user=m-2451FB5E401B67610ECAEC7641A066D3&scn=ANON - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:43:56.088Z] [WEB CONSOLE] WARN: An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+[DEBUG 2026-03-26T17:43:56.371Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:43:56.372Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:43:57.248Z] [WEB CONSOLE] ERROR: Failed to load resource: the server responded with a status of 404 ()
+[DEBUG 2026-03-26T17:43:59.402Z] [WEB CONSOLE] ERROR: {"id":20166,"severity":0,"pb":{"build":"20260325.190","appType":"views","pcsVersion":"20260320.3","pcsEnv":"prod","buildAlias":"latest","shouldDelayUntilLoadTime":false,"shouldSampleErrorsForTreatement1":true,"isVisible":true,"networkStatus":"connected","customMessage":"pageType: webcompar, status: 0, StatusText: , StartTime: 2026-03-26T17:43:56.394Z, EndTime: 2026-03-26T17:43:59.404Z, url: https://srtb.msn.com/auction","w":1},"message":"Timeout calling SAMRTB Ajax"}
+[DEBUG 2026-03-26T17:43:59.402Z] [WEB CONSOLE] ERROR: This App error Id: 20166 will not be sent due to app error sampling!
+[DEBUG 2026-03-26T17:43:59.406Z] [WEB REQUEST FAILED] https://srtb.msn.com/auction - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:00.088Z] [WEB REQUEST FAILED] https://api.btloader.com/exd?tid=Ba3jziiJw-aUqixSex8-9d2b3ee720&sid=AJuPsf5aym-NZeDHZBZBe-9d2b3ee720&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:00.366Z] [WEB CONSOLE] INFO: BSSO Telemetry: {"result":"Error","error":"NoExtension","type":"ChromeSsoTelemetry","data":{},"traces":["BrowserSSO Initialized","Creating ChromeBrowserCore provider","Sending message for method CreateProviderAsync","Received message for method CreateProviderAsync","Error: ChromeBrowserCore error NoExtension: Extension is not installed."]}
+[DEBUG 2026-03-26T17:44:00.937Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:00.938Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:01.364Z] [WEB CONSOLE] LOG: true
+[DEBUG 2026-03-26T17:44:01.365Z] [WEB CONSOLE] LOG: Storage access: true
+[DEBUG 2026-03-26T17:44:01.485Z] [WEB CONSOLE] WARN: An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+[DEBUG 2026-03-26T17:44:02.105Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:02.106Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:03.127Z] [WEB REQUEST FAILED] https://video.twimg.com/amplify_video/2037042324027441153/aud/mp4a/0/3000/32000/4PDSLzF2I_DGwVtq.m4s - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:03.485Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=Ba3jziiJw-aUqixSex8-9d2b3ee720&sid=AJuPsf5aym-NZeDHZBZBe-9d2b3ee720&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:04.807Z] Scrolling page to trigger lazy loading...
+[DEBUG 2026-03-26T17:44:04.808Z] Executing autoScroll script within page...
+[DEBUG 2026-03-26T17:44:05.779Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=Tb571SnM0W-xfCNPRqGO-9d2b3f0c35&sid=AJuPsf5aym-NZeDHZBZBe-9d2b3ee720&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:06.336Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:06.336Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:06.619Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=tDmUgjdjW6-6R6eC1NF-9d2b3f0ff4&sid=AJuPsf5aym-NZeDHZBZBe-9d2b3ee720&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:06.656Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus005/5d6cde53-db91-4fdf-80bc-dcdbfe1ee686/c4ef6e95-727f-43b1-a165-623261f169d0_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:07.465Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=3E4r2wDjM-9wr4TO3Og-9d2b3f12ac&sid=AJuPsf5aym-NZeDHZBZBe-9d2b3ee720&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:07.499Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:07.585Z] [WEB CONSOLE] ERROR: This App error Id: 20165 will not be sent due to app error sampling!
+[DEBUG 2026-03-26T17:44:07.585Z] [WEB CONSOLE] ERROR: {"id":20165,"severity":0,"pb":{"build":"20260325.190","appType":"views","pcsVersion":"20260320.3","pcsEnv":"prod","buildAlias":"latest","shouldDelayUntilLoadTime":false,"shouldSampleErrorsForTreatement1":true,"isVisible":true,"networkStatus":"connected","customMessage":"Status: 204, StatusText: , request: {\"adRefreshVariant\":\"\",\"locale\":\"es-mx\",\"rid\":\"9d63dedce3c84d358e2f4c7479bfc982\",\"partnerId\":\"article\",\"content\":{\"sourceUrl\":\"https://www.msn.com/es-mx/noticias/mexico/colosio-riojas-igual-que-l%C3%B3pez-obrador/ar-AA1ZshKm?ocid=hpmsn&cvid=69c56d9f9d6c47aa94b1105df6618ff0&ei=12\",\"pageType\":\"webcompar\",\"previousReservedRiverNativeAdCount\":0,\"previousRiverDualWideNativeAdCount\":0,\"previousRiverHalfNativeAdCount\":0,\"previousRiverNativeAdCount\":0,\"verticalName\":\"noticias\",\"isXfeed\":false,\"audienceMode\":\"adult\"},\"user\":{\"browserOptOut\":false,\"isAdblock\":false,\"gdpr\":false,\"muid\":\"2451FB5E401B67610ECAEC7641A066D3\"},\"placements\":[{\"assets\":[[{\"required\":1,\"data\":{\"type\":1},\"id\":1},{\"required\":0,\"data\":{\"type\":6},\"id\":2},{\"required\":0,\"data\":{\"type\":12,\"len\":15},\"id\":3},{\"required\":0,\"data\":{\"type\":513},\"id\":4},{\"required\":0,\"data\":{\"type\":517},\"id\":5},{\"required\":0,\"data\":{\"type\":517},\"id\":6},{\"required\":0,\"data\":{\"type\":517},\"id\":7},{\"required\":0,\"data\":{\"type\":517},\"id\":8},{\"required\":0,\"data\":{\"type\":555},\"id\":9},{\"required\":0,\"data\":{\"type\":556},\"id\":10},{\"required\":0,\"data\":{\"type\":557},\"id\":11},{\"required\":1,\"title\":{\"len\":100},\"id\":12},{\"required\":0,\"img\":{\"w\":16,\"h\":16,\"type\":1},\"id\":13},{\"required\":1,\"img\":{\"w\":300,\"h\":157,\"type\":3},\"id\":14}]],\"region\":\"river\",\"indices\":[3,4],\"img\":{\"h\":157,\"w\":300},\"keywords\":[{\"key\":\"plcmnt_region\",\"value\":[\"river\"]}],\"isStrictIndices\":true,\"msan_kvs\":[\"{\\\"modelSignals\\\":{\\\"cardSize\\\":{\\\"w\\\":300,\\\"h\\\":304},\\\"pageRegion\\\":\\\"consumption-river\\\"},\\\"requestModelSignals\\\":{\\\"vpSize\\\":{\\\"w\\\":1440,\\\"h\\\":900},\\\"ocid\\\":\\\"hpmsn\\\"},\\\"device\\\":{\\\"pxratio\\\":1}}\",\"{\\\"modelSignals\\\":{\\\"cardSize\\\":{\\\"w\\\":300,\\\"h\\\":304},\\\"pageRegion\\\":\\\"consumption-river\\\"},\\\"requestModelSignals\\\":{\\\"vpSize\\\":{\\\"w\\\":1440,\\\"h\\\":900},\\\"ocid\\\":\\\"hpmsn\\\"},\\\"device\\\":{\\\"pxratio\\\":1}}\"]}],\"extensions\":{\"taboola\":{\"sessionId\":\"init\"},\"impressedCrids\":[\"IMG_T0FERDIuMTIzMzY1MjA2NDA2MTM1Ml8xVktEVk9MNlBLQTJRTEg=\",\"IMG_T0FERDIuMTE3NjQ3NzQ1Mzc3MTMzMl8xVzFYWDNZT0ZISTM4Q1k=\",\"IMG_T1BIUy5IMUtmWVlBVkdWenVqdzQ3NEM0NzQ=\",\"IMG_T0FERDIuMTIzNjk1MDY0MzExMzExNV8xWkxDQUM0UTVXN01NUVM=\",\"IMG_T0FERDIuMTE4MTk3NTEzOTUzOTczN18xWVNXUTBWVDNUQ0Q3QTY=\",\"IMG_T0FERDIuMTM1MTI5OTc5NjE0OTA5MV8xU0dZVFlZOTJBN1JTU1Y=\",\"IMG_T1BIUy5YZnQ4MEh1eW9SYldKQTQ3NEM0NzQ=\",\"IMG_T0FERDIuNzU1OTUzODY1OTIyNV9GTF8wMDI=\",\"IMG_T0FERDIuMTE4MzA3NDUyMzU1NjQxMF8xNlVMTjU4WTc5V0pRTUg=\",\"PH_6771993544188128721\",\"PH_3447762348812703533\",\"PH_276344000375342217\",\"PH_5566060694772429763\",\"PH_685990840788837206\",\"PH_7886874873440802505\",\"PH_5424772490241701837\",\"TL_YWI2MWViZDU2OGZlYmRkZS04M2M3MmYzMzMyMWFlODlk\",\"TL_MTAyOTU0YTU1Mzc4Nzc1OC0xMTU2NjYyNWFlOTc3MTg5\",\"TL_OGU5ZWQ2NTQwNjJjNjA3OS05Y2Y1NTE1YjY4YmFlYzJk\",\"TL_NWQ4ZDE3MzA2NDQ1NmIxLWNiMmVkZDQ3ZGJiMTkxN2I=\",\"TL_YmU1YmZhMGQ4MDFkNDAwMi0zMjE0MzBkOGY3NDczNzcy\",\"TL_ZGFiYjFkM2Y1MzBlNDUyOC0xZDU3NjEzNzY5N2E4NzFh\",\"TL_YjE2MjRkM2E2ZWVjNzFkYy02YWViYTAwMDlkYTc1MGQx\",\"TL_ODkxNzIxNjkwYWJiOTlkLTg5YTU1MzY2OGViNTRmNQ==\"],\"msan_kv\":\"{\\\"page\\\":{\\\"type\\\":\\\"article\\\"},\\\"flightSignals\\\":{\\\"vaXandrMigration\\\":true}}\"},\"isCookieWallPresent\":false,\"isPeregrine\":true,\"device\":{\"isMobile\":false},\"keywords\":[{\"key\":\"pub\",\"value\":[\"msn\"]},{\"key\":\"lang\",\"value\":[\"es\"]},{\"key\":\"market\",\"value\":[\"mx\"]},{\"key\":\"sales_page_type\",\"value\":[\"article\"]},{\"key\":\"device_type\",\"value\":[\"desktopweb\"]},{\"key\":\"cat\",\"value\":[\"politics\"]},{\"key\":\"subcat\",\"value\":[\"mexican_politics\",\"government\"]},{\"key\":\"cont_topic\",\"value\":[\"andres_manuel_lopez_obrador\"]},{\"key\":\"sales_provider_id\",\"value\":[\"BB1pDGkd\"]}]}","w":1},"message":"Get 204 error from SAMRTB Ajax"}
+[DEBUG 2026-03-26T17:44:07.771Z] [WEB CONSOLE] WARN: VIDEOJS: WARN: A plugin named "qualityLevels" already exists. You may want to avoid re-registering plugins!
+[DEBUG 2026-03-26T17:44:07.778Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:07.781Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.087Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.091Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.092Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.092Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.092Z] [WEB CONSOLE] ERROR: {"id":38123,"severity":1,"pb":{"build":"20260325.190","appType":"views","pcsVersion":"20260320.3","pcsEnv":"prod","buildAlias":"latest","shouldDelayUntilLoadTime":false,"shouldSampleErrorsForTreatement1":false,"isVisible":true,"networkStatus":"connected","articleId":"AA1ZoRkx","videoId":"AA1Zpeha","videoPlayerType":"partner","w":1},"message":"Video Player is intersecting with Continue Reading Button"}
+[DEBUG 2026-03-26T17:44:08.092Z] [WEB CONSOLE] ERROR: This App error Id: 38123 will not be sent due to app error sampling!
+[DEBUG 2026-03-26T17:44:08.095Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.214Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.220Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.267Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus004/d958c72b-cb20-442a-b87d-132857a5d5f8/e4f68bf1-0200-4801-8834-10c7264551ae_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:08.335Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=Af6pZnTXkc-pl14ZVq5-9d2b3f16d9&sid=AJuPsf5aym-NZeDHZBZBe-9d2b3ee720&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:08.920Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.976Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.976Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.977Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.978Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.979Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:08.980Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:09.015Z] autoScroll finished.
+[DEBUG 2026-03-26T17:44:09.218Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=xBEytmDJqj-BPaIaW0anu-9d2b3f1a6b&sid=AJuPsf5aym-NZeDHZBZBe-9d2b3ee720&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:09.739Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:09.740Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:09.741Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:09.742Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:09.742Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:09.775Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:09.775Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:09.906Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus002/a7df4604-7a89-4762-8b7a-4e581dd6f6e9/013cc83e-ce03-49c6-8fb7-4601ad2098d0_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:10.228Z] Taking screenshot to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_73\page.png
+[DEBUG 2026-03-26T17:44:10.305Z] [WEB REQUEST FAILED] https://cm.g.doubleclick.net/partnerpixels?url=https%3A%2F%2Fadsdkprod.azureedge.net%2Fassets%2Fsf%2Fv1.0.0-1%2Fsafeframe-v2.html - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:10.308Z] [WEB REQUEST FAILED] https://83fc0590cf4ca5091d1300b226c48394.safeframe.googlesyndication.com/safeframe/1-0-45/html/container.html?n=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:10.931Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.937Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.939Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.940Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.940Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.942Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.943Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.944Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.945Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.945Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.948Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.950Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.951Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.953Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.954Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.955Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.956Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.957Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.958Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.958Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.959Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.959Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.960Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.961Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.961Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.967Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.972Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.973Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.974Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:10.975Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.090Z] [WEB REQUEST FAILED] https://adsdkprod.azureedge.net/assets/sf/v1.0.0-1/safeframe-v2.html - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:11.584Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.586Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.587Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.587Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.588Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.589Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.590Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.592Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.593Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.594Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.595Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.596Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.598Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.599Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.600Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.601Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.602Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.602Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.603Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.603Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.604Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.604Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.605Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.606Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.606Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.607Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.608Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.608Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.609Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:11.614Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:44:12.229Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus002/a7df4604-7a89-4762-8b7a-4e581dd6f6e9/013cc83e-ce03-49c6-8fb7-4601ad2098d0_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:44:14.069Z] Initializing scribe.js-ocr...
+[DEBUG 2026-03-26T17:44:14.673Z] Importing file to scribe: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_73\page.png
+[DEBUG 2026-03-26T17:44:14.715Z] Running OCR (Language: spa+eng)...
+[DEBUG 2026-03-26T17:48:52.799Z] Starting capture for URL: https://elsoldenayarit.mx/nota-roja/joven-que-asesino-a-dos-maestras-en-michoacan-enfrentaria-una-pena-de-solo-tres-anos
+[DEBUG 2026-03-26T17:48:52.805Z] Ensuring output directory exists: C:\laragon\www\hemeroteca\storage\app/private/capturas/fuente_74
+[DEBUG 2026-03-26T17:48:52.807Z] Launching Puppeteer browser...
+[DEBUG 2026-03-26T17:48:53.325Z] Creating new page...
+[DEBUG 2026-03-26T17:48:53.443Z] Navigating to URL...
+[DEBUG 2026-03-26T17:48:55.175Z] [WEB ERROR] Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+[DEBUG 2026-03-26T17:48:55.645Z] [WEB REQUEST FAILED] https://www.google-analytics.com/g/collect?v=2&tid=G-ZYJNNWF8X2&gtm=45je63p0v9109737252za200zd9109737252&_p=1774547335205&gcd=13l3l3l3l1l1&npa=0&dma=0&cid=651901636.1774547335&ul=es-es&sr=800x600&ir=1&uaa=x86&uab=64&uafvl=Not-A.Brand%3B24.0.0.0%7CChromium%3B146.0.7680.153&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&are=1&frm=0&pscdl=noapi&_eu=EA&_s=1&tag_exp=103116026~103200004~115616986~115938465~115938468~116024733~117484252&sid=1774547335&sct=1&seg=0&dl=https%3A%2F%2Felsoldenayarit.mx%2Fnota-roja%2Fjoven-que-asesino-a-dos-maestras-en-michoacan-enfrentaria-una-pena-de-solo-tres-anos&dt=Joven%20que%20asesin%C3%B3%20a%20dos%20maestras%20en%20Michoac%C3%A1n%20enfrentar%C3%ADa%20una%20pena%20de%20solo%20tres%20a%C3%B1os%20%7C%20El%20Sol%20de%20Nayarit&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=1801 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:48:55.764Z] [WEB REQUEST FAILED] https://elsoldenayarit.mx/seccion/nota-roja?_rsc=ykpgp - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:48:55.764Z] [WEB REQUEST FAILED] https://elsoldenayarit.mx/seccion/opinion?_rsc=ykpgp - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:48:55.770Z] [WEB REQUEST FAILED] https://elsoldenayarit.mx/seccion/cultura?_rsc=ykpgp - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:48:56.864Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:48:57.717Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:48:59.302Z] Scrolling page to trigger lazy loading...
+[DEBUG 2026-03-26T17:48:59.305Z] Executing autoScroll script within page...
+[DEBUG 2026-03-26T17:48:59.926Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:49:00.382Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:49:00.393Z] autoScroll finished.
+[DEBUG 2026-03-26T17:49:00.978Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:49:01.131Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:49:01.596Z] Taking screenshot to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_74\page.png
+[DEBUG 2026-03-26T17:49:02.577Z] Initializing scribe.js-ocr...
+[DEBUG 2026-03-26T17:49:03.282Z] Importing file to scribe: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_74\page.png
+[DEBUG 2026-03-26T17:49:03.342Z] Running OCR (Language: spa+eng)...
+[DEBUG 2026-03-26T17:49:31.810Z] Extracting text and saving to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_74\ocr.txt
+[DEBUG 2026-03-26T17:49:31.819Z] Exporting searchable PDF natively via scribe to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_74\page.pdf
+[DEBUG 2026-03-26T17:49:32.945Z] Cleaning up scribe resources...
+[DEBUG 2026-03-26T17:49:33.078Z] Gathering metadata...
+[DEBUG 2026-03-26T17:49:33.086Z] Saving metadata to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_74\metadata.json
+[DEBUG 2026-03-26T17:49:33.088Z] Process completed successfully, outputting JSON...
+[DEBUG 2026-03-26T17:52:13.169Z] Starting capture for URL: https://www.msn.com/es-mx/noticias/mexico/colosio-riojas-igual-que-l%C3%B3pez-obrador/ar-AA1ZshKm?ocid=hpmsn&cvid=69c56d9f9d6c47aa94b1105df6618ff0&ei=12
+[DEBUG 2026-03-26T17:52:13.174Z] Ensuring output directory exists: C:\laragon\www\hemeroteca\storage\app/private/capturas/fuente_75
+[DEBUG 2026-03-26T17:52:13.176Z] Launching Puppeteer browser...
+[DEBUG 2026-03-26T17:52:13.767Z] Creating new page...
+[DEBUG 2026-03-26T17:52:13.819Z] Navigating to URL...
+[DEBUG 2026-03-26T17:52:15.077Z] [WEB CONSOLE] INFO: AST library loaded: 1.10.78
+[DEBUG 2026-03-26T17:52:15.672Z] [WEB REQUEST FAILED] https://assets.msn.com/statics/icons/favicon.ico - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:16.025Z] [WEB REQUEST FAILED] https://api.msn.com/msn/v0/pages/LiveRamp/getLiveRampId?apikey=0QfOX3Vn51YCzitbLaRkTTBadtWpgTN8NZLW0C1SEM&activityId=69c5724e-79ac-4640-818f-8accd31842d3&ocid=peregrine&cm=es-mx&it=web&user=m-1D2BBB6CF4256F0F3E3AAC44F5E06E4F&scn=ANON - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:16.658Z] [WEB CONSOLE] WARN: An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+[DEBUG 2026-03-26T17:52:17.005Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:17.006Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:17.739Z] [WEB CONSOLE] INFO: BSSO Telemetry: {"result":"Error","error":"NoExtension","type":"ChromeSsoTelemetry","data":{},"traces":["BrowserSSO Initialized","Creating ChromeBrowserCore provider","Sending message for method CreateProviderAsync","Received message for method CreateProviderAsync","Error: ChromeBrowserCore error NoExtension: Extension is not installed."]}
+[DEBUG 2026-03-26T17:52:17.850Z] [WEB CONSOLE] ERROR: Failed to load resource: the server responded with a status of 404 ()
+[DEBUG 2026-03-26T17:52:17.908Z] [WEB REQUEST FAILED] https://api.btloader.com/exd?tid=qqlEvkZG0-oNdGpX7WJ-9d2b468cdd&sid=Zl3OU7VJW-n4l7DeacA-9d2b468cdd&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:18.393Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:18.450Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:18.450Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:18.450Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:18.451Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:18.451Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:18.452Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:18.694Z] [WEB CONSOLE] LOG: true
+[DEBUG 2026-03-26T17:52:18.695Z] [WEB CONSOLE] LOG: Storage access: true
+[DEBUG 2026-03-26T17:52:18.824Z] [WEB CONSOLE] WARN: An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+[DEBUG 2026-03-26T17:52:21.543Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=qqlEvkZG0-oNdGpX7WJ-9d2b468cdd&sid=Zl3OU7VJW-n4l7DeacA-9d2b468cdd&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:22.109Z] Scrolling page to trigger lazy loading...
+[DEBUG 2026-03-26T17:52:22.110Z] Executing autoScroll script within page...
+[DEBUG 2026-03-26T17:52:23.427Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=eJSJDcszOc-pB2ch3wL-9d2b46a4a8&sid=Zl3OU7VJW-n4l7DeacA-9d2b468cdd&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:23.510Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:23.954Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=o1dQPaplFz-xc1WTtl3-9d2b46a675&sid=Zl3OU7VJW-n4l7DeacA-9d2b468cdd&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:24.256Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:24.525Z] [WEB CONSOLE] WARN: VIDEOJS: WARN: A plugin named "qualityLevels" already exists. You may want to avoid re-registering plugins!
+[DEBUG 2026-03-26T17:52:24.533Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:24.534Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:24.858Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:24.866Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:24.867Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:24.868Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:24.868Z] [WEB CONSOLE] ERROR: {"id":38123,"severity":1,"pb":{"build":"20260325.190","appType":"views","pcsVersion":"20260320.3","pcsEnv":"prod","buildAlias":"latest","shouldDelayUntilLoadTime":false,"shouldSampleErrorsForTreatement1":false,"isVisible":true,"networkStatus":"connected","articleId":"AA1ZoRkx","videoId":"AA1Zpeha","videoPlayerType":"partner","w":1},"message":"Video Player is intersecting with Continue Reading Button"}
+[DEBUG 2026-03-26T17:52:24.869Z] [WEB CONSOLE] ERROR: This App error Id: 38123 will not be sent due to app error sampling!
+[DEBUG 2026-03-26T17:52:24.969Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:25.103Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:25.108Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:25.301Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=CwdgF4dZr-ozhZePuR-9d2b46aaa9&sid=Zl3OU7VJW-n4l7DeacA-9d2b468cdd&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:26.285Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=zo1rHzPs5f-Dud1d6dN6-9d2b46af6c&sid=Zl3OU7VJW-n4l7DeacA-9d2b468cdd&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:26.738Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus003/661c4345-a8b0-4ed2-b7e2-42cfcfd18e15/69c39cf6-cd25-46aa-aab2-33eff66ee764_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:26.756Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus004/d958c72b-cb20-442a-b87d-132857a5d5f8/e4f68bf1-0200-4801-8834-10c7264551ae_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:26.756Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus004/19500baa-e956-472e-90eb-53f7464122ef/f897e26a-4a00-4400-ae40-e3c62e20672a.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:26.797Z] autoScroll finished.
+[DEBUG 2026-03-26T17:52:26.870Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:26.870Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:26.872Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:26.873Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:26.873Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:26.936Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:26.936Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:27.480Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus003/661c4345-a8b0-4ed2-b7e2-42cfcfd18e15/69c39cf6-cd25-46aa-aab2-33eff66ee764_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:27.482Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=acYSHhVW-SQXSN6Pn3-9d2b46b360&sid=Zl3OU7VJW-n4l7DeacA-9d2b468cdd&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:27.508Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus004/d958c72b-cb20-442a-b87d-132857a5d5f8/e4f68bf1-0200-4801-8834-10c7264551ae_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T17:52:28.008Z] Taking screenshot to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_75\page.png
+[DEBUG 2026-03-26T17:52:28.196Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.202Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.203Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.203Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.204Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.205Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.207Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.208Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.209Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.209Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.210Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.213Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.215Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.216Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.217Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.219Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.221Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.222Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.223Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.223Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.224Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.225Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.226Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.229Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.231Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.233Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.234Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.235Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.236Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.237Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.237Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.238Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.239Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.239Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.239Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.240Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.240Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.241Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.241Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:28.242Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T17:52:30.644Z] Initializing scribe.js-ocr...
+[DEBUG 2026-03-26T17:52:30.836Z] [WEB CONSOLE] ERROR: Thu Mar 26 2026 10:52:30 GMT-0700 (hora estándar del Pacífico de México): 1774547550836 {"id":20165,"severity":0,"pb":{"build":"20260325.190","appType":"views","pcsVersion":"20260320.3","pcsEnv":"prod","buildAlias":"latest","shouldDelayUntilLoadTime":false,"shouldSampleErrorsForTreatement1":true,"isVisible":true,"networkStatus":"connected","customMessage":"Status: 204, StatusText: , request: {\"adRefreshVariant\":\"\",\"locale\":\"es-mx\",\"rid\":\"69c5724e79ac4640818f8accd31842d3\",\"partnerId\":\"article\",\"content\":{\"sourceUrl\":\"https://www.msn.com/es-mx/noticias/mexico/colosio-riojas-igual-que-l%C3%B3pez-obrador/ar-AA1ZshKm?ocid=hpmsn&cvid=69c56d9f9d6c47aa94b1105df6618ff0&ei=12\",\"pageType\":\"webcompar\",\"previousReservedRiverNativeAdCount\":0,\"previousRiverDualWideNativeAdCount\":0,\"previousRiverHalfNativeAdCount\":0,\"previousRiverNativeAdCount\":0,\"verticalName\":\"noticias\",\"isXfeed\":false,\"audienceMode\":\"adult\"},\"user\":{\"browserOptOut\":false,\"isAdblock\":false,\"gdpr\":false,\"muid\":\"1D2BBB6CF4256F0F3E3AAC44F5E06E4F\"},\"placements\":[{\"assets\":[[{\"required\":1,\"data\":{\"type\":1},\"id\":1},{\"required\":0,\"data\":{\"type\":6},\"id\":2},{\"required\":0,\"data\":{\"type\":12,\"len\":15},\"id\":3},{\"required\":0,\"data\":{\"type\":513},\"id\":4},{\"required\":0,\"data\":{\"type\":517},\"id\":5},{\"required\":0,\"data\":{\"type\":517},\"id\":6},{\"required\":0,\"data\":{\"type\":517},\"id\":7},{\"required\":0,\"data\":{\"type\":517},\"id\":8},{\"required\":0,\"data\":{\"type\":555},\"id\":9},{\"required\":0,\"data\":{\"type\":556},\"id\":10},{\"required\":0,\"data\":{\"type\":557},\"id\":11},{\"required\":1,\"title\":{\"len\":100},\"id\":12},{\"required\":0,\"img\":{\"w\":16,\"h\":16,\"type\":1},\"id\":13},{\"required\":1,\"img\":{\"w\":300,\"h\":157,\"type\":3},\"id\":14}]],\"region\":\"river\",\"indices\":[9,10],\"img\":{\"h\":157,\"w\":300},\"keywords\":[{\"key\":\"plcmnt_region\",\"value\":[\"river\"]}],\"isStrictIndices\":true,\"msan_kvs\":[\"{\\\"modelSignals\\\":{\\\"cardSize\\\":{\\\"w\\\":300,\\\"h\\\":304},\\\"pageRegion\\\":\\\"consumption-river\\\"},\\\"requestModelSignals\\\":{\\\"vpSize\\\":{\\\"w\\\":1440,\\\"h\\\":900},\\\"ocid\\\":\\\"hpmsn\\\"},\\\"device\\\":{\\\"pxratio\\\":1}}\",\"{\\\"modelSignals\\\":{\\\"cardSize\\\":{\\\"w\\\":300,\\\"h\\\":304},\\\"pageRegion\\\":\\\"consumption-river\\\"},\\\"requestModelSignals\\\":{\\\"vpSize\\\":{\\\"w\\\":1440,\\\"h\\\":900},\\\"ocid\\\":\\\"hpmsn\\\"},\\\"device\\\":{\\\"pxratio\\\":1}}\"]}],\"extensions\":{\"taboola\":{\"sessionId\":\"init\"},\"impressedCrids\":[\"IMG_T0FERDIuMTIzMDM1MzU3MzY1OTg3N18xOUQ4WjM3MEoyU0hUNFM=\",\"IMG_T1BFQy5QZHVBbkxjNlBPN1NzUTQ3NEM0NzQ=\",\"IMG_T0FERDIuODI0NjQzNTE3ODIzM18xTUswNUNZWEpJNVBURUVXVVk=\",\"IMG_T1BIUy50VlNLQUZIaGRvTnhhdzQ3NEM0NzQ=\",\"IMG_T0FERDIuNzI4NDM3NDczMTYzMF8xUkFLWjlOMVlQUUZCU0RSS0k=\",\"IMG_T0FERDIuMTIzNjk1MDY0MzExMzExNV8xWkxDQUM0UTVXN01NUVM=\",\"IMG_T0FJUC5hZThhMDIzZDg1MTJjZTE5NzU5YmU0YTIxZjA5MzFlZA==\",\"IMG_T0FERDIuMTI1Njc0MTgxNzIzMTI0NV8xWUI5VTFTOFZUMzVGV0I=\",\"IMG_T1BIUy5TbjJlNyUyYmd0eSUyYm14cGc0NzRDNDc0\",\"IMG_T0FERDIuNzU1OTUzODY1OTIyNV9GTF8wMDI=\",\"IMG_T0FERDIuMTE4MzA3NDUyMzU1NjQxMF8xNlVMTjU4WTc5V0pRTUg=\",\"IMG_T0FERDIuMTE3NjQ3NzQ1Mzc3MTMzMl8xVzFYWDNZT0ZISTM4Q1k=\",\"IMG_T0FERDIuMTE3NjQ3NzU4MTIzODgzNl8xNDMyMTRDUDRTU0hCN0Q=\",\"IMG_T0FERDIuODI0NjQzNTE3ODI0Nl8xU0ZRNlZRQTkwSkJYTUJYTjA=\",\"IMG_T0FERDIuMTI1NDU0MjgwMzk3NzIyN18xVThaOURFV1lXRzVDWk8=\",\"PH_7065468202457609650\",\"PH_9489986846609456180\",\"PH_10174489236930781812\",\"PH_2954643936914936652\",\"PH_7595211341827054945\",\"PH_9657272453373186318\",\"PH_7772621114181032655\",\"PH_10635465350477734796\",\"PH_11369655328581465442\",\"PH_8934779001554907789\",\"PH_7886874873440802505\",\"PH_5424772490241701837\",\"PH_3447762348812703533\",\"PH_6684387385624278465\",\"PH_12593227108504491392\",\"TL_YTFjMTliMTExZmIxYWJjNS0zZDgwMTA1NTgzZDc1Mzdl\",\"TL_Yzg1ZGI3MzI0ZjNhNTAxNC05NmIzOWZhZTZhOWRhYjk3\",\"TL_MzVjMWZjZjhiMjcwZTg2Ny1hNGUzNDAyMDFiOWRkYTg3\",\"TL_ZGFiYjFkM2Y1MzBlNDUyOC0xZDU3NjEzNzY5N2E4NzFh\",\"TL_YjE2MjRkM2E2ZWVjNzFkYy02YWViYTAwMDlkYTc1MGQx\",\"TL_ODkxNzIxNjkwYWJiOTlkLTg5YTU1MzY2OGViNTRmNQ==\",\"TL_MWY2MTM0M2M2ODE2N2I3MC02NGE2MzFjNjhlMmRkZjBl\",\"TL_NWQ4ZDE3MzA2NDQ1NmIxLWNiMmVkZDQ3ZGJiMTkxN2I=\",\"TL_NmRiZTMxYTcwYzQ4YzY2Yy1jOWNjNTdiNzM4YzI4ZGY3\",\"TL_Yjg5ZjNhMGQ0YmE1MzRhNy02MzdhZmE5OGIzNGQwMmYx\"],\"msan_kv\":\"{\\\"page\\\":{\\\"type\\\":\\\"article\\\"},\\\"flightSignals\\\":{\\\"vaXandrMigration\\\":true}}\"},\"isCookieWallPresent\":false,\"isPeregrine\":true,\"device\":{\"isMobile\":false},\"keywords\":[{\"key\":\"pub\",\"value\":[\"msn\"]},{\"key\":\"lang\",\"value\":[\"es\"]},{\"key\":\"market\",\"value\":[\"mx\"]},{\"key\":\"sales_page_type\",\"value\":[\"article\"]},{\"key\":\"device_type\",\"value\":[\"desktopweb\"]},{\"key\":\"cat\",\"value\":[\"politics\"]},{\"key\":\"subcat\",\"value\":[\"elections\",\"mexican_politics\",\"political_scandals\",\"government\"]},{\"key\":\"cont_topic\",\"value\":[\"andres_manuel_lopez_obrador\",\"political_gaffes\"]},{\"key\":\"sales_provider_id\",\"value\":[\"AA175g70\"]}]}","w":1},"message":"Get 204 error from SAMRTB Ajax"}
+[DEBUG 2026-03-26T17:52:31.005Z] Importing file to scribe: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_75\page.png
+[DEBUG 2026-03-26T17:52:31.021Z] Running OCR (Language: spa+eng)...
+[DEBUG 2026-03-26T18:02:43.451Z] Starting capture for URL: https://www.msn.com/es-mx/noticias/mundo/destroz%C3%B3-a-una-familia-esposo-de-maestra-asesinada-en-michoac%C3%A1n-reacciona-tras-el-ataque/ar-AA1ZoVL1?ocid=hpmsn&cvid=69c56d9f9d6c47aa94b1105df6618ff0&ei=22
+[DEBUG 2026-03-26T18:02:43.458Z] Ensuring output directory exists: C:\laragon\www\hemeroteca\storage\app/private/capturas/fuente_76
+[DEBUG 2026-03-26T18:02:43.459Z] Launching Puppeteer browser...
+[DEBUG 2026-03-26T18:02:44.196Z] Creating new page...
+[DEBUG 2026-03-26T18:02:44.275Z] Navigating to URL...
+[DEBUG 2026-03-26T18:02:45.331Z] [WEB CONSOLE] INFO: AST library loaded: 1.10.78
+[DEBUG 2026-03-26T18:02:47.539Z] [WEB REQUEST FAILED] https://assets.msn.com/statics/icons/favicon.ico - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:02:47.745Z] [WEB REQUEST FAILED] https://api.msn.com/msn/v0/pages/LiveRamp/getLiveRampId?apikey=0QfOX3Vn51YCzitbLaRkTTBadtWpgTN8NZLW0C1SEM&activityId=69c574c4-3d7d-402e-bcd3-f51643ee378a&ocid=peregrine&cm=es-mx&it=web&user=m-039C7D057C7D66F3146B6A2D7D1C67D0&scn=ANON - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:02:51.480Z] [WEB CONSOLE] WARN: An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+[DEBUG 2026-03-26T18:02:51.744Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:02:52.402Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:02:52.591Z] [WEB CONSOLE] ERROR: Failed to load resource: the server responded with a status of 404 ()
+[DEBUG 2026-03-26T18:02:54.762Z] [WEB CONSOLE] ERROR: {"id":20166,"severity":0,"pb":{"build":"20260325.190","appType":"views","pcsVersion":"20260320.3","pcsEnv":"prod","buildAlias":"latest","shouldDelayUntilLoadTime":false,"shouldSampleErrorsForTreatement1":true,"isVisible":true,"networkStatus":"connected","customMessage":"pageType: webcompar, status: 0, StatusText: , StartTime: 2026-03-26T18:02:51.752Z, EndTime: 2026-03-26T18:02:54.762Z, url: https://srtb.msn.com/auction","w":1},"message":"Timeout calling SAMRTB Ajax"}
+[DEBUG 2026-03-26T18:02:54.762Z] [WEB CONSOLE] ERROR: This App error Id: 20166 will not be sent due to app error sampling!
+[DEBUG 2026-03-26T18:02:54.769Z] [WEB REQUEST FAILED] https://srtb.msn.com/auction - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:02:58.205Z] [WEB REQUEST FAILED] https://api.btloader.com/exd?tid=Xu1AD6i6yM-Hk5uTV4X-9d2b503a8d&sid=tWoTlmKzJ-bGoXIqcD-9d2b503a8d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:02:58.737Z] [WEB CONSOLE] INFO: BSSO Telemetry: {"result":"Error","error":"NoExtension","type":"ChromeSsoTelemetry","data":{},"traces":["BrowserSSO Initialized","Creating ChromeBrowserCore provider","Sending message for method CreateProviderAsync","Received message for method CreateProviderAsync","Error: ChromeBrowserCore error NoExtension: Extension is not installed."]}
+[DEBUG 2026-03-26T18:02:58.871Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=Xu1AD6i6yM-Hk5uTV4X-9d2b503a8d&sid=tWoTlmKzJ-bGoXIqcD-9d2b503a8d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:03:01.498Z] [WEB REQUEST FAILED] https://login.live.com/Me.htm?v=3 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:03:05.569Z] Scrolling page to trigger lazy loading...
+[DEBUG 2026-03-26T18:03:05.570Z] Executing autoScroll script within page...
+[DEBUG 2026-03-26T18:03:06.116Z] [WEB CONSOLE] ERROR: {"id":38119,"severity":1,"pb":{"build":"20260325.190","appType":"views","pcsVersion":"20260320.3","pcsEnv":"prod","buildAlias":"latest","shouldDelayUntilLoadTime":false,"shouldSampleErrorsForTreatement1":false,"isVisible":true,"networkStatus":"connected","customMessage":"Video ID: Error playing video - AbortError: The play() request was interrupted because the media was removed from the document. https://goo.gl/LdLk22","w":1}}
+[DEBUG 2026-03-26T18:03:06.117Z] [WEB CONSOLE] ERROR: This App error Id: 38119 will not be sent due to app error sampling!
+[DEBUG 2026-03-26T18:03:06.546Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus004/132d7f0a-8f2f-4777-a1b2-a80ad714ddab/f9b6f3f6-364d-4bdc-a125-219d43bb7082_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:03:06.813Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=VAOP7nceEp-neS6ZcTY-9d2b50762c&sid=tWoTlmKzJ-bGoXIqcD-9d2b503a8d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:03:06.848Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:06.909Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:06.910Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:06.910Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:06.911Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:06.911Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:06.912Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:07.582Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:07.605Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=YVrkhtLuTk-HlTA1bhc-9d2b5078b7&sid=tWoTlmKzJ-bGoXIqcD-9d2b503a8d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:03:08.774Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=D6YCgvQ5-C06SDprUHf-9d2b507cd0&sid=tWoTlmKzJ-bGoXIqcD-9d2b503a8d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:03:08.838Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:08.883Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:08.885Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:09.135Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:09.137Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:09.459Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:09.461Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:09.959Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus004/d958c72b-cb20-442a-b87d-132857a5d5f8/e4f68bf1-0200-4801-8834-10c7264551ae_650.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:03:09.987Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=uNyAcyCl-DrJQTB6MZl-9d2b508158&sid=tWoTlmKzJ-bGoXIqcD-9d2b503a8d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:03:10.165Z] [WEB CONSOLE] WARN: VIDEOJS: WARN: A plugin named "qualityLevels" already exists. You may want to avoid re-registering plugins!
+[DEBUG 2026-03-26T18:03:10.170Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:10.175Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:10.516Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:10.517Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:10.550Z] autoScroll finished. reason=bottom-stable, steps=29, durationMs=4974, finalHeight=15443
+[DEBUG 2026-03-26T18:03:11.393Z] [WEB REQUEST FAILED] https://prod-streaming-video-msn-com.akamaized.net/v1/eus002/e869c356-2e9b-4dcb-abce-ca196c064bb1/8085d1b5-bcdf-4931-b462-c24f6d0f3df6.mp4 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:03:11.434Z] [WEB REQUEST FAILED] https://api.btloader.com/pv?nlf=false&tid=vbTXpdg39a-t1vuqZqkSZ-9d2b5087e6&sid=tWoTlmKzJ-bGoXIqcD-9d2b503a8d&cv=2.1.184-3-g2982370&upapi=true - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:03:11.758Z] Taking screenshot to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_76\page.png
+[DEBUG 2026-03-26T18:03:11.932Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:11.933Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:11.934Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:11.939Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:11.940Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.009Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.010Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.020Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.023Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.025Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.024Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.034Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.038Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.041Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.043Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.044Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.046Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.322Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.378Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.378Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.379Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.379Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.380Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:12.380Z] [WEB CONSOLE] VERBOSE: Rendering was performed in a subtree hidden by content-visibility.
+[DEBUG 2026-03-26T18:03:14.571Z] Initializing scribe.js-ocr...
+[DEBUG 2026-03-26T18:03:14.969Z] Importing file to scribe: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_76\page.png
+[DEBUG 2026-03-26T18:03:14.988Z] Running OCR (Language: spa+eng)...
+[DEBUG 2026-03-26T18:06:55.251Z] Starting capture for URL: https://elsoldenayarit.mx/nota-roja/joven-que-asesino-a-dos-maestras-en-michoacan-enfrentaria-una-pena-de-solo-tres-anos
+[DEBUG 2026-03-26T18:06:55.255Z] Ensuring output directory exists: C:\laragon\www\hemeroteca\storage\app/private/capturas/fuente_77
+[DEBUG 2026-03-26T18:06:55.257Z] Launching Puppeteer browser...
+[DEBUG 2026-03-26T18:06:55.868Z] Creating new page...
+[DEBUG 2026-03-26T18:06:55.923Z] Navigating to URL...
+[DEBUG 2026-03-26T18:06:57.459Z] [WEB ERROR] Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+[DEBUG 2026-03-26T18:06:58.012Z] [WEB REQUEST FAILED] https://elsoldenayarit.mx/seccion/nota-roja?_rsc=ykpgp - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:06:58.014Z] [WEB REQUEST FAILED] https://elsoldenayarit.mx/seccion/cultura?_rsc=ykpgp - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:06:58.016Z] [WEB REQUEST FAILED] https://elsoldenayarit.mx/seccion/politica?_rsc=ykpgp - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:06:58.712Z] [WEB REQUEST FAILED] https://www.google-analytics.com/g/collect?v=2&tid=G-ZYJNNWF8X2&gtm=45je63p0v9109737252za200zd9109737252&_p=1774548417485&gcd=13l3l3l3l1l1&npa=0&dma=0&cid=1276236248.1774548418&ul=es-es&sr=800x600&ir=1&uaa=x86&uab=64&uafvl=Not-A.Brand%3B24.0.0.0%7CChromium%3B146.0.7680.153&uamb=0&uam=&uap=Windows&uapv=19.0.0&uaw=0&are=1&frm=0&pscdl=noapi&_eu=EA&_s=1&tag_exp=103116026~103200004~115938466~115938469~116024733~116133313~117484252&sid=1774548418&sct=1&seg=0&dl=https%3A%2F%2Felsoldenayarit.mx%2Fnota-roja%2Fjoven-que-asesino-a-dos-maestras-en-michoacan-enfrentaria-una-pena-de-solo-tres-anos&dt=Joven%20que%20asesin%C3%B3%20a%20dos%20maestras%20en%20Michoac%C3%A1n%20enfrentar%C3%ADa%20una%20pena%20de%20solo%20tres%20a%C3%B1os%20%7C%20El%20Sol%20de%20Nayarit&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=2412 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:06:59.217Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:06:59.312Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:07:00.854Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:07:04.237Z] Scrolling page to trigger lazy loading...
+[DEBUG 2026-03-26T18:07:04.238Z] Executing autoScroll script within page...
+[DEBUG 2026-03-26T18:07:04.815Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:07:05.143Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:07:05.172Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:07:05.635Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:07:05.662Z] [WEB REQUEST FAILED] https://elsoldenayarit.mx/seccion/mujer?_rsc=ykpgp - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:07:05.666Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:07:05.965Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:07:05.989Z] autoScroll finished. reason=bottom-stable, steps=12, durationMs=1747, finalHeight=4251
+[DEBUG 2026-03-26T18:07:06.502Z] [WEB REQUEST FAILED] https://pagead2.googlesyndication.com/pagead/ping?e=1 - net::ERR_ABORTED
+[DEBUG 2026-03-26T18:07:07.206Z] Taking screenshot to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_77\page.png
+[DEBUG 2026-03-26T18:07:07.901Z] Initializing scribe.js-ocr...
+[DEBUG 2026-03-26T18:07:08.359Z] Importing file to scribe: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_77\page.png
+[DEBUG 2026-03-26T18:07:08.379Z] Running OCR (Language: spa+eng)...
+[DEBUG 2026-03-26T18:07:36.276Z] Extracting text and saving to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_77\ocr.txt
+[DEBUG 2026-03-26T18:07:36.287Z] Exporting searchable PDF natively via scribe to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_77\page.pdf
+[DEBUG 2026-03-26T18:07:37.642Z] Cleaning up scribe resources...
+[DEBUG 2026-03-26T18:07:37.770Z] Gathering metadata...
+[DEBUG 2026-03-26T18:07:37.778Z] Saving metadata to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_77\metadata.json
+[DEBUG 2026-03-26T18:07:37.779Z] Process completed successfully, outputting JSON...
+[DEBUG 2026-03-26T18:09:45.089Z] Starting capture for URL: https://www.facebook.com/share/p/1CHTCWNVNL/
+[DEBUG 2026-03-26T18:09:45.093Z] Ensuring output directory exists: C:\laragon\www\hemeroteca\storage\app/private/capturas/fuente_78
+[DEBUG 2026-03-26T18:09:45.095Z] Launching Puppeteer browser...
+[DEBUG 2026-03-26T18:09:45.605Z] Creating new page...
+[DEBUG 2026-03-26T18:09:45.708Z] Navigating to URL...
+[DEBUG 2026-03-26T18:09:47.560Z] [WEB CONSOLE] LOG: 
+%c¡Detente! font-family:helvetica; font-size:20px; font-size:50px; font-weight:bold; color:red; -webkit-text-stroke:1px black;
+[DEBUG 2026-03-26T18:09:47.560Z] [WEB CONSOLE] LOG: 
+%cEsta función del navegador está pensada para desarrolladores. Si alguna persona te ha indicado que copiaras y pegaras algo aquí para habilitar una función de Facebook o para "hackear" la cuenta de alguien, se trata de un fraude. Si lo haces, esta persona podrá acceder a tu cuenta. font-family:helvetica; font-size:20px; 
+[DEBUG 2026-03-26T18:09:47.561Z] [WEB CONSOLE] LOG: 
+%cPara obtener más información, consulta https://www.facebook.com/selfxss. font-family:helvetica; font-size:20px; 
+[DEBUG 2026-03-26T18:09:47.561Z] [WEB CONSOLE] LOG: 
+%c 
+[DEBUG 2026-03-26T18:09:47.573Z] [WEB CONSOLE] ERROR: ErrorUtils caught an error:
+
+terminate stream because StartStreamFailure with msg : UNAUTHENTICATED [Caught in: Subscription error in preprocessResponse]
+
+Subsequent non-fatal errors won't be logged; see https://fburl.com/debugjs. [object Object]
+[DEBUG 2026-03-26T18:09:47.808Z] [WEB CONSOLE] VERBOSE: [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o
+[DEBUG 2026-03-26T18:09:48.787Z] Scrolling page to trigger lazy loading...
+[DEBUG 2026-03-26T18:09:48.789Z] Executing autoScroll script within page...
+[DEBUG 2026-03-26T18:09:49.389Z] autoScroll finished. reason=bottom-stable, steps=4, durationMs=594, finalHeight=956
+[DEBUG 2026-03-26T18:09:50.606Z] Taking screenshot to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_78\page.png
+[DEBUG 2026-03-26T18:09:50.797Z] Initializing scribe.js-ocr...
+[DEBUG 2026-03-26T18:09:51.094Z] Importing file to scribe: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_78\page.png
+[DEBUG 2026-03-26T18:09:51.100Z] Running OCR (Language: spa+eng)...
+[DEBUG 2026-03-26T18:09:54.866Z] Extracting text and saving to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_78\ocr.txt
+[DEBUG 2026-03-26T18:09:54.872Z] Exporting searchable PDF natively via scribe to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_78\page.pdf
+[DEBUG 2026-03-26T18:09:55.424Z] Cleaning up scribe resources...
+[DEBUG 2026-03-26T18:09:55.524Z] Gathering metadata...
+[DEBUG 2026-03-26T18:09:55.532Z] Saving metadata to: C:\laragon\www\hemeroteca\storage\app\private\capturas\fuente_78\metadata.json
+[DEBUG 2026-03-26T18:09:55.534Z] Process completed successfully, outputting JSON...

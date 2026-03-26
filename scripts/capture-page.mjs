@@ -9,6 +9,12 @@ import scribe from 'scribe.js-ocr';
 
 const [, , targetUrl, outputDir] = process.argv;
 
+const AUTO_SCROLL_DISTANCE_PX = 500;
+const AUTO_SCROLL_INTERVAL_MS = 140;
+const AUTO_SCROLL_MAX_DURATION_MS = 12000;
+const AUTO_SCROLL_MAX_STEPS = 120;
+const AUTO_SCROLL_STABLE_HEIGHT_STEPS = 4;
+
 const debugLog = async (message) => {
     try {
         const time = new Date().toISOString();
@@ -84,24 +90,75 @@ const processOcrAndPdf = async (pngPath, pdfPath, ocrPath) => {
 
 const autoScroll = async (page) => {
     await debugLog(`Executing autoScroll script within page...`);
-    await page.evaluate(async () => {
-        await new Promise((resolve) => {
-            let totalHeight = 0;
-            const distance = 500;
-            const timer = setInterval(() => {
+    const autoScrollStats = await page.evaluate(
+        async ({ distance, intervalMs, maxDurationMs, maxSteps, stableHeightSteps }) => {
+            const getScrollHeight = () =>
+                Math.max(
+                    document.body?.scrollHeight ?? 0,
+                    document.documentElement?.scrollHeight ?? 0,
+                );
+
+            const start = Date.now();
+            let steps = 0;
+            let stableHeightCount = 0;
+            let previousHeight = getScrollHeight();
+            let stopReason = 'unknown';
+
+            while (true) {
                 window.scrollBy(0, distance);
-                totalHeight += distance;
+                steps += 1;
 
-                if (totalHeight >= document.body.scrollHeight) {
-                    clearInterval(timer);
-                    resolve();
+                await new Promise((resolve) => setTimeout(resolve, intervalMs));
+
+                const currentHeight = getScrollHeight();
+                const currentBottom = window.scrollY + window.innerHeight;
+                const reachedBottom = currentBottom >= currentHeight - 4;
+
+                if (currentHeight === previousHeight) {
+                    stableHeightCount += 1;
+                } else {
+                    stableHeightCount = 0;
+                    previousHeight = currentHeight;
                 }
-            }, 120);
-        });
 
-        window.scrollTo(0, 0);
-    });
-    await debugLog(`autoScroll finished.`);
+                if (reachedBottom && stableHeightCount >= stableHeightSteps) {
+                    stopReason = 'bottom-stable';
+                    break;
+                }
+
+                if (steps >= maxSteps) {
+                    stopReason = 'max-steps';
+                    break;
+                }
+
+                if (Date.now() - start >= maxDurationMs) {
+                    stopReason = 'max-duration';
+                    break;
+                }
+            }
+
+            const finalHeight = getScrollHeight();
+            window.scrollTo(0, 0);
+
+            return {
+                stopReason,
+                steps,
+                durationMs: Date.now() - start,
+                finalHeight,
+            };
+        },
+        {
+            distance: AUTO_SCROLL_DISTANCE_PX,
+            intervalMs: AUTO_SCROLL_INTERVAL_MS,
+            maxDurationMs: AUTO_SCROLL_MAX_DURATION_MS,
+            maxSteps: AUTO_SCROLL_MAX_STEPS,
+            stableHeightSteps: AUTO_SCROLL_STABLE_HEIGHT_STEPS,
+        },
+    );
+
+    await debugLog(
+        `autoScroll finished. reason=${autoScrollStats.stopReason}, steps=${autoScrollStats.steps}, durationMs=${autoScrollStats.durationMs}, finalHeight=${autoScrollStats.finalHeight}`,
+    );
 };
 
 let browser;
