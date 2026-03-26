@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -19,6 +18,37 @@ use Inertia\Response;
 
 class HemerotecaController extends Controller
 {
+    private function resolveOcrAbsolutePath(?string $storedPath): ?string
+    {
+        if (!$storedPath) {
+            return null;
+        }
+
+        $storedAbsolutePath = $this->resolveStoredCaptureAbsolutePath($storedPath);
+        return dirname($storedAbsolutePath).DIRECTORY_SEPARATOR.'ocr.txt';
+    }
+
+    private function getOcrText(?string $storedPath): string
+    {
+        $ocrAbsolutePath = $this->resolveOcrAbsolutePath($storedPath);
+
+        if (!$ocrAbsolutePath || !File::exists($ocrAbsolutePath)) {
+            return '';
+        }
+
+        try {
+            return trim(File::get($ocrAbsolutePath));
+        } catch (\Throwable $exception) {
+            Log::warning('No se pudo leer el archivo OCR de la fuente.', [
+                'stored_path' => $storedPath,
+                'ocr_path' => $ocrAbsolutePath,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return '';
+        }
+    }
+
     private function truncateLogValue(string $value, int $limit = 3000): string
     {
         return mb_strlen($value) > $limit
@@ -38,12 +68,20 @@ class HemerotecaController extends Controller
         $absolutePath = $this->resolveStoredCaptureAbsolutePath((string) $source->ruta_archivo);
         abort_unless(File::exists($absolutePath), 404);
 
-        if (strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION)) === 'html') {
+        $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+
+        if ($extension === 'html') {
             return response(File::get($absolutePath), 200, ['Content-Type' => 'text/html; charset=UTF-8']);
         }
 
+        $contentType = match ($extension) {
+            'pdf' => 'application/pdf',
+            'png' => 'image/png',
+            default => 'application/octet-stream',
+        };
+
         return response()->file($absolutePath, [
-            'Content-Type' => 'image/png',
+            'Content-Type' => $contentType,
             'Cache-Control' => 'private, max-age=300',
         ]);
     }
@@ -60,11 +98,13 @@ class HemerotecaController extends Controller
         $absolutePath = $this->resolveStoredCaptureAbsolutePath((string) $source->ruta_archivo);
         abort_unless(File::exists($absolutePath), 404);
 
-        if (strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION)) === 'html') {
+        $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+
+        if ($extension === 'html') {
             return response()->download($absolutePath, "respaldo_fuente_{$sourceId}.html");
         }
 
-        return response()->download($absolutePath, "captura_fuente_{$sourceId}.png");
+        return response()->download($absolutePath, "captura_fuente_{$sourceId}.{$extension}");
     }
 
     public function thumbnailBackup(int $sourceId): BinaryFileResponse
@@ -82,23 +122,6 @@ class HemerotecaController extends Controller
         return response()->file($thumbnailAbsolutePath, [
             'Content-Type' => 'image/png',
             'Cache-Control' => 'private, max-age=300',
-        ]);
-    }
-
-    public function backupOcr(int $sourceId): JsonResponse
-    {
-        $source = DB::table('fuentes')
-            ->select('id', 'ruta_archivo')
-            ->where('id', $sourceId)
-            ->first();
-
-        abort_unless($source && $source->ruta_archivo, 404);
-
-        $ocrAbsolutePath = $this->resolveOcrAbsolutePath((string) $source->ruta_archivo);
-        abort_unless(File::exists($ocrAbsolutePath), 404);
-
-        return response()->json([
-            'text' => File::get($ocrAbsolutePath),
         ]);
     }
 
@@ -123,33 +146,13 @@ class HemerotecaController extends Controller
     {
         $storedAbsolutePath = $this->resolveStoredCaptureAbsolutePath($storedPath);
 
-        if (strtolower(pathinfo($storedAbsolutePath, PATHINFO_EXTENSION)) === 'html') {
+        $extension = strtolower(pathinfo($storedAbsolutePath, PATHINFO_EXTENSION));
+
+        if (in_array($extension, ['html', 'pdf'], true)) {
             return dirname($storedAbsolutePath).DIRECTORY_SEPARATOR.'page.png';
         }
 
         return $storedAbsolutePath;
-    }
-
-    private function resolveOcrAbsolutePath(string $storedPath): string
-    {
-        $screenshotAbsolutePath = $this->resolveScreenshotAbsolutePath($storedPath);
-
-        return dirname($screenshotAbsolutePath).DIRECTORY_SEPARATOR.'ocr.txt';
-    }
-
-    private function readOcrTextFromStoredPath(?string $storedPath): ?string
-    {
-        if (!$storedPath) {
-            return null;
-        }
-
-        $ocrAbsolutePath = $this->resolveOcrAbsolutePath($storedPath);
-
-        if (!File::exists($ocrAbsolutePath)) {
-            return null;
-        }
-
-        return trim(File::get($ocrAbsolutePath));
     }
 
     public function store(Request $request): RedirectResponse
@@ -240,7 +243,7 @@ class HemerotecaController extends Controller
             ]);
             $process->setTimeout(180);
 
-            Log::info('Iniciando captura con OCR usando Puppeteer.', [
+            Log::info('Iniciando captura con Puppeteer.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
                 'node_binary' => $nodeBinary,
@@ -256,16 +259,16 @@ class HemerotecaController extends Controller
             DB::table('fuentes')
                 ->where('id', $sourceId)
                 ->update([
-                    'ruta_archivo' => "{$relativeCaptureDir}/page.png",
+                    'ruta_archivo' => "{$relativeCaptureDir}/page.pdf",
                     'estado_captura' => 'capturada',
                     'capturado_en' => now(),
                     'updated_at' => now(),
                 ]);
 
-            Log::info('Captura y OCR finalizados correctamente.', [
+            Log::info('Captura finalizada correctamente.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
-                'ocr_exists' => File::exists("{$absoluteCaptureDir}/ocr.txt"),
+                'pdf_exists' => File::exists("{$absoluteCaptureDir}/page.pdf"),
                 'png_exists' => File::exists("{$absoluteCaptureDir}/page.png"),
                 'metadata_exists' => File::exists("{$absoluteCaptureDir}/metadata.json"),
                 'capture_output' => $captureOutput,
@@ -295,7 +298,7 @@ class HemerotecaController extends Controller
                 'exit_text' => $failedProcess->getExitCodeText(),
                 'stdout' => $this->truncateLogValue($failedProcess->getOutput()),
                 'stderr' => $this->truncateLogValue($failedProcess->getErrorOutput()),
-                'ocr_exists' => File::exists("{$absoluteCaptureDir}/ocr.txt"),
+                'pdf_exists' => File::exists("{$absoluteCaptureDir}/page.pdf"),
                 'png_exists' => File::exists("{$absoluteCaptureDir}/page.png"),
                 'metadata_exists' => File::exists("{$absoluteCaptureDir}/metadata.json"),
             ]);
@@ -313,7 +316,7 @@ class HemerotecaController extends Controller
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
                 'message' => $exception->getMessage(),
-                'ocr_exists' => File::exists("{$absoluteCaptureDir}/ocr.txt"),
+                'pdf_exists' => File::exists("{$absoluteCaptureDir}/page.pdf"),
                 'png_exists' => File::exists("{$absoluteCaptureDir}/page.png"),
                 'metadata_exists' => File::exists("{$absoluteCaptureDir}/metadata.json"),
             ]);
@@ -325,8 +328,8 @@ class HemerotecaController extends Controller
             ->with(
                 'message',
                 $captureSucceeded
-                    ? 'Captura y OCR guardados correctamente.'
-                    : 'La fuente se guardo, pero fallo la captura con OCR.',
+                    ? 'Captura guardada correctamente.'
+                    : 'La fuente se guardo, pero fallo la captura.',
             );
     }
 
@@ -368,6 +371,7 @@ class HemerotecaController extends Controller
             ->orderByDesc('fuentes.id')
             ->get()
             ->map(function (object $source) use ($tagSeparator): array {
+                $backupPath = $source->ruta_archivo ? (string) $source->ruta_archivo : null;
                 $tagList = $source->tags ? explode($tagSeparator, (string) $source->tags) : [];
                 $capturedAt = $source->capturado_en ? Carbon::parse($source->capturado_en) : null;
                 $capturedAtLabel = $capturedAt
@@ -379,8 +383,8 @@ class HemerotecaController extends Controller
                     'name' => $source->titulo ?: parse_url((string) $source->url, PHP_URL_HOST) ?: 'Sin titulo',
                     'description' => $source->descripcion ?: 'Sin descripcion.',
                     'url' => (string) $source->url,
-                    'backupPath' => $source->ruta_archivo ?: null,
-                    'ocrText' => $this->readOcrTextFromStoredPath($source->ruta_archivo),
+                    'backupPath' => $backupPath,
+                    'ocrText' => $this->getOcrText($backupPath),
                     'tags' => array_values(array_filter($tagList)),
                     'date' => $capturedAt ? $capturedAt->locale('es')->translatedFormat('d/m/Y H:i') : $capturedAtLabel,
                     'capturedAt' => $capturedAt?->format('Y-m-d'),

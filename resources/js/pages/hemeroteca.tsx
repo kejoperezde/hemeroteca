@@ -35,7 +35,7 @@ type Source = {
     description: string;
     url: string;
     backupPath: string | null;
-    ocrText: string | null;
+    ocrText: string;
     tags: string[];
     date: string;
     capturedAt: string | null;
@@ -94,7 +94,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
 
         return sources.filter((source) => {
             if (search) {
-                const searchableText = [source.name, source.description, source.ocrText ?? '', ...source.tags]
+                const searchableText = [source.name, source.description, ...source.tags, source.ocrText]
                     .join(' ')
                     .toLowerCase();
 
@@ -277,7 +277,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
         }
 
         const search = term.toLowerCase();
-        const candidates = [source.name, source.description, source.ocrText ?? '', source.tags.join(', ')];
+        const candidates = [source.name, source.description, source.tags.join(', '), source.ocrText];
 
         for (const candidate of candidates) {
             const normalizedCandidate = candidate.replace(/\s+/g, ' ').trim();

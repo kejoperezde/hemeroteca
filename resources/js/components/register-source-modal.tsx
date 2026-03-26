@@ -27,6 +27,7 @@ type FlashProps = {
 export function RegisterSourceModal() {
     const { flash } = usePage<FlashProps>().props;
     const lastFlashMessageRef = useRef<string | null>(null);
+    const pendingSaveToastRef = useRef<string | number | null>(null);
 
     const [open, setOpen] = useState(false);
     const [url, setUrl] = useState('');
@@ -45,9 +46,19 @@ export function RegisterSourceModal() {
         }
 
         if (flash.status === 'success') {
-            toast.success(flash.message);
+            if (pendingSaveToastRef.current !== null) {
+                toast.success(flash.message, { id: pendingSaveToastRef.current });
+                pendingSaveToastRef.current = null;
+            } else {
+                toast.success(flash.message);
+            }
         } else if (flash.status === 'error') {
-            toast.error(flash.message);
+            if (pendingSaveToastRef.current !== null) {
+                toast.error(flash.message, { id: pendingSaveToastRef.current });
+                pendingSaveToastRef.current = null;
+            } else {
+                toast.error(flash.message);
+            }
         }
 
         lastFlashMessageRef.current = flash.message;
@@ -99,12 +110,16 @@ export function RegisterSourceModal() {
         }
 
         if (isRequestLetter && !requestLetterNumber.trim()) {
-            setErrorMessage('El numero de oficio es obligatorio cuando corresponde a oficio de peticion.');
+            setErrorMessage('El numero de oficio es obligatorio cuando corresponde a oficio de petición.');
             return;
         }
 
         setIsSaving(true);
         setErrorMessage(null);
+        pendingSaveToastRef.current = toast.loading(
+            'Guardando y procesando captura. Esto puede tardar un momento...',
+            { duration: Infinity },
+        );
 
         router.post(
             '/hemeroteca/sources',
@@ -124,7 +139,12 @@ export function RegisterSourceModal() {
                 },
                 onError: () => {
                     setErrorMessage('No se pudo guardar la fuente. Verifique los datos e intente de nuevo.');
-                    toast.error('No se pudo guardar la fuente.');
+                    if (pendingSaveToastRef.current !== null) {
+                        toast.error('No se pudo guardar la fuente.', { id: pendingSaveToastRef.current });
+                        pendingSaveToastRef.current = null;
+                    } else {
+                        toast.error('No se pudo guardar la fuente.');
+                    }
                 },
                 onFinish: () => {
                     setIsSaving(false);
@@ -235,7 +255,7 @@ export function RegisterSourceModal() {
 
                     <div className="space-y-2">
                         <Label htmlFor="source-request-letter" className="text-sm font-semibold">
-                            Oficio de peticion
+                            Oficio de petición
                         </Label>
                         <label htmlFor="source-request-letter" className="flex items-center gap-2 text-sm text-foreground">
                             <input
@@ -252,7 +272,7 @@ export function RegisterSourceModal() {
                                 }}
                                 className="h-4 w-4 rounded border-input"
                             />
-                            Marcar si corresponde a oficio de peticion
+                            Marcar si corresponde a oficio de petición
                         </label>
 
                         {isRequestLetter ? (
@@ -286,7 +306,7 @@ export function RegisterSourceModal() {
                     </DialogClose>
                     <Button className="h-10 gap-2 px-6" onClick={handleSave} disabled={isSaving}>
                         <CloudUpload className="size-4" />
-                        {isSaving ? 'Guardando...' : 'Capturar y Guardar'}
+                        {isSaving ? 'Procesando captura...' : 'Capturar y Guardar'}
                     </Button>
                 </DialogFooter>
             </DialogContent>
