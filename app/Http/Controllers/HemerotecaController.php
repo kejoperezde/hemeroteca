@@ -273,6 +273,12 @@ class HemerotecaController extends Controller
 
     public function __invoke(): Response
     {
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+        $tagSeparator = $isSqlite ? ',' : '||';
+        $tagAggregateSql = $isSqlite
+            ? 'GROUP_CONCAT(DISTINCT etiquetas.nombre) AS tags'
+            : "GROUP_CONCAT(DISTINCT etiquetas.nombre ORDER BY etiquetas.nombre SEPARATOR '{$tagSeparator}') AS tags";
+
         $sources = DB::table('fuentes')
             ->leftJoin('users', 'fuentes.user_id', '=', 'users.id')
             ->leftJoin('etiqueta_fuente', 'fuentes.id', '=', 'etiqueta_fuente.fuente_id')
@@ -287,7 +293,7 @@ class HemerotecaController extends Controller
                 'fuentes.ruta_archivo',
                 'fuentes.capturado_en',
                 'users.name as captured_by',
-                DB::raw("GROUP_CONCAT(DISTINCT etiquetas.nombre ORDER BY etiquetas.nombre SEPARATOR '||') AS tags"),
+                DB::raw($tagAggregateSql),
                 DB::raw('MAX(libro_oficios.oficio_peticion) AS oficio_number'),
             )
             ->groupBy(
@@ -302,8 +308,8 @@ class HemerotecaController extends Controller
             ->orderByDesc('fuentes.capturado_en')
             ->orderByDesc('fuentes.id')
             ->get()
-            ->map(function (object $source): array {
-                $tagList = $source->tags ? explode('||', (string) $source->tags) : [];
+            ->map(function (object $source) use ($tagSeparator): array {
+                $tagList = $source->tags ? explode($tagSeparator, (string) $source->tags) : [];
                 $capturedAt = $source->capturado_en ? Carbon::parse($source->capturado_en) : null;
                 $capturedAtLabel = $capturedAt
                     ? $capturedAt->locale('es')->translatedFormat('j M Y')
