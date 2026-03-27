@@ -329,6 +329,26 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
         );
     };
 
+    const renderGridDescription = (source: Source) => {
+        if (!showSearchResultColumn) {
+            return <p className="line-clamp-3 text-sm text-muted-foreground">{source.description}</p>;
+        }
+
+        const parts = getSearchResultParts(source);
+
+        if (!parts) {
+            return <p className="line-clamp-3 text-sm text-muted-foreground">{source.description}</p>;
+        }
+
+        return (
+            <p className="line-clamp-3 text-sm text-foreground">
+                <span className="font-normal">{parts.before}</span>
+                <strong className="font-semibold">{parts.match}</strong>
+                <span className="font-normal">{parts.after}</span>
+            </p>
+        );
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Hemeroteca" />
@@ -629,7 +649,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
                                     >
                                         <CardContent className="space-y-3 p-4">
                                             <h3 className="line-clamp-2 text-sm font-semibold text-foreground">{source.name}</h3>
-                                            <p className="line-clamp-3 text-sm text-muted-foreground">{source.description}</p>
+                                            {renderGridDescription(source)}
                                             <a
                                                 href={source.url}
                                                 target="_blank"

@@ -27,7 +27,7 @@ const debugLog = async (message) => {
 };
 
 if (!targetUrl || !outputDir) {
-    debugLog('Usage: node scripts/capture-page.mjs <url> <outputDir>');
+    // debugLog('Usage: node scripts/capture-page.mjs <url> <outputDir>');
     process.exit(1);
 }
 
@@ -63,33 +63,33 @@ const getPngDimensions = async (filePath) => {
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 const processOcrAndPdf = async (pngPath, pdfPath, ocrPath) => {
-    await debugLog(`Initializing scribe.js-ocr...`);
+    // await debugLog(`Initializing scribe.js-ocr...`);
     await scribe.init();
     
     // Configurar Scribe para que el texto escaneado en el PDF sea invisible (capa de texto buscable)
     scribe.opt.displayMode = 'invis';
     
     const absolutePngPath = path.resolve(pngPath);
-    await debugLog(`Importing file to scribe: ${absolutePngPath}`);
+    // await debugLog(`Importing file to scribe: ${absolutePngPath}`);
     await scribe.importFiles([absolutePngPath]);
 
-    await debugLog(`Running OCR (Language: spa+eng)...`);
+    // await debugLog(`Running OCR (Language: spa+eng)...`);
     await scribe.recognize('spa+eng');
 
-    await debugLog(`Extracting text and saving to: ${ocrPath}`);
+    // await debugLog(`Extracting text and saving to: ${ocrPath}`);
     const ocrText = await scribe.exportData('txt');
     await writeText(ocrPath, typeof ocrText === 'string' ? ocrText : ocrText.toString('utf8'));
 
-    await debugLog(`Exporting searchable PDF natively via scribe to: ${pdfPath}`);
+    // await debugLog(`Exporting searchable PDF natively via scribe to: ${pdfPath}`);
     const pdfData = await scribe.exportData('pdf');
     await fs.writeFile(pdfPath, Buffer.from(pdfData));
 
-    await debugLog(`Cleaning up scribe resources...`);
+    // await debugLog(`Cleaning up scribe resources...`);
     await scribe.terminate();
 };
 
 const autoScroll = async (page) => {
-    await debugLog(`Executing autoScroll script within page...`);
+    // await debugLog(`Executing autoScroll script within page...`);
     const autoScrollStats = await page.evaluate(
         async ({ distance, intervalMs, maxDurationMs, maxSteps, stableHeightSteps }) => {
             const getScrollHeight = () =>
@@ -156,47 +156,45 @@ const autoScroll = async (page) => {
         },
     );
 
-    await debugLog(
-        `autoScroll finished. reason=${autoScrollStats.stopReason}, steps=${autoScrollStats.steps}, durationMs=${autoScrollStats.durationMs}, finalHeight=${autoScrollStats.finalHeight}`,
-    );
+    // await debugLog(
+    //     `autoScroll finished. reason=${autoScrollStats.stopReason}, steps=${autoScrollStats.steps}, durationMs=${autoScrollStats.durationMs}, finalHeight=${autoScrollStats.finalHeight}`,
+    // );
 };
 
 let browser;
 
 try {
-    await debugLog(`Starting capture for URL: ${targetUrl}`);
-    await debugLog(`Ensuring output directory exists: ${outputDir}`);
+    // await debugLog(`Starting capture for URL: ${targetUrl}`);
+    // await debugLog(`Ensuring output directory exists: ${outputDir}`);
     await ensureDir(outputDir);
 
-    await debugLog(`Launching Puppeteer browser...`);
+    // await debugLog(`Launching Puppeteer browser...`);
     browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
-    await debugLog(`Creating new page...`);
+    // await debugLog(`Creating new page...`);
     const page = await browser.newPage();
-    
-    // Capturar logs de la consola web
-    page.on('console', async (msg) => {
-        await debugLog(`[WEB CONSOLE] ${msg.type().toUpperCase()}: ${msg.text()}`);
-    });
-    // Capturar errores de JS en la página
-    page.on('pageerror', async (error) => {
-        await debugLog(`[WEB ERROR] ${error.message}`);
-    });
-    // Capturar peticiones fallidas de red
-    page.on('requestfailed', async (request) => {
-        await debugLog(`[WEB REQUEST FAILED] ${request.url()} - ${request.failure()?.errorText || 'Unknown error'}`);
-    });
+
+    // Capturar logs/errores de la web para depuracion
+    // page.on('console', async (msg) => {
+    //     await debugLog(`[WEB CONSOLE] ${msg.type().toUpperCase()}: ${msg.text()}`);
+    // });
+    // page.on('pageerror', async (error) => {
+    //     await debugLog(`[WEB ERROR] ${error.message}`);
+    // });
+    // page.on('requestfailed', async (request) => {
+    //     await debugLog(`[WEB REQUEST FAILED] ${request.url()} - ${request.failure()?.errorText || 'Unknown error'}`);
+    // });
 
     await page.setViewport({ width: 1440, height: 900 });
     await page.setBypassCSP(true);
     
-    await debugLog(`Navigating to URL...`);
+    // await debugLog(`Navigating to URL...`);
     await page.goto(targetUrl, { waitUntil: 'networkidle0', timeout: 90000 });
-    
-    await debugLog(`Scrolling page to trigger lazy loading...`);
+
+    // await debugLog(`Scrolling page to trigger lazy loading...`);
     await autoScroll(page);
     await new Promise((resolve) => setTimeout(resolve, 1200));
 
@@ -205,7 +203,7 @@ try {
     const ocrPath = path.join(outputDir, 'ocr.txt');
     const metadataPath = path.join(outputDir, 'metadata.json');
 
-    await debugLog(`Taking screenshot to: ${screenshotPath}`);
+    // await debugLog(`Taking screenshot to: ${screenshotPath}`);
     await page.screenshot({
         path: screenshotPath,
         fullPage: true,
@@ -214,7 +212,7 @@ try {
 
     await processOcrAndPdf(screenshotPath, pdfPath, ocrPath);
 
-    await debugLog(`Gathering metadata...`);
+    // await debugLog(`Gathering metadata...`);
     const metadata = {
         url: targetUrl,
         capturedAt: new Date().toISOString(),
@@ -226,10 +224,10 @@ try {
         userAgent: await page.evaluate(() => navigator.userAgent),
     };
 
-    await debugLog(`Saving metadata to: ${metadataPath}`);
+    // await debugLog(`Saving metadata to: ${metadataPath}`);
     await writeJson(metadataPath, metadata);
 
-    await debugLog(`Process completed successfully, outputting JSON...`);
+    // await debugLog(`Process completed successfully, outputting JSON...`);
     process.stdout.write(
         JSON.stringify({
             screenshotPath,
@@ -240,7 +238,7 @@ try {
     );
 } catch (error) {
     if (error instanceof Error) {
-        await debugLog(`Unhandled exception occurred: ${error.stack}`);
+        // await debugLog(`Unhandled exception occurred: ${error.stack}`);
         console.error(
             JSON.stringify(
                 {
@@ -280,7 +278,7 @@ try {
             ),
         );
     }
-
+    
     process.exit(1);
 } finally {
     if (browser) {
