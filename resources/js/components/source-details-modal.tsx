@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -23,8 +23,6 @@ type SourceDetailsModalProps = {
 };
 
 export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModalProps) {
-    const [thumbnailUnavailable, setThumbnailUnavailable] = useState(false);
-
     useEffect(() => {
         if (!open) {
             return;
@@ -46,13 +44,15 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
         };
     }, [open, onClose]);
 
-    useEffect(() => {
-        setThumbnailUnavailable(false);
-    }, [open, source?.id]);
-
     if (!open || !source) {
         return null;
     }
+
+    return <SourceDetailsModalContent key={`${source.id}-${open ? 'open' : 'closed'}`} source={source} onClose={onClose} />;
+}
+
+function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails; onClose: () => void }) {
+    const [thumbnailUnavailable, setThumbnailUnavailable] = useState(false);
 
     const formattedCapturedAt = source.capturedAt
         ? source.capturedAt.split('-').reverse().join('/')

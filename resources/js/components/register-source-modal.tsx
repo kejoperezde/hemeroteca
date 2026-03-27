@@ -1,5 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { CloudUpload, Link as LinkIcon, Plus, X } from 'lucide-react';
+import { useEffect, useRef, useState  } from 'react';
+import type {KeyboardEvent} from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,7 +17,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CloudUpload, Link as LinkIcon, Plus, X } from 'lucide-react';
 
 type FlashProps = {
     flash?: {
@@ -55,6 +56,7 @@ export function RegisterSourceModal() {
 
     const addTag = (value: string) => {
         const nextTag = value.trim();
+
         if (!nextTag || tags.includes(nextTag)) {
             return;
         }
@@ -95,11 +97,13 @@ export function RegisterSourceModal() {
     const handleSave = () => {
         if (!url.trim() || !name.trim()) {
             setErrorMessage('URL y Nombre son obligatorios.');
+
             return;
         }
 
         if (isRequestLetter && !requestLetterNumber.trim()) {
             setErrorMessage('El numero de oficio es obligatorio cuando corresponde a oficio de peticion.');
+
             return;
         }
 

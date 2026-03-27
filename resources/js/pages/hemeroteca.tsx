@@ -1,15 +1,4 @@
 import { Head } from '@inertiajs/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import * as XLSX from 'xlsx';
-import { RegisterSourceModal } from '@/components/register-source-modal';
-import { SourceDetailsModal } from '@/components/source-details-modal';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import AppLayout from '@/layouts/app-layout';
-import { hemeroteca } from '@/routes';
-import type { BreadcrumbItem } from '@/types';
 import {
     CalendarDays,
     ChevronDown,
@@ -21,6 +10,17 @@ import {
     Upload,
     Plus,
 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import * as XLSX from 'xlsx';
+import { RegisterSourceModal } from '@/components/register-source-modal';
+import { SourceDetailsModal } from '@/components/source-details-modal';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import AppLayout from '@/layouts/app-layout';
+import { hemeroteca } from '@/routes';
+import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -67,7 +67,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
     const [tagSearchTerm, setTagSearchTerm] = useState('');
     const [sortKey, setSortKey] = useState<SortKey>('date');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-    const [currentPage, setCurrentPage] = useState(1);
+    const [requestedPage, setRequestedPage] = useState(1);
     const [viewMode, setViewMode] = useState<ViewMode>('list');
     const [selectedSource, setSelectedSource] = useState<Source | null>(null);
     const pageSize = viewMode === 'grid' ? 9 : 8;
@@ -159,18 +159,11 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
         [sortedSources.length, pageSize],
     );
 
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm, fromDate, toDate, selectedTags, sortKey, sortDirection]);
-
-    useEffect(() => {
-        if (currentPage > totalPages) {
-            setCurrentPage(totalPages);
-        }
-    }, [currentPage, totalPages]);
+    const currentPage = Math.min(requestedPage, totalPages);
 
     const displayedSources = useMemo(() => {
         const startIndex = (currentPage - 1) * pageSize;
+
         return sortedSources.slice(startIndex, startIndex + pageSize);
     }, [sortedSources, currentPage, pageSize]);
 
@@ -182,20 +175,25 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
     const handleSort = (key: SortKey) => {
         if (sortKey === key) {
             setSortDirection((prevDirection) => (prevDirection === 'asc' ? 'desc' : 'asc'));
+            setRequestedPage(1);
+
             return;
         }
 
         setSortKey(key);
         setSortDirection('asc');
+        setRequestedPage(1);
     };
 
     const toggleTag = (tag: string) => {
+        setRequestedPage(1);
         setSelectedTags((prevTags) =>
             prevTags.includes(tag) ? prevTags.filter((item) => item !== tag) : [...prevTags, tag],
         );
     };
 
     const selectTag = (tag: string) => {
+        setRequestedPage(1);
         setSelectedTags((prevTags) => (prevTags.includes(tag) ? prevTags : [...prevTags, tag]));
         setIsTagSearchOpen(false);
         setTagSearchTerm('');
@@ -216,6 +214,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
         setFromDate('');
         setToDate('');
         setSelectedTags([]);
+        setRequestedPage(1);
     };
 
     const hasActiveFilters =
@@ -227,6 +226,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
         }
 
         input.focus();
+
         if ('showPicker' in input) {
             input.showPicker();
         }
@@ -313,7 +313,10 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
                                         placeholder="Nombre o contenido..."
                                         className="h-9 w-full border-slate-200 bg-white pl-9 text-sm dark:border-slate-800 dark:bg-slate-950"
                                         value={searchTerm}
-                                        onChange={(event) => setSearchTerm(event.target.value)}
+                                        onChange={(event) => {
+                                            setSearchTerm(event.target.value);
+                                            setRequestedPage(1);
+                                        }}
                                     />
                                 </div>
                             </div>
@@ -328,7 +331,10 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
                                             ref={fromDateRef}
                                             type="date"
                                             value={fromDate}
-                                            onChange={(event) => setFromDate(event.target.value)}
+                                            onChange={(event) => {
+                                                setFromDate(event.target.value);
+                                                setRequestedPage(1);
+                                            }}
                                             className="h-9 w-full pr-10 text-sm [&::-webkit-calendar-picker-indicator]:pointer-events-none [&::-webkit-calendar-picker-indicator]:opacity-0"
                                         />
                                         <button
@@ -350,7 +356,10 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
                                             ref={toDateRef}
                                             type="date"
                                             value={toDate}
-                                            onChange={(event) => setToDate(event.target.value)}
+                                            onChange={(event) => {
+                                                setToDate(event.target.value);
+                                                setRequestedPage(1);
+                                            }}
                                             className="h-9 w-full pr-10 text-sm [&::-webkit-calendar-picker-indicator]:pointer-events-none [&::-webkit-calendar-picker-indicator]:opacity-0"
                                         />
                                         <button
@@ -616,7 +625,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8"
-                                    onClick={() => setCurrentPage((prevPage) => Math.max(1, prevPage - 1))}
+                                    onClick={() => setRequestedPage((prevPage) => Math.max(1, prevPage - 1))}
                                     disabled={isFirstPage}
                                 >
                                     <ChevronLeft className="h-4 w-4" />
@@ -628,7 +637,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8"
-                                    onClick={() => setCurrentPage((prevPage) => Math.min(totalPages, prevPage + 1))}
+                                    onClick={() => setRequestedPage((prevPage) => Math.min(totalPages, prevPage + 1))}
                                     disabled={isLastPage}
                                 >
                                     <ChevronRight className="h-4 w-4" />

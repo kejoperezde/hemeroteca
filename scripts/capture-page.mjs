@@ -1,3 +1,5 @@
+/* global process, Buffer */
+
 /**
  * capture-page.mjs — Advanced offline page snapshot tool
  *
@@ -23,13 +25,13 @@
  *       css/   js/   img/   fonts/   data/   other/
  */
 
-import fs from 'node:fs/promises';
-import { createWriteStream } from 'node:fs';
-import path from 'node:path';
 import crypto from 'node:crypto';
-import puppeteer from 'puppeteer';
+import { createWriteStream } from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import archiver from 'archiver';
 import mime from 'mime';
+import puppeteer from 'puppeteer';
 
 // ─────────────────────────────────────────────
 // CLI
@@ -61,20 +63,40 @@ const getExtension = (url, mimeType) => {
     try {
         const urlPath = new URL(url).pathname;
         const ext = path.extname(urlPath).toLowerCase();
-        if (ext && ext.length >= 2 && ext.length <= 6) return ext;
+
+        if (ext && ext.length >= 2 && ext.length <= 6) {
+return ext;
+}
     } catch { /* ignore */ }
+
     const cleanMime = (mimeType || '').split(';')[0].trim();
     const ext = mime.getExtension(cleanMime);
+
     return ext ? `.${ext}` : '';
 };
 
 /** Bucket MIME types into asset subfolders */
 const assetFolder = (mimeType = '') => {
-    if (mimeType.startsWith('image/')) return 'img';
-    if (mimeType.startsWith('font/') || mimeType.includes('font')) return 'fonts';
-    if (mimeType.includes('css')) return 'css';
-    if (mimeType.includes('javascript') || mimeType.includes('ecmascript')) return 'js';
-    if (mimeType.includes('json') || mimeType.includes('xml')) return 'data';
+    if (mimeType.startsWith('image/')) {
+return 'img';
+}
+
+    if (mimeType.startsWith('font/') || mimeType.includes('font')) {
+return 'fonts';
+}
+
+    if (mimeType.includes('css')) {
+return 'css';
+}
+
+    if (mimeType.includes('javascript') || mimeType.includes('ecmascript')) {
+return 'js';
+}
+
+    if (mimeType.includes('json') || mimeType.includes('xml')) {
+return 'data';
+}
+
     return 'other';
 };
 
@@ -103,15 +125,18 @@ const autoScroll = async (page) => {
                 if (atBottom) {
                     if (newHeight === lastScrollHeight) {
                         idleCount++;
+
                         if (idleCount >= MAX_IDLES) {
                             clearInterval(timer);
                             window.scrollTo(0, 0);
                             resolve();
+
                             return;
                         }
                     } else {
                         idleCount = 0;
                     }
+
                     lastScrollHeight = newHeight;
                 }
             }, INTERVAL);
@@ -133,7 +158,10 @@ const waitForContent = async (page) => {
                       }),
             ),
         );
-        if (document.fonts?.ready) await document.fonts.ready;
+
+        if (document.fonts?.ready) {
+await document.fonts.ready;
+}
     });
 };
 
@@ -162,8 +190,14 @@ const attachResourceCapture = async (page) => {
 
     client.on('Network.responseReceived', ({ requestId, response }) => {
         const { url, mimeType, status, headers } = response;
-        if (url.startsWith('data:') || url.startsWith('blob:')) return;
-        if (status < 200 || status >= 400) return;
+
+        if (url.startsWith('data:') || url.startsWith('blob:')) {
+return;
+}
+
+        if (status < 200 || status >= 400) {
+return;
+}
 
         const cleanMime = (headers['content-type'] || mimeType || '').split(';')[0].trim();
         pendingMeta.set(requestId, { url, mimeType: cleanMime, status });
@@ -171,10 +205,16 @@ const attachResourceCapture = async (page) => {
 
     client.on('Network.loadingFinished', async ({ requestId }) => {
         const meta = pendingMeta.get(requestId);
-        if (!meta) return;
+
+        if (!meta) {
+return;
+}
+
         pendingMeta.delete(requestId);
 
-        if (resourceMap.has(meta.url)) return;
+        if (resourceMap.has(meta.url)) {
+return;
+}
 
         try {
             const { body, base64Encoded } = await client.send('Network.getResponseBody', {
@@ -211,8 +251,12 @@ const attachResourceCapture = async (page) => {
  */
 const rewriteCssUrls = (cssText, cssFileUrl, resolveUrl) =>
     cssText.replace(/url\(\s*(['"]?)([^'")\s]+)\1\s*\)/gi, (match, _q, rawUrl) => {
-        if (rawUrl.startsWith('data:') || rawUrl.startsWith('#')) return match;
+        if (rawUrl.startsWith('data:') || rawUrl.startsWith('#')) {
+return match;
+}
+
         const replacement = resolveUrl(rawUrl, cssFileUrl);
+
         return replacement ? `url("${replacement}")` : match;
     });
 
@@ -238,20 +282,26 @@ const buildLinkedSnapshot = async (rawHtml, resourceMap, assetsDir, assetsRelDir
 
     // Pass 2: rewrite url() inside saved CSS files
     for (const [url, { mimeType, filename }] of resourceMap) {
-        if (!mimeType?.includes('css')) continue;
+        if (!mimeType?.includes('css')) {
+continue;
+}
+
         const folder = assetFolder(mimeType);
         const filePath = path.join(assetsDir, folder, filename);
         const cssText = await fs.readFile(filePath, 'utf8');
         const rewritten = rewriteCssUrls(cssText, url, (raw, cssUrl) => {
             try {
                 return urlToRel.get(new URL(raw, cssUrl).href) ?? null;
-            } catch { return null; }
+            } catch {
+ return null; 
+}
         });
         await fs.writeFile(filePath, rewritten, 'utf8');
     }
 
     // Pass 3: rewrite HTML — longest URLs first to avoid substring collisions
     let html = rawHtml;
+
     for (const [url, rel] of [...urlToRel.entries()].sort((a, b) => b[0].length - a[0].length)) {
         html = html.replaceAll(url, rel);
     }
@@ -272,19 +322,27 @@ const buildInlineSnapshot = (rawHtml, resourceMap) => {
 
     // Non-CSS first (images, fonts, JS…)
     for (const [url, { body, mimeType }] of resourceMap) {
-        if (mimeType?.includes('css')) continue;
+        if (mimeType?.includes('css')) {
+continue;
+}
+
         const type = mimeType || 'application/octet-stream';
         urlToDataUri.set(url, `data:${type};base64,${body.toString('base64')}`);
     }
 
     // CSS: inline their internal url() references first, then encode
     for (const [url, { body, mimeType }] of resourceMap) {
-        if (!mimeType?.includes('css')) continue;
+        if (!mimeType?.includes('css')) {
+continue;
+}
+
         let cssText = body.toString('utf8');
         cssText = rewriteCssUrls(cssText, url, (raw, cssUrl) => {
             try {
                 return urlToDataUri.get(new URL(raw, cssUrl).href) ?? null;
-            } catch { return null; }
+            } catch {
+ return null; 
+}
         });
         const encoded = Buffer.from(cssText).toString('base64');
         urlToDataUri.set(url, `data:text/css;base64,${encoded}`);
@@ -292,6 +350,7 @@ const buildInlineSnapshot = (rawHtml, resourceMap) => {
 
     // Rewrite HTML — longest URLs first
     let html = rawHtml;
+
     for (const [url, dataUri] of [...urlToDataUri.entries()].sort((a, b) => b[0].length - a[0].length)) {
         html = html.replaceAll(url, dataUri);
     }
@@ -321,36 +380,55 @@ const createZip = (sourceDir, zipPath) =>
 const getRawHtml = async (page) =>
     page.evaluate(() => {
         const toAbsolute = (url) => {
-            try { return new URL(url, document.baseURI).href; } catch { return url; }
+            try {
+ return new URL(url, document.baseURI).href; 
+} catch {
+ return url; 
+}
         };
 
         document.querySelectorAll('[src]').forEach((el) => {
             const v = el.getAttribute('src');
-            if (v && !v.startsWith('data:')) el.setAttribute('src', toAbsolute(v));
+
+            if (v && !v.startsWith('data:')) {
+el.setAttribute('src', toAbsolute(v));
+}
         });
         document.querySelectorAll('[href]').forEach((el) => {
             const v = el.getAttribute('href');
-            if (v && !v.startsWith('data:') && !v.startsWith('#')) el.setAttribute('href', toAbsolute(v));
+
+            if (v && !v.startsWith('data:') && !v.startsWith('#')) {
+el.setAttribute('href', toAbsolute(v));
+}
         });
         document.querySelectorAll('[poster]').forEach((el) => {
             const v = el.getAttribute('poster');
-            if (v && !v.startsWith('data:')) el.setAttribute('poster', toAbsolute(v));
+
+            if (v && !v.startsWith('data:')) {
+el.setAttribute('poster', toAbsolute(v));
+}
         });
         document.querySelectorAll('[srcset]').forEach((el) => {
             const v = el.getAttribute('srcset');
+
             if (v) {
                 el.setAttribute('srcset', v.split(',').map((part) => {
                     const p = part.trim().split(/\s+/);
                     p[0] = toAbsolute(p[0]);
+
                     return p.join(' ');
                 }).join(', '));
             }
         });
         document.querySelectorAll('[style]').forEach((el) => {
             const v = el.getAttribute('style');
+
             if (v && v.includes('url(')) {
                 el.setAttribute('style', v.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi, (m, q, raw) => {
-                    if (raw.startsWith('data:')) return m;
+                    if (raw.startsWith('data:')) {
+return m;
+}
+
                     return `url("${toAbsolute(raw)}")`;
                 }));
             }
@@ -358,7 +436,10 @@ const getRawHtml = async (page) =>
         document.querySelectorAll('style').forEach((el) => {
             if (el.textContent && el.textContent.includes('url(')) {
                 el.textContent = el.textContent.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi, (m, q, raw) => {
-                    if (raw.startsWith('data:') || raw.startsWith('blob:')) return m;
+                    if (raw.startsWith('data:') || raw.startsWith('blob:')) {
+return m;
+}
+
                     return `url("${toAbsolute(raw)}")`;
                 });
             }
@@ -367,6 +448,7 @@ const getRawHtml = async (page) =>
         const doctype = document.doctype
             ? `<!DOCTYPE ${document.doctype.name}>`
             : '<!DOCTYPE html>';
+
         return `${doctype}\n${document.documentElement.outerHTML}`;
     });
 
@@ -425,6 +507,7 @@ try {
 
     // ── MHTML via CDP ─────────────────────────────────────────────
     log('Saving MHTML…');
+
     try {
         const { data: mhtmlData } = await client.send('Page.captureSnapshot', { format: 'mhtml' });
         await fs.writeFile(path.join(outputDir, 'page.mhtml'), mhtmlData, 'utf8');
@@ -435,6 +518,7 @@ try {
 
     // ── PDF ───────────────────────────────────────────────────────
     log('Exporting PDF…');
+
     try {
         await page.pdf({
             path: path.join(outputDir, 'page.pdf'),
@@ -522,6 +606,7 @@ try {
     const byType = [...resourceMap.values()].reduce((acc, { mimeType }) => {
         const key = (mimeType || 'unknown').split('/')[0];
         acc[key] = (acc[key] || 0) + 1;
+
         return acc;
     }, {});
     const totalBytes = [...resourceMap.values()].reduce((s, { body }) => s + body.length, 0);
@@ -585,5 +670,7 @@ try {
     );
     process.exit(1);
 } finally {
-    if (browser) await browser.close();
+    if (browser) {
+await browser.close();
+}
 }
