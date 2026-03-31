@@ -6,13 +6,10 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
     server: {
-        host: '0.0.0.0',
+        host: 'localhost',
         port: 3000,
         cors: {
             origin: '*',
-        },
-        hmr: {
-            host: '10.16.16.110'
         }
     },
     plugins: [

@@ -5,16 +5,17 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use JsonException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response as BaseResponse;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Str;
 
 class HemerotecaController extends Controller
 {
@@ -25,10 +26,94 @@ class HemerotecaController extends Controller
             : $value;
     }
 
-    public function openBackup(int $sourceId): HttpResponse
+    private function captureDirectorySnapshot(string $absoluteCaptureDir): array
+    {
+        if (!File::isDirectory($absoluteCaptureDir)) {
+            return [
+                'capture_dir_exists' => false,
+                'capture_files' => [],
+            ];
+        }
+
+        $normalizedRoot = str_replace('\\', '/', $absoluteCaptureDir);
+        $files = collect(File::allFiles($absoluteCaptureDir))
+            ->map(function (\SplFileInfo $file) use ($normalizedRoot): array {
+                $filePath = str_replace('\\', '/', $file->getPathname());
+                $relativePath = ltrim((string) Str::after($filePath, $normalizedRoot), '/');
+
+                return [
+                    'path' => $relativePath !== '' ? $relativePath : basename($filePath),
+                    'size' => $file->getSize(),
+                ];
+            })
+            ->values()
+            ->all();
+
+        return [
+            'capture_dir_exists' => true,
+            'capture_files' => $files,
+        ];
+    }
+
+    private function resolveGeneratedWaczPath(string $captureRoot): ?string
+    {
+        if (!File::isDirectory($captureRoot)) {
+            return null;
+        }
+
+        return collect(File::allFiles($captureRoot))
+            ->filter(function (\SplFileInfo $file): bool {
+                $path = str_replace('\\', '/', strtolower($file->getPathname()));
+
+                return Str::endsWith($path, '.wacz')
+                    && !str_contains($path, '/profile/');
+            })
+            ->sortByDesc(fn (\SplFileInfo $file): int => $file->getMTime())
+            ->map(fn (\SplFileInfo $file): string => $file->getPathname())
+            ->first();
+    }
+
+    private function resolveGeneratedThumbnailPath(int $sourceId): ?string
+    {
+        $captureRoot = storage_path("app/private/capturas/fuente_{$sourceId}");
+        $preferredCandidates = [
+            $captureRoot.DIRECTORY_SEPARATOR.'page.png',
+            $captureRoot.DIRECTORY_SEPARATOR.'collections'.DIRECTORY_SEPARATOR."fuente_{$sourceId}".DIRECTORY_SEPARATOR.'page.png',
+        ];
+
+        foreach ($preferredCandidates as $candidatePath) {
+            if (File::exists($candidatePath)) {
+                return $candidatePath;
+            }
+        }
+
+        if (!File::isDirectory($captureRoot)) {
+            return null;
+        }
+
+        return collect(File::allFiles($captureRoot))
+            ->filter(function (\SplFileInfo $file): bool {
+                $path = str_replace('\\', '/', strtolower($file->getPathname()));
+
+                if (!preg_match('/\.(png|jpe?g|webp)$/i', $path)) {
+                    return false;
+                }
+
+                if (str_contains($path, '/profile/')) {
+                    return false;
+                }
+
+                return str_contains($path, '/pages/') || str_contains($path, '/screenshots/');
+            })
+            ->sortByDesc(fn (\SplFileInfo $file): int => $file->getMTime())
+            ->map(fn (\SplFileInfo $file): string => $file->getPathname())
+            ->first();
+    }
+
+    public function openBackup(int $sourceId): BaseResponse
     {
         $source = DB::table('fuentes')
-            ->select('id', 'ruta_archivo')
+            ->select('id', 'ruta_archivo', 'url')
             ->where('id', $sourceId)
             ->first();
 
@@ -37,7 +122,102 @@ class HemerotecaController extends Controller
         $absolutePath = $this->resolveBackupAbsolutePath((string) $source->ruta_archivo);
         abort_unless(File::exists($absolutePath), 404);
 
-        return response(File::get($absolutePath), 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+        if (Str::endsWith(strtolower($absolutePath), '.html')) {
+            return response(File::get($absolutePath), 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+        }
+
+                if (Str::endsWith(strtolower($absolutePath), '.wacz')) {
+                        $downloadUrl = route('hemeroteca.sources.backup.download', ['sourceId' => $sourceId]);
+                        $viewerHtml = <<<'HTML'
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Respaldo __SOURCE_ID__</title>
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: #0b1020;
+            color: #e5e7eb;
+            font-family: ui-sans-serif, -apple-system, Segoe UI, sans-serif;
+        }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 14px;
+            border-bottom: 1px solid #1f2937;
+            background: #111827;
+        }
+        .toolbar a {
+            color: #93c5fd;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .toolbar a:hover { text-decoration: underline; }
+        replay-web-page {
+            display: block;
+            width: 100%;
+            height: calc(100% - 48px);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/replaywebpage/ui.js" type="module"></script>
+</head>
+<body>
+    <div class="toolbar">
+        <strong>Respaldo __SOURCE_ID__</strong>
+        <a href="__DOWNLOAD_URL__">Descargar .wacz</a>
+    </div>
+    <replay-web-page source="__DOWNLOAD_URL__" url="__ORIGINAL_URL__"></replay-web-page>
+</body>
+</html>
+HTML;
+
+                        $viewerHtml = str_replace(
+                                ['__SOURCE_ID__', '__DOWNLOAD_URL__', '__ORIGINAL_URL__'],
+                                [
+                                        (string) $sourceId,
+                                        e($downloadUrl),
+                                        e((string) $source->url),
+                                ],
+                                $viewerHtml,
+                        );
+
+                        return response($viewerHtml, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+                }
+
+        $mimeType = File::mimeType($absolutePath) ?: 'application/octet-stream';
+
+        return response()->file($absolutePath, ['Content-Type' => $mimeType]);
+    }
+
+    public function replayAsset(int $sourceId, string $asset): BaseResponse
+    {
+        abort_unless($sourceId > 0, 404);
+
+        $normalizedAsset = trim($asset, '/');
+        if ($normalizedAsset === '' || str_contains($normalizedAsset, '..')) {
+            abort(404);
+        }
+
+        if (preg_match('/^[A-Za-z0-9_\-\.\/]+$/', $normalizedAsset) !== 1) {
+            abort(404);
+        }
+
+        $upstreamUrl = "https://cdn.jsdelivr.net/npm/replaywebpage/{$normalizedAsset}";
+        $upstream = Http::timeout(30)->get($upstreamUrl);
+
+        abort_unless($upstream->successful(), 404);
+
+        $contentType = $upstream->header('content-type') ?: 'application/octet-stream';
+
+        return response($upstream->body(), 200, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
     }
 
     public function downloadBackup(int $sourceId): BinaryFileResponse
@@ -52,7 +232,12 @@ class HemerotecaController extends Controller
         $absolutePath = $this->resolveBackupAbsolutePath((string) $source->ruta_archivo);
         abort_unless(File::exists($absolutePath), 404);
 
-        return response()->download($absolutePath, "respaldo_fuente_{$sourceId}.html");
+        $extension = pathinfo($absolutePath, PATHINFO_EXTENSION);
+        $downloadName = $extension
+            ? "respaldo_fuente_{$sourceId}.{$extension}"
+            : "respaldo_fuente_{$sourceId}";
+
+        return response()->download($absolutePath, $downloadName);
     }
 
     public function thumbnailBackup(int $sourceId): BinaryFileResponse
@@ -64,9 +249,9 @@ class HemerotecaController extends Controller
 
         abort_unless($source && $source->ruta_archivo, 404);
 
-        $htmlAbsolutePath = $this->resolveBackupAbsolutePath((string) $source->ruta_archivo);
-        $thumbnailAbsolutePath = dirname($htmlAbsolutePath).DIRECTORY_SEPARATOR.'page.png';
-        abort_unless(File::exists($thumbnailAbsolutePath), 404);
+        $thumbnailAbsolutePath = $this->resolveGeneratedThumbnailPath($sourceId);
+
+        abort_unless(is_string($thumbnailAbsolutePath) && File::exists($thumbnailAbsolutePath), 404);
 
         return response()->file($thumbnailAbsolutePath, [
             'Content-Type' => 'image/png',
@@ -155,6 +340,14 @@ class HemerotecaController extends Controller
             return $createdSourceId;
         });
 
+        Log::info('Fuente registrada. Iniciando proceso de captura de respaldo.', [
+            'source_id' => $sourceId,
+            'url' => $validated['url'],
+            'has_description' => filled($validated['description'] ?? null),
+            'tags_count' => count($validated['tags'] ?? []),
+            'is_request_letter' => !empty($validated['isRequestLetter']),
+        ]);
+
         $relativeCaptureDir = "capturas/fuente_{$sourceId}";
         $absoluteCaptureDir = storage_path("app/private/{$relativeCaptureDir}");
         $tmpDir = storage_path('app/tmp');
@@ -164,13 +357,33 @@ class HemerotecaController extends Controller
         $captureSucceeded = false;
 
         try {
-            $nodeBinary = env('NODE_BINARY', 'node');
+            $dockerBinary = env('DOCKER_BINARY', 'docker');
+            $browsertrixImage = env('BROWSERTRIX_IMAGE', 'webrecorder/browsertrix-crawler');
             $captureTimeout = (int) env('CAPTURE_PROCESS_TIMEOUT', 420);
+            $collectionName = "fuente_{$sourceId}";
             $process = new Process([
-                $nodeBinary,
-                base_path('scripts/capture-page.mjs'),
+                $dockerBinary,
+                'run',
+                '--rm',
+                '-v',
+                "{$absoluteCaptureDir}:/crawls",
+                $browsertrixImage,
+                'crawl',
+                '--url',
                 $validated['url'],
-                $absoluteCaptureDir,
+                '--generateWACZ',
+                '--screenshot',
+                '--headless',
+                '--collection',
+                $collectionName,
+                '--timeout',
+                '30',
+                '--limit',
+                '1',
+                '--sizeLimit',
+                '104857600',
+                '--behaviorTimeout',
+                '10',
             ], base_path(), [
                 'SYSTEMROOT' => env('SYSTEMROOT', 'C:\\Windows'),
                 'WINDIR' => env('WINDIR', 'C:\\Windows'),
@@ -180,10 +393,12 @@ class HemerotecaController extends Controller
             ]);
             $process->setTimeout($captureTimeout);
 
-            Log::info('Iniciando captura de respaldo con Puppeteer.', [
+            Log::info('Iniciando captura de respaldo con Browsertrix.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
-                'node_binary' => $nodeBinary,
+                'docker_binary' => $dockerBinary,
+                'browsertrix_image' => $browsertrixImage,
+                'collection' => $collectionName,
                 'timeout_seconds' => $captureTimeout,
                 'capture_dir' => $absoluteCaptureDir,
                 'tmp_dir' => $tmpDir,
@@ -192,12 +407,24 @@ class HemerotecaController extends Controller
 
             $process->mustRun();
 
-            json_decode($process->getOutput(), true, 512, JSON_THROW_ON_ERROR);
+            $waczPath = $this->resolveGeneratedWaczPath($absoluteCaptureDir);
+
+            if (!is_string($waczPath)) {
+                throw new \RuntimeException('Browsertrix finalizo, pero no se encontro ningun archivo .wacz.');
+            }
+
+            $privateRoot = str_replace('\\', '/', storage_path('app/private'));
+            $normalizedWaczPath = str_replace('\\', '/', $waczPath);
+            $storedBackupPath = ltrim((string) Str::after($normalizedWaczPath, $privateRoot), '/');
+
+            if ($storedBackupPath === '') {
+                throw new \RuntimeException('No se pudo resolver la ruta relativa del archivo .wacz generado.');
+            }
 
             DB::table('fuentes')
                 ->where('id', $sourceId)
                 ->update([
-                    'ruta_archivo' => "{$relativeCaptureDir}/page.html",
+                    'ruta_archivo' => $storedBackupPath,
                     'estado_captura' => 'capturada',
                     'capturado_en' => now(),
                     'updated_at' => now(),
@@ -206,9 +433,11 @@ class HemerotecaController extends Controller
             Log::info('Captura de respaldo finalizada correctamente.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
-                'html_exists' => File::exists("{$absoluteCaptureDir}/page.html"),
+                'stored_backup_path' => $storedBackupPath,
+                'wacz_exists' => File::exists($waczPath),
                 'png_exists' => File::exists("{$absoluteCaptureDir}/page.png"),
                 'metadata_exists' => File::exists("{$absoluteCaptureDir}/metadata.json"),
+                ...$this->captureDirectorySnapshot($absoluteCaptureDir),
                 'stdout' => $this->truncateLogValue($process->getOutput()),
                 'stderr' => $this->truncateLogValue($process->getErrorOutput()),
             ]);
@@ -226,7 +455,7 @@ class HemerotecaController extends Controller
 
             $failedProcess = $exception->getProcess();
 
-            Log::error('No se pudo capturar la fuente con Puppeteer.', [
+            Log::error('No se pudo capturar la fuente con Browsertrix.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
                 'message' => $exception->getMessage(),
@@ -236,11 +465,13 @@ class HemerotecaController extends Controller
                 'exit_text' => $failedProcess->getExitCodeText(),
                 'stdout' => $this->truncateLogValue($failedProcess->getOutput()),
                 'stderr' => $this->truncateLogValue($failedProcess->getErrorOutput()),
-                'html_exists' => File::exists("{$absoluteCaptureDir}/page.html"),
+                'wacz_exists' => collect(File::allFiles($absoluteCaptureDir))
+                    ->contains(fn (\SplFileInfo $file): bool => Str::endsWith(strtolower($file->getPathname()), '.wacz')),
                 'png_exists' => File::exists("{$absoluteCaptureDir}/page.png"),
                 'metadata_exists' => File::exists("{$absoluteCaptureDir}/metadata.json"),
+                ...$this->captureDirectorySnapshot($absoluteCaptureDir),
             ]);
-        } catch (JsonException $exception) {
+        } catch (\RuntimeException $exception) {
             DB::table('fuentes')
                 ->where('id', $sourceId)
                 ->update([
@@ -250,13 +481,32 @@ class HemerotecaController extends Controller
                     'updated_at' => now(),
                 ]);
 
-            Log::error('La salida de Puppeteer no se pudo parsear como JSON.', [
+            Log::error('La captura de Browsertrix finalizo con salida invalida.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
                 'message' => $exception->getMessage(),
-                'html_exists' => File::exists("{$absoluteCaptureDir}/page.html"),
+                'wacz_exists' => collect(File::allFiles($absoluteCaptureDir))
+                    ->contains(fn (\SplFileInfo $file): bool => Str::endsWith(strtolower($file->getPathname()), '.wacz')),
                 'png_exists' => File::exists("{$absoluteCaptureDir}/page.png"),
                 'metadata_exists' => File::exists("{$absoluteCaptureDir}/metadata.json"),
+                ...$this->captureDirectorySnapshot($absoluteCaptureDir),
+            ]);
+        } catch (\Throwable $exception) {
+            DB::table('fuentes')
+                ->where('id', $sourceId)
+                ->update([
+                    'ruta_archivo' => null,
+                    'estado_captura' => 'error',
+                    'capturado_en' => null,
+                    'updated_at' => now(),
+                ]);
+
+            Log::error('Error inesperado durante la captura de respaldo.', [
+                'source_id' => $sourceId,
+                'url' => $validated['url'],
+                'exception_class' => $exception::class,
+                'message' => $exception->getMessage(),
+                ...$this->captureDirectorySnapshot($absoluteCaptureDir),
             ]);
         }
 
