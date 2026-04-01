@@ -27,6 +27,10 @@ class BrowsertrixCaptureService
         $browsertrixImage = env('BROWSERTRIX_IMAGE', 'webrecorder/browsertrix-crawler');
         $captureTimeout = (int) env('CAPTURE_PROCESS_TIMEOUT', 420);
         $collectionName = "fuente_{$sourceId}";
+        $crawlerTimeout = $this->isFacebookDomain($url) ? 60 : 30;
+        $crawlerLimit = $this->isFacebookDomain($url) ? 2 : 1;
+        $crawlerBehaviorTimeout = $this->isFacebookDomain($url) ? 40 : 10;
+        $captureSizeLimitBytes = (int) env('CAPTURE_SIZE_LIMIT_BYTES', 209715200);
 
         $process = new Process([
             $dockerBinary,
@@ -38,18 +42,24 @@ class BrowsertrixCaptureService
             'crawl',
             '--url',
             $url,
+            '--extraChromeArgs',
+            '--disable-blink-features=AutomationControlled',
+            '--userAgent',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             '--generateWACZ',
             '--headless',
             '--collection',
             $collectionName,
             '--timeout',
-            '30',
+            (string) $crawlerTimeout,
             '--limit',
-            '1',
+            (string) $crawlerLimit,
+            '--text',
+            'to-pages',
             '--sizeLimit',
-            '104857600',
+            (string) $captureSizeLimitBytes,
             '--behaviorTimeout',
-            '10',
+            (string) $crawlerBehaviorTimeout,
         ], base_path(), [
             'SYSTEMROOT' => env('SYSTEMROOT', 'C:\\Windows'),
             'WINDIR' => env('WINDIR', 'C:\\Windows'),
@@ -67,6 +77,10 @@ class BrowsertrixCaptureService
             'browsertrix_image' => $browsertrixImage,
             'collection' => $collectionName,
             'timeout_seconds' => $captureTimeout,
+            'crawler_timeout_seconds' => $crawlerTimeout,
+            'crawler_limit' => $crawlerLimit,
+            'crawler_behavior_timeout_seconds' => $crawlerBehaviorTimeout,
+            'capture_size_limit_bytes' => $captureSizeLimitBytes,
             'capture_dir' => $absoluteCaptureDir,
             'tmp_dir' => $tmpDir,
             'command' => $process->getCommandLine(),
@@ -172,6 +186,21 @@ JS
         return mb_strlen($value) > $limit
             ? mb_substr($value, 0, $limit).'... [truncated]'
             : $value;
+    }
+
+    private function isFacebookDomain(string $url): bool
+    {
+        $host = (string) parse_url($url, PHP_URL_HOST);
+        $host = strtolower($host);
+
+        if ($host === '') {
+            return false;
+        }
+
+        return $host === 'facebook.com'
+            || str_ends_with($host, '.facebook.com')
+            || $host === 'fb.com'
+            || str_ends_with($host, '.fb.com');
     }
 
     private function captureDirectorySnapshot(string $absoluteCaptureDir): array

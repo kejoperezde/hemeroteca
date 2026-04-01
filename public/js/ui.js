@@ -107,7 +107,7 @@ class Ae extends Ee{}Ae.directiveName="unsafeSVG",Ae.resultType=2;const Te=Ce(Ae
           <p class="modal-card-title is-3">${this.title}</p>
           <button
             class="delete"
-            aria-label="close"
+            aria-label="cerrar"
             @click="${this.onClose}"
           ></button>
         </header>
@@ -308,14 +308,15 @@ const ut=()=>new ft;class ft{}const pt=new WeakMap,mt=Ce(class extends ht{render
         >
           <div class="dropdown-content embed-info-drop">
             <p class="mb-4">
-              Even if the original page goes offline or is changed, the content
-              below will remain unchanged as it is loaded from a web archive.
+              Aunque la pagina original deje de estar disponible o cambie, el
+              contenido de abajo permanecera sin cambios porque se carga desde
+              un archivo web.
             </p>
             <hr class="dropdown-divider" />
-            <h2 class="mt-4">Get A Copy!</h2>
+            <h2 class="mt-4">Obten una copia</h2>
             <p class="mt-2">
-              After downloading, this web archive can be loaded and viewed
-              directly in your browser via
+              Despues de descargarlo, este archivo web puede cargarse y verse
+              directamente en tu navegador mediante
               <a
                 style="white-space: nowrap;"
                 target="_blank"
@@ -336,26 +337,26 @@ const ut=()=>new ft;class ft{}const pt=new WeakMap,mt=Ce(class extends ht{render
                         .svg="${_t}"
                       ></fa-icon>
                     </span>
-                    <span>Download Archive</span>
+                    <span>Descargar archivo</span>
                   </a>
                   <hr class="dropdown-divider mt-4" />
                 `:X}
-            <h2 class="mt-4">Technical Information</h2>
+            <h2 class="mt-4">Informacion tecnica</h2>
             <div class="embed-info-drop-statscontainer mb-4">
               ${this.url?Q`
-                    <h3>Original URL:</h3>
+                    <h3>URL original:</h3>
                     <p>
                       <a target="_blank" href="${this.url}">${this.url}</a>
                     </p>
                   `:X}
-              <h3 class="mt-2">Archived On:</h3>
+              <h3 class="mt-2">Archivado el:</h3>
               <p>${f}</p>
               ${s?Q`
-                    <h3 class="mt-2">Observed By:</h3>
+                    <h3 class="mt-2">Observado por:</h3>
                     <p>${s}</p>
                     ${u?Q` <p>
                           <a target="_blank" href="${u}"
-                            >View Certificate</a
+                            >Ver certificado</a
                           >
                         </p>`:""}
                   `:d?Q` <h3 class="mt-2">Created With:</h3>
@@ -526,10 +527,10 @@ const ut=()=>new ft;class ft{}const pt=new WeakMap,mt=Ce(class extends ht{render
           >
             ${t.coll||"No ID"}
           </wr-labeled-field>`:X}
-      <wr-labeled-field label="Date Loaded" class="column is-2">
+      <wr-labeled-field label="Fecha de carga" class="column is-2">
         ${t.ctime?Tt.format(new Date(t.ctime)):X}
       </wr-labeled-field>
-      <wr-labeled-field label="Total Size" class="column is-2">
+      <wr-labeled-field label="Tamaño total" class="column is-2">
         ${At()(Number(t.totalSize||t.size||0))}
       </wr-labeled-field>
     `}renderSummaryView(){const e=this.item;return Q` <div class="columns">
@@ -563,11 +564,11 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
           </wr-labeled-field>`:X}
       ${this.renderSource()}
       ${o?Q`
-            <wr-labeled-field label="Observed By" class="column">
+            <wr-labeled-field label="Observado por" class="column">
               <p>${o}</p>
               ${l?Q`<span
                     ><a target="_blank" href="${l}"
-                      >&nbsp;View Certificate</a
+                      >&nbsp;Ver certificado</a
                     ></span
                   >`:X}
             </wr-labeled-field>
@@ -578,33 +579,33 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
             </wr-labeled-field>
           `:X}
 
-      <wr-labeled-field label="Validation" class="column">
+      <wr-labeled-field label="Validacion" class="column">
         ${t>0||i>0?Q` <p>
               ${t} hashes
-              verified${i?Q`, ${i} invalid`:X}
-            </p>`:Q` Not Available`}
+          verificados${i?Q`, ${i} invalidos`:X}
+        </p>`:Q` No disponible`}
       </wr-labeled-field>
 
       <wr-labeled-field
-        label="Package Hash"
+        label="Hash del paquete"
         class="column"
         .copy=${r}
       >
-        ${r||"Not Available"}
+        ${r||"No disponible"}
       </wr-labeled-field>
 
       <wr-labeled-field
-        label="Observer Public Key"
+        label="Clave publica del observador"
         class="column"
         .copy=${s}
       >
-        ${s||"Not Available"}
+        ${s||"No disponible"}
       </wr-labeled-field>
 
-      <wr-labeled-field label="Loading Mode" class="column">
-        ${e.onDemand?"Download On-Demand":"Fully Local"}
+      <wr-labeled-field label="Modo de carga" class="column">
+        ${e.onDemand?"Descarga bajo demanda":"Totalmente local"}
       </wr-labeled-field>
-    </div>`}render(){return this.detailed?this.renderDetailed():this.renderSummaryView()}onCopy(e,t){return e.preventDefault(),e.stopPropagation(),t&&navigator.clipboard.writeText(t),!1}onPurge(e){const t={reload:e};this.dispatchEvent(new CustomEvent("item-purge",{detail:t}))}}t([ye({type:Object})],zi.prototype,"item",void 0),t([ye({type:Boolean})],zi.prototype,"detailed",void 0),t([ye({type:Boolean})],zi.prototype,"canDelete",void 0),customElements.define("wr-item-info",zi);const _i="search://";class Ci extends me{constructor(){super(),this.inited=!1,this.sourceUrl=null,this.downloadUrl=null,this.loadInfo=null,this.embedOpts={},this.showSidebar=null,this.itemInfo=null,this.item="",this.hasStory=!1,this.isLoading=!1,this.tabData={},this.url="",this.ts="",this.isFullscreen=null,this.menuActive=!1,this.embed=null,this.embedDropdownActive=!1,this.editable=!1,this.browsable=!0,this.clearable=!0,this.isVisible=!0,this.favIconUrl="",this.appName="ReplayWeb.page",this.appVersion=He,this.autoUpdateInterval=10,this.swName=null,this.replayNotFoundError=!1,this.multiTs=[],this.clickToDownloadMode=!1,this.splitter=null,this._replaceLoc=!1,this._locUpdateNeeded=!1,this._locationHash="",this._autoUpdater=null,this.archiveInfoDialog=ut(),this.tabNames=["pages","story","resources","info"],this.tabLabels={pages:"Pages",story:"Story",resources:"URLs"},this._lastUrlUpdate=null,this.showSidebar="1"===localStorage.getItem("pages:showSidebar")&&this.browsable}firstUpdated(){this.inited=!0,window.addEventListener("hashchange",()=>this.onHashChange()),this.addEventListener("fullscreenchange",()=>{this.isFullscreen=!!document.fullscreenElement}),this.embed&&this.loadInfo&&this.loadInfo.hideOffscreen&&(this.observer=new IntersectionObserver(e=>{this.isVisible=e[0].isIntersecting}),this.observer.observe(this))}runUpdateLoop(){var e;return i(this,void 0,void 0,function*(){try{for(;this.editable&&this.autoUpdateInterval&&(!(null===(e=this.itemInfo)||void 0===e?void 0:e.pages)||this.itemInfo.pages.length<100);)yield new Promise(e=>setTimeout(e,1e3*this.autoUpdateInterval)),yield this.doUpdateInfo(!0)}finally{this._autoUpdater=null}})}getMultiTimestamps(){return i(this,void 0,void 0,function*(){if(!this.tabData.url)return;const e=yield fetch(Oe+"/c/"+this.item+"/ts/?url="+window.encodeURIComponent(this.tabData.url));if(200!==e.status)return void(this.multiTs=[]);const t=yield e.json();this.multiTs=t.timestamps})}willUpdate(e){if(e.has("tabData")){const t={};Object.entries(this.tabData).forEach(([e,i])=>{i&&(t[e]=i)}),this.tabData=t;const i=e.get("tabData");this.tabData.url&&this.tabData.url!==(null==i?void 0:i.url)&&this.getMultiTimestamps()}}updated(e){var t;if(e.has("sourceUrl")&&this.doUpdateInfo(),e.has("editable")&&this.editable&&this.autoUpdateInterval&&!this._autoUpdater&&(this._autoUpdater=this.runUpdateLoop()),e.has("tabData")){if(!(null===(t=this.itemInfo)||void 0===t?void 0:t.coll))return;const i="#"+new URLSearchParams(this.tabData).toString();if(this.tabData.url||(this.url=_i+decodeURIComponent(this._paramsToString(this.tabData))),i!==this._locationHash){if(this._locationHash=i,this._replaceLoc||0===Object.keys(e.get("tabData")||{}).length){const e=new URL(window.location.href);e.hash=this._locationHash,window.history.replaceState({},"",e.href),this._replaceLoc=!1}else if(window.location.hash=this._locationHash,!this.showSidebar){const e=this.renderRoot.querySelector("wr-coll-replay");e&&e.focus()}if(this.embed&&window.parent!==window){const{url:e,ts:t,view:i,query:o,title:n}=this.tabData,r=this._lastUrlUpdate,s=this.replayNotFoundError;if(!r||r.url!==e||r.ts!==t||r.view!==i||r.query!==o||r.title!==n){const r={type:"urlchange",url:e,ts:t,view:i,query:o,title:n,replayNotFoundError:s};window.parent.postMessage(r,"*"),this._lastUrlUpdate=r}}}this._locUpdateNeeded=!1}e.has("showSidebar")&&(this.embed||localStorage.setItem("pages:showSidebar",this.showSidebar?"1":"0")),(e.has("tabData")||e.has("showSidebar"))&&this.configureSplitter()}configureSplitter(){if(this.tabData.url&&this.showSidebar){const e=this.renderRoot.querySelector("#contents"),t=this.renderRoot.querySelector("wr-coll-replay");if(e&&t&&!this.splitter){const i={sizes:[30,70],minSize:[300,300],gutterSize:4,onDragStart(){t.setDisablePointer(!0)},onDragEnd(){t.setDisablePointer(!1)}};this.splitter=ti([e,t],i)}}else if(this.splitter){try{this.splitter.destroy()}catch(e){}this.splitter=null}}doUpdateInfo(e=!1){var t,o,n,r;return i(this,void 0,void 0,function*(){if(e&&this.tabData.url&&!this.showSidebar)return;let i=null===(t=this.loadInfo)||void 0===t?void 0:t.customColl;if(!i){i=(yield $t(this.sourceUrl)).item}this.item=i;const s=Oe+"/c/"+i,a=Ue+"/"+i,l=yield fetch(s+"?all=1");if(200!=l.status)return void(this.itemInfo={});const c=yield l.json();if(this.itemInfo=Object.assign({apiPrefix:s,replayPrefix:a,coll:i},c),null===(n=null===(o=this.loadInfo)||void 0===o?void 0:o.extraConfig)||void 0===n?void 0:n.headers){const e=this.loadInfo.extraConfig.headers;yield fetch(`${s}/updateAuth`,{method:"POST",body:JSON.stringify({headers:e})})}const{title:d,name:h,filename:u,downloadUrl:f}=this.itemInfo;d||(this.itemInfo.title=h||u),this.downloadUrl=null===f?null:f||this.sourceUrl,"replayonly"!==this.embed&&"replay-with-info"!==this.embed||(this.showSidebar=!1),this.hasStory=Boolean(this.itemInfo.desc||(null===(r=this.itemInfo.lists)||void 0===r?void 0:r.length)),this.dispatchEvent(new CustomEvent("coll-loaded",{detail:{collInfo:this.itemInfo,alreadyLoaded:!0}})),this.onHashChange()})}onItemLoaded(e){this.doUpdateInfo(),this.loadInfo=null,e.detail.sourceUrl&&(this.sourceUrl=e.detail.sourceUrl),this.dispatchEvent(new CustomEvent("coll-loaded",{detail:{sourceUrl:this.sourceUrl,collInfo:this.itemInfo}}))}onItemUpdate(e){this.editable&&(this.itemInfo=Object.assign(Object.assign({},this.itemInfo),e.detail))}onHashChange(){var e,t,i;const o=window.location.hash;if(o&&o!==this._locationHash&&(this.tabData=Object.fromEntries(new URLSearchParams(o.slice(1)).entries()),this._locationHash=o),(null===(e=this.itemInfo)||void 0===e?void 0:e.coll)&&(!this.tabData.view||!this.tabNames.includes(this.tabData.view))){const e=this.hasStory?"story":this.editable||(null===(t=this.itemInfo.pages)||void 0===t?void 0:t.length)?"pages":"resources";this.tabData=Object.assign(Object.assign({},this.tabData),{view:e})}if(this.tabData.url&&this.tabData.url.startsWith("page:")){const e=Number(this.tabData.url.slice(5));if((null===(i=this.itemInfo)||void 0===i?void 0:i.pages)&&!isNaN(e)&&e<this.itemInfo.pages.length){const t=this.itemInfo.pages[e];this.tabData.url=t.url,this.tabData.ts=yt(t).timestamp}}this.hasStory||"story"!==this.tabData.view||(this.tabData.view="pages"),this.tabData.url&&this.tabData.query&&this.browsable&&(this.showSidebar=!0)}onTabClick(e){e.preventDefault();const t=e.currentTarget.getAttribute("href");return this.tabData=Object.assign(Object.assign({},this.tabData),{view:t.slice(1)}),!1}onItemTabNav(e){if(e.detail.reload)return void this.onRefresh(null,!0);const t=e.target.id,{data:i,replaceLoc:o,replayNotFoundError:n}=e.detail;void 0!==n&&(this.replayNotFoundError=n),(t===this.tabData.view||"replay"===t&&this.tabData.url||this.showSidebar&&this.tabData.url)&&this.updateTabData(i,o)}updateTabData(e,t=!1){this.tabData=Object.assign(Object.assign({},this.tabData),e),this.tabData.url&&(this.url=this.tabData.url||""),this.tabData.ts&&(this.ts=this.tabData.ts||""),this._replaceLoc=!this._locUpdateNeeded&&t,this._locUpdateNeeded=!0}static get styles(){return Ne(Ci.compStyles)}static get compStyles(){return h`
+    </div>`}render(){return this.detailed?this.renderDetailed():this.renderSummaryView()}onCopy(e,t){return e.preventDefault(),e.stopPropagation(),t&&navigator.clipboard.writeText(t),!1}onPurge(e){const t={reload:e};this.dispatchEvent(new CustomEvent("item-purge",{detail:t}))}}t([ye({type:Object})],zi.prototype,"item",void 0),t([ye({type:Boolean})],zi.prototype,"detailed",void 0),t([ye({type:Boolean})],zi.prototype,"canDelete",void 0),customElements.define("wr-item-info",zi);const _i="search://";class Ci extends me{constructor(){super(),this.inited=!1,this.sourceUrl=null,this.downloadUrl=null,this.loadInfo=null,this.embedOpts={},this.showSidebar=null,this.itemInfo=null,this.item="",this.hasStory=!1,this.isLoading=!1,this.tabData={},this.url="",this.ts="",this.isFullscreen=null,this.menuActive=!1,this.embed=null,this.embedDropdownActive=!1,this.editable=!1,this.browsable=!0,this.clearable=!0,this.isVisible=!0,this.favIconUrl="",this.appName="ReplayWeb.page",this.appVersion=He,this.autoUpdateInterval=10,this.swName=null,this.replayNotFoundError=!1,this.multiTs=[],this.clickToDownloadMode=!1,this.splitter=null,this._replaceLoc=!1,this._locUpdateNeeded=!1,this._locationHash="",this._autoUpdater=null,this.archiveInfoDialog=ut(),this.tabNames=["pages","story","resources","info"],this.tabLabels={pages:"Paginas",story:"Historia",resources:"URLs"},this._lastUrlUpdate=null,this.showSidebar="1"===localStorage.getItem("pages:showSidebar")&&this.browsable}firstUpdated(){this.inited=!0,window.addEventListener("hashchange",()=>this.onHashChange()),this.addEventListener("fullscreenchange",()=>{this.isFullscreen=!!document.fullscreenElement}),this.embed&&this.loadInfo&&this.loadInfo.hideOffscreen&&(this.observer=new IntersectionObserver(e=>{this.isVisible=e[0].isIntersecting}),this.observer.observe(this))}runUpdateLoop(){var e;return i(this,void 0,void 0,function*(){try{for(;this.editable&&this.autoUpdateInterval&&(!(null===(e=this.itemInfo)||void 0===e?void 0:e.pages)||this.itemInfo.pages.length<100);)yield new Promise(e=>setTimeout(e,1e3*this.autoUpdateInterval)),yield this.doUpdateInfo(!0)}finally{this._autoUpdater=null}})}getMultiTimestamps(){return i(this,void 0,void 0,function*(){if(!this.tabData.url)return;const e=yield fetch(Oe+"/c/"+this.item+"/ts/?url="+window.encodeURIComponent(this.tabData.url));if(200!==e.status)return void(this.multiTs=[]);const t=yield e.json();this.multiTs=t.timestamps})}willUpdate(e){if(e.has("tabData")){const t={};Object.entries(this.tabData).forEach(([e,i])=>{i&&(t[e]=i)}),this.tabData=t;const i=e.get("tabData");this.tabData.url&&this.tabData.url!==(null==i?void 0:i.url)&&this.getMultiTimestamps()}}updated(e){var t;if(e.has("sourceUrl")&&this.doUpdateInfo(),e.has("editable")&&this.editable&&this.autoUpdateInterval&&!this._autoUpdater&&(this._autoUpdater=this.runUpdateLoop()),e.has("tabData")){if(!(null===(t=this.itemInfo)||void 0===t?void 0:t.coll))return;const i="#"+new URLSearchParams(this.tabData).toString();if(this.tabData.url||(this.url=_i+decodeURIComponent(this._paramsToString(this.tabData))),i!==this._locationHash){if(this._locationHash=i,this._replaceLoc||0===Object.keys(e.get("tabData")||{}).length){const e=new URL(window.location.href);e.hash=this._locationHash,window.history.replaceState({},"",e.href),this._replaceLoc=!1}else if(window.location.hash=this._locationHash,!this.showSidebar){const e=this.renderRoot.querySelector("wr-coll-replay");e&&e.focus()}if(this.embed&&window.parent!==window){const{url:e,ts:t,view:i,query:o,title:n}=this.tabData,r=this._lastUrlUpdate,s=this.replayNotFoundError;if(!r||r.url!==e||r.ts!==t||r.view!==i||r.query!==o||r.title!==n){const r={type:"urlchange",url:e,ts:t,view:i,query:o,title:n,replayNotFoundError:s};window.parent.postMessage(r,"*"),this._lastUrlUpdate=r}}}this._locUpdateNeeded=!1}e.has("showSidebar")&&(this.embed||localStorage.setItem("pages:showSidebar",this.showSidebar?"1":"0")),(e.has("tabData")||e.has("showSidebar"))&&this.configureSplitter()}configureSplitter(){if(this.tabData.url&&this.showSidebar){const e=this.renderRoot.querySelector("#contents"),t=this.renderRoot.querySelector("wr-coll-replay");if(e&&t&&!this.splitter){const i={sizes:[30,70],minSize:[300,300],gutterSize:4,onDragStart(){t.setDisablePointer(!0)},onDragEnd(){t.setDisablePointer(!1)}};this.splitter=ti([e,t],i)}}else if(this.splitter){try{this.splitter.destroy()}catch(e){}this.splitter=null}}doUpdateInfo(e=!1){var t,o,n,r;return i(this,void 0,void 0,function*(){if(e&&this.tabData.url&&!this.showSidebar)return;let i=null===(t=this.loadInfo)||void 0===t?void 0:t.customColl;if(!i){i=(yield $t(this.sourceUrl)).item}this.item=i;const s=Oe+"/c/"+i,a=Ue+"/"+i,l=yield fetch(s+"?all=1");if(200!=l.status)return void(this.itemInfo={});const c=yield l.json();if(this.itemInfo=Object.assign({apiPrefix:s,replayPrefix:a,coll:i},c),null===(n=null===(o=this.loadInfo)||void 0===o?void 0:o.extraConfig)||void 0===n?void 0:n.headers){const e=this.loadInfo.extraConfig.headers;yield fetch(`${s}/updateAuth`,{method:"POST",body:JSON.stringify({headers:e})})}const{title:d,name:h,filename:u,downloadUrl:f}=this.itemInfo;d||(this.itemInfo.title=h||u),this.downloadUrl=null===f?null:f||this.sourceUrl,"replayonly"!==this.embed&&"replay-with-info"!==this.embed||(this.showSidebar=!1),this.hasStory=Boolean(this.itemInfo.desc||(null===(r=this.itemInfo.lists)||void 0===r?void 0:r.length)),this.dispatchEvent(new CustomEvent("coll-loaded",{detail:{collInfo:this.itemInfo,alreadyLoaded:!0}})),this.onHashChange()})}onItemLoaded(e){this.doUpdateInfo(),this.loadInfo=null,e.detail.sourceUrl&&(this.sourceUrl=e.detail.sourceUrl),this.dispatchEvent(new CustomEvent("coll-loaded",{detail:{sourceUrl:this.sourceUrl,collInfo:this.itemInfo}}))}onItemUpdate(e){this.editable&&(this.itemInfo=Object.assign(Object.assign({},this.itemInfo),e.detail))}onHashChange(){var e,t,i;const o=window.location.hash;if(o&&o!==this._locationHash&&(this.tabData=Object.fromEntries(new URLSearchParams(o.slice(1)).entries()),this._locationHash=o),(null===(e=this.itemInfo)||void 0===e?void 0:e.coll)&&(!this.tabData.view||!this.tabNames.includes(this.tabData.view))){const e=this.hasStory?"story":this.editable||(null===(t=this.itemInfo.pages)||void 0===t?void 0:t.length)?"pages":"resources";this.tabData=Object.assign(Object.assign({},this.tabData),{view:e})}if(this.tabData.url&&this.tabData.url.startsWith("page:")){const e=Number(this.tabData.url.slice(5));if((null===(i=this.itemInfo)||void 0===i?void 0:i.pages)&&!isNaN(e)&&e<this.itemInfo.pages.length){const t=this.itemInfo.pages[e];this.tabData.url=t.url,this.tabData.ts=yt(t).timestamp}}this.hasStory||"story"!==this.tabData.view||(this.tabData.view="pages"),this.tabData.url&&this.tabData.query&&this.browsable&&(this.showSidebar=!0)}onTabClick(e){e.preventDefault();const t=e.currentTarget.getAttribute("href");return this.tabData=Object.assign(Object.assign({},this.tabData),{view:t.slice(1)}),!1}onItemTabNav(e){if(e.detail.reload)return void this.onRefresh(null,!0);const t=e.target.id,{data:i,replaceLoc:o,replayNotFoundError:n}=e.detail;void 0!==n&&(this.replayNotFoundError=n),(t===this.tabData.view||"replay"===t&&this.tabData.url||this.showSidebar&&this.tabData.url)&&this.updateTabData(i,o)}updateTabData(e,t=!1){this.tabData=Object.assign(Object.assign({},this.tabData),e),this.tabData.url&&(this.url=this.tabData.url||""),this.tabData.ts&&(this.ts=this.tabData.ts||""),this._replaceLoc=!this._locUpdateNeeded&&t,this._locUpdateNeeded=!0}static get styles(){return Ne(Ci.compStyles)}static get compStyles(){return h`
       :host {
         display: flex;
         flex-direction: column;
@@ -939,13 +940,13 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
         @coll-loaded=${this.onItemLoaded}
       ></wr-loader>`:this.itemInfo?Q`
         ${this.renderLocationBar()} ${this.renderVerifyInfo()}
-        <sl-dialog label="Archive Info" ${mt(this.archiveInfoDialog)}>
+        <sl-dialog label="Informacion del archivo" ${mt(this.archiveInfoDialog)}>
           ${this.renderItemInfo()}
           <sl-button
             slot="footer"
             variant="primary"
             @click="${this.onHideInfoDialog}"
-            >Close</sl-button
+            >Cerrar</sl-button
           >
         </sl-dialog>
         <div id="tabContents">
@@ -953,7 +954,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
             id="contents"
             class="is-light ${i?"sidebar":t?"is-hidden":"full-pages"}"
             role="${$e(i?"complementary":void 0)}"
-            aria-label="${i?"Browse Contents":""}"
+            aria-label="${i?"Explorar contenido":""}"
           >
             ${this.renderTabHeader(i)}
             ${i||!t?this.renderItemTabs(i):Q``}
@@ -978,7 +979,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
         </div>
       `:Q``}renderTabHeader(e){return Q` <nav
       class="main tabs is-centered ${e?"sidebar":""}"
-      aria-label="tabs"
+      aria-label="pestanas"
     >
       <ul>
         ${e?Q` <li class="sidebar-nav left">
@@ -990,12 +991,12 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                 class="is-marginless is-size-6 is-paddingless"
               >
                 <fa-icon
-                  title="Hide"
+                  title="Ocultar"
                   .svg="${'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M31.7 239l136-136c9.4-9.4 24.6-9.4 33.9 0l22.6 22.6c9.4 9.4 9.4 24.6 0 33.9L127.9 256l96.4 96.4c9.4 9.4 9.4 24.6 0 33.9L201.7 409c-9.4 9.4-24.6 9.4-33.9 0l-136-136c-9.5-9.4-9.5-24.6-.1-34z"/></svg>'}"
                   aria-hidden="true"
                 ></fa-icon>
-                <span class="nav-hover" aria-hidden="true">Hide</span>
-                <span class="is-sr-only">Hide Sidebar</span>
+                <span class="nav-hover" aria-hidden="true">Ocultar</span>
+                <span class="is-sr-only">Ocultar barra lateral</span>
               </a>
             </li>`:""}
         ${this.hasStory?Q` <li
@@ -1005,42 +1006,25 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                 @click="${this.onTabClick}"
                 href="#story"
                 class="is-size-6"
-                aria-label="Story"
+                aria-label="Historia"
                 aria-current="${$e("story"===this.tabData.view?"location":void 0)}"
               >
                 <span class="icon"
                   ><fa-icon
                     .svg="${'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z"/></svg>'}"
                     aria-hidden="true"
-                    title="Story"
+                    title="Historia"
                   ></fa-icon
                 ></span>
                 <span
                   class="tab-label ${e?"is-hidden":""}"
-                  title="Story"
-                  >Story</span
+                  title="Historia"
+                  >Historia</span
                 >
               </a>
             </li>`:""}
 
-        <li class="${"pages"===this.tabData.view?"is-active":""}">
-          <a
-            @click="${this.onTabClick}"
-            href="#pages"
-            class="is-size-6"
-            aria-label="Pages"
-            aria-current="${$e("pages"===this.tabData.view?"location":void 0)}"
-          >
-            <span class="icon"
-              ><fa-icon
-                .svg="${'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M369.9 97.9L286 14C277 5 264.8-.1 252.1-.1H48C21.5 0 0 21.5 0 48v416c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V131.9c0-12.7-5.1-25-14.1-34zM332.1 128H256V51.9l76.1 76.1zM48 464V48h160v104c0 13.3 10.7 24 24 24h104v288H48zm32-48h224V288l-23.5-23.5c-4.7-4.7-12.3-4.7-17 0L176 352l-39.5-39.5c-4.7-4.7-12.3-4.7-17 0L80 352v64zm48-240c-26.5 0-48 21.5-48 48s21.5 48 48 48 48-21.5 48-48-21.5-48-48-48z"/></svg>'}"
-                aria-hidden="true"
-                title="Pages"
-              ></fa-icon
-            ></span>
-            <span class="tab-label" title="Pages">Pages</span>
-          </a>
-        </li>
+        
 
         <li class="${"resources"===this.tabData.view?"is-active":""}">
           <a
@@ -1054,10 +1038,10 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
               ><fa-icon
                 .svg="${'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M519.442 288.651c-41.519 0-59.5 31.593-82.058 31.593C377.409 320.244 432 144 432 144s-196.288 80-196.288-3.297c0-35.827 36.288-46.25 36.288-85.985C272 19.216 243.885 0 210.539 0c-34.654 0-66.366 18.891-66.366 56.346 0 41.364 31.711 59.277 31.711 81.75C175.885 207.719 0 166.758 0 166.758v333.237s178.635 41.047 178.635-28.662c0-22.473-40-40.107-40-81.471 0-37.456 29.25-56.346 63.577-56.346 33.673 0 61.788 19.216 61.788 54.717 0 39.735-36.288 50.158-36.288 85.985 0 60.803 129.675 25.73 181.23 25.73 0 0-34.725-120.101 25.827-120.101 35.962 0 46.423 36.152 86.308 36.152C556.712 416 576 387.99 576 354.443c0-34.199-18.962-65.792-56.558-65.792z"/></svg>'}"
                 aria-hidden="true"
-                title="Resources"
+                title="Recursos"
               ></fa-icon
             ></span>
-            <span class="tab-label" title="Resources">Resources</span>
+            <span class="tab-label" title="Recursos">Recursos</span>
           </a>
         </li>
 
@@ -1086,8 +1070,8 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
             @click="${this.onShowPages}"
             @keyup="${je}"
             ?disabled="${!e}"
-            title="Browse Contents"
-            aria-label="Browse Contents"
+            title="Explorar contenido"
+            aria-label="Explorar contenido"
             aria-controls="contents"
           >
             <span class="icon is-small">
@@ -1105,8 +1089,8 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
         class="button narrow is-borderless"
         @click="${this.onGoBack}"
         @keyup="${je}"
-        title="Back"
-        aria-label="Back"
+        title="Atras"
+        aria-label="Atras"
       >
         <span class="icon is-small">
           <fa-icon
@@ -1123,8 +1107,8 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
         class="button narrow is-borderless"
         @click="${this.onGoForward}"
         @keyup="${je}"
-        title="Forward"
-        aria-label="Forward"
+        title="Adelante"
+        aria-label="Adelante"
       >
         <span class="icon is-small">
           <fa-icon
@@ -1142,8 +1126,8 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
         id="refresh"
         @click="${this.onRefresh}"
         @keyup="${je}"
-        title="Reload"
-        aria-label="Reload"
+        title="Recargar"
+        aria-label="Recargar"
       >
         <span class="icon is-small">
           ${this.isLoading?"":Q`
@@ -1159,7 +1143,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
         class="skip-link"
         href="#skip-replay-target"
         @click="${this.skipMenu}"
-        >Skip replay navigation</a
+        >Saltar navegacion de reproduccion</a
       >
       <nav class="replay-bar" aria-label="replay">
         <div class="field has-addons">
@@ -1175,7 +1159,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                 @keydown="${this.onKeyDown}"
                 @blur="${this.onLostFocus}"
                 .value="${this.url}"
-                placeholder="Enter text to search or a URL to replay"
+                placeholder="Ingresa texto para buscar o una URL para reproducir"
               />
               ${e?this.clickToDownloadMode?this.renderClickToDownloadNotify():this.renderTimestamp():""}
               ${t?Q` <span class="favicon icon is-small is-left">
@@ -1186,13 +1170,13 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
           ${this.renderToolbarRight()}
         </div>
       </nav>
-      <p id="skip-replay-target" tabindex="-1" class="is-sr-only">Skipped</p>`}renderClickToDownloadNotify(){return Q`<article
+      <p id="skip-replay-target" tabindex="-1" class="is-sr-only">Saltado</p>`}renderClickToDownloadNotify(){return Q`<article
       id="click-download-msg"
       class="loc-overlay has-background-link-light is-size-7"
     >
       <div class="ml-4 is-flex">
-        Select image or media highlighted with 🟦 (blue box) on hover to
-        download.
+        Selecciona imagen o medio resaltado con 🟦 (cuadro azul) al pasar el
+        cursor para descargar.
       </div>
       <button
         class="mx-4 delete"
@@ -1210,8 +1194,8 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
         id="fullscreen"
         @click="${this.onFullscreenToggle}"
         @keyup="${je}"
-        title="${this.isFullscreen?"Exit Full Screen":"Full Screen"}"
-        aria-label="${this.isFullscreen?"Exit Fullscreen":"Fullscreen"}"
+        title="${this.isFullscreen?"Salir de pantalla completa":"Pantalla completa"}"
+        aria-label="${this.isFullscreen?"Salir de pantalla completa":"Pantalla completa"}"
       >
         <span class="icon is-small">
           <fa-icon
@@ -1229,7 +1213,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
           aria-controls="menu-dropdown"
           aria-expanded="${this.menuActive}"
           @click="${this.onMenu}"
-          aria-label="more replay controls"
+          aria-label="mas controles de reproduccion"
         >
           <span class="icon is-small">
             <fa-icon
@@ -1258,7 +1242,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                 .svg="${this.isFullscreen?Et:It}"
               ></fa-icon>
             </span>
-            <span>Full Screen</span>
+            <span>Pantalla completa</span>
           </a>
           ${this.browsable?Q` <a
                 href="#"
@@ -1275,7 +1259,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                     .svg="${Ct}"
                   ></fa-icon>
                 </span>
-                <span>Browse Contents</span>
+                <span>Explorar contenido</span>
               </a>`:""}
           ${this.clearable?Q` <hr class="dropdown-divider is-hidden-desktop" />
                 <a
@@ -1293,7 +1277,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                       .svg="${'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M370.72 133.28C339.458 104.008 298.888 87.962 255.848 88c-77.458.068-144.328 53.178-162.791 126.85-1.344 5.363-6.122 9.15-11.651 9.15H24.103c-7.498 0-13.194-6.807-11.807-14.176C33.933 94.924 134.813 8 256 8c66.448 0 126.791 26.136 171.315 68.685L463.03 40.97C478.149 25.851 504 36.559 504 57.941V192c0 13.255-10.745 24-24 24H345.941c-21.382 0-32.09-25.851-16.971-40.971l41.75-41.749zM32 296h134.059c21.382 0 32.09 25.851 16.971 40.971l-41.75 41.75c31.262 29.273 71.835 45.319 114.876 45.28 77.418-.07 144.315-53.144 162.787-126.849 1.344-5.363 6.122-9.15 11.651-9.15h57.304c7.498 0 13.194 6.807 11.807 14.176C478.067 417.076 377.187 504 256 504c-66.448 0-126.791-26.136-171.315-68.685L48.97 471.03C33.851 486.149 8 475.441 8 454.059V320c0-13.255 10.745-24 24-24z"/></svg>'}"
                     ></fa-icon>
                   </span>
-                  <span>Purge Cache + Full Reload</span>
+                  <span>Limpiar cache + recarga completa</span>
                 </a>`:Q``}
           ${i&&!this.embedOpts.noMediaDownloadUI?Q`<hr class="dropdown-divider" />
                 <a
@@ -1310,7 +1294,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                       .svg="${'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm-32-316v116h-67c-10.7 0-16 12.9-8.5 20.5l99 99c4.7 4.7 12.3 4.7 17 0l99-99c7.6-7.6 2.2-20.5-8.5-20.5h-67V140c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12z"/></svg>'}"
                     ></fa-icon>
                   </span>
-                  <span>Select Media to Download</span>
+                  <span>Seleccionar medios para descargar</span>
                 </a>`:Q``}
           ${!this.editable&&(null===(e=this.downloadUrl)||void 0===e?void 0:e.startsWith("http://"))||(null===(t=this.downloadUrl)||void 0===t?void 0:t.startsWith("https://"))?Q` <hr class="dropdown-divider" />
                 <a
@@ -1327,7 +1311,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                       .svg="${_t}"
                     ></fa-icon>
                   </span>
-                  <span>Download Archive</span>
+                  <span>Descargar archivo</span>
                 </a>`:Q``}
           ${o?Q` <hr class="dropdown-divider is-hidden-desktop" />
                 <div class="dropdown-item info is-hidden-tablet">
@@ -1346,24 +1330,9 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                     .svg="${'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 110c23.196 0 42 18.804 42 42s-18.804 42-42 42-42-18.804-42-42 18.804-42 42-42zm56 254c0 6.627-5.373 12-12 12h-88c-6.627 0-12-5.373-12-12v-24c0-6.627 5.373-12 12-12h12v-64h-12c-6.627 0-12-5.373-12-12v-24c0-6.627 5.373-12 12-12h64c6.627 0 12 5.373 12 12v100h12c6.627 0 12 5.373 12 12v24z"/></svg>'}"
                   ></fa-icon>
                 </span>
-                <span>Archive Info</span>
+                <span>Informacion del archivo</span>
               </a>`}
           <hr class="dropdown-divider" />
-          <a
-            href="#"
-            role="button"
-            class="dropdown-item"
-            @click="${this.onAbout}"
-          >
-            <fa-icon
-              class="has-text-grey"
-              size="1.0rem"
-              aria-hidden="true"
-              .svg=${bt}
-            ></fa-icon>
-            <span>&nbsp;About ${this.appName}</span>
-            <span class="menu-version">(${this.appVersion})</span>
-          </a>
         </div>
       </div>
     </div>`}renderTimestamp(){var e;const t=[];null===(e=this.multiTs)||void 0===e||e.forEach(e=>{try{const i=wt(+e),o=i?Tt.format(vt(i)):"";t.push({date:i,label:o})}catch(e){}});const i=this.ts?Tt.format(vt(this.ts)):"";return Q`<div id="datetime" class="control is-hidden-mobile loc-overlay">
@@ -1409,8 +1378,8 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
           .svg=${'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937 0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288 354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"/></svg>'}
           aria-hidden="true"
         ></fa-icon>
-        <strong>Archive info is not available</strong><br />
-        Please reload and try again.
+        <strong>La informacion del archivo no esta disponible</strong><br />
+        Recarga e intenta de nuevo.
       </sl-alert>`}renderItemTabs(e){const t=this.hasStory&&"story"===this.tabData.view,i="pages"===this.tabData.view,o="resources"===this.tabData.view;return Q`
       ${t?Q` <wr-coll-story
             .collInfo="${this.itemInfo||{}}"
@@ -1452,7 +1421,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
             role="${$e(e?void 0:"main")}"
           >
           </wr-page-view>`:""}
-    `}skipMenu(e){var t;e.preventDefault(),null===(t=this.renderRoot.querySelector("#skip-replay-target"))||void 0===t||t.focus()}onKeyDown(e){"Esc"!==e.key&&"Escape"!==e.key||(e.preventDefault(),e.currentTarget.value=this.url)}onMenu(e){e.stopPropagation(),this.menuActive=!this.menuActive,this.menuActive&&document.addEventListener("click",()=>{this.menuActive=!1},{once:!0})}onFullscreenToggle(e){e.preventDefault(),this.menuActive=!1,this.isFullscreen?document.exitFullscreen():this.requestFullscreen()}onGoBack(e){e.preventDefault(),this.menuActive=!1,window.history.back()}onGoForward(e){e.preventDefault(),this.menuActive=!1,window.history.forward()}onShowPages(e){e.preventDefault(),this.showSidebar||document.documentElement.clientWidth>=769?this.showSidebar=!this.showSidebar:(this.showSidebar=!1,this.updateTabData({url:"",ts:""})),this.browsable||(this.showSidebar=!1)}onFullPageView(e){e.preventDefault(),this.updateTabData({url:"",ts:""})}onHideSidebar(e){e.preventDefault(),this.showSidebar=!1}onReplayLoading(e){var t,o;return i(this,void 0,void 0,function*(){const{loading:i,replayNotFoundError:n}=e.detail;if(this.embed&&window.parent!==window&&this.isLoading!==i){let e;e=i?{loading:i}:{loading:i,replayNotFoundError:null!=n&&n};const r=Object.assign(Object.assign({},e),{type:"page-loading",url:null!==(t=this.tabData.url)&&void 0!==t?t:"",ts:null!==(o=this.tabData.ts)&&void 0!==o?o:""});window.parent.postMessage(r,"*")}this.isLoading=i})}onFavIcons(e){return i(this,void 0,void 0,function*(){this.embed&&window.parent!==window&&window.parent.postMessage(Object.assign({type:"favicons"},e.detail),"*");for(const t of e.detail.icons){const e=yield fetch(t.href);if(200===e.status){const i=e.headers.get("Content-Type");if(i&&!i.startsWith("text/"))return void(this.favIconUrl=t.href)}}this.favIconUrl=""})}onPurgeCache(e){e.preventDefault();const t=!e.detail||void 0===e.detail.reload||e.detail.reload;this.deleteFully(t)}deleteFully(e=!1){return i(this,void 0,void 0,function*(){const t=this.itemInfo.apiPrefix+(e?"?reload=1":""),i=yield fetch(t,{method:"DELETE"});200!==i.status&&console.warn("purge failed: "+i.status),e||this.embed?window.location.reload():window.location.search=""})}onSubmit(e){e.preventDefault();const t=this.renderRoot.querySelector("input");return t.value?this.navigateTo(t.value):t.value=this.url,!1}onLostFocus(e){e.currentTarget.value||(e.currentTarget.value=this.url)}onTimestampDropdownBtnBlur(e){const t=e.currentTarget.closest("sl-dropdown"),i=e.relatedTarget;i&&(null==t?void 0:t.contains(i))||(null==t?void 0:t.open)&&t.hide()}onSelectTimestamp(e){const{item:t}=e.detail;this.updateTabData({ts:t.value})}navigateTo(e){let t;if(e.startsWith("http://")||e.startsWith("https://")){if(t={url:e},e===this.tabData.url){const e=this.renderRoot.querySelector("wr-coll-replay");return void(e&&e.refresh())}}else t=e.startsWith(_i)?this._stringToParams(e):{query:e,view:"pages"};this.updateTabData(t)}_stringToParams(e){const t=new URLSearchParams(e.slice(9)),i={url:"",ts:""};for(const e of["query","view","currList","currMime","urlSearchType"])t.has(e)&&(i[e]=t.get(e));return i}_paramsToString(e){const t=new URLSearchParams;for(const i of["query","view","currList","currMime","urlSearchType"])i in e&&t.set(i,String(e[i]));return t.toString()}onRefresh(e,t=!1){if(e&&e.preventDefault(),this.menuActive=!1,this.tabData.url){const e=this.renderRoot.querySelector("wr-coll-replay");e&&e.refresh()}else t||window.location.reload()}onAbout(){this.dispatchEvent(new CustomEvent("about-show"))}onShowInfoDialog(){var e;null===(e=this.archiveInfoDialog.value)||void 0===e||e.show()}onHideInfoDialog(){var e;null===(e=this.archiveInfoDialog.value)||void 0===e||e.hide()}}t([ye({type:Boolean})],Ci.prototype,"inited",void 0),t([ye({type:String})],Ci.prototype,"sourceUrl",void 0),t([ye({type:String})],Ci.prototype,"downloadUrl",void 0),t([ye({type:Object,attribute:!1})],Ci.prototype,"loadInfo",void 0),t([ye({type:Object})],Ci.prototype,"embedOpts",void 0),t([ye({type:Boolean})],Ci.prototype,"showSidebar",void 0),t([ye({type:Object,attribute:!1})],Ci.prototype,"itemInfo",void 0),t([ye({type:String})],Ci.prototype,"item",void 0),t([ye({type:Boolean})],Ci.prototype,"hasStory",void 0),t([ye({type:Boolean})],Ci.prototype,"isLoading",void 0),t([ye({type:Object,attribute:!1})],Ci.prototype,"tabData",void 0),t([ye({type:String})],Ci.prototype,"url",void 0),t([ye({type:String})],Ci.prototype,"ts",void 0),t([ye({type:Boolean})],Ci.prototype,"isFullscreen",void 0),t([ye({type:Boolean})],Ci.prototype,"menuActive",void 0),t([ye({type:String})],Ci.prototype,"embed",void 0),t([ye({type:Boolean})],Ci.prototype,"embedDropdownActive",void 0),t([ye({type:Boolean})],Ci.prototype,"editable",void 0),t([ye({type:Boolean})],Ci.prototype,"browsable",void 0),t([ye({type:Boolean})],Ci.prototype,"clearable",void 0),t([ye({type:Boolean})],Ci.prototype,"isVisible",void 0),t([ye({type:String})],Ci.prototype,"favIconUrl",void 0),t([ye({type:String})],Ci.prototype,"appName",void 0),t([ye({type:String})],Ci.prototype,"appVersion",void 0),t([ye({type:Number})],Ci.prototype,"autoUpdateInterval",void 0),t([ye({type:String})],Ci.prototype,"swName",void 0),t([ye({type:Boolean})],Ci.prototype,"replayNotFoundError",void 0),t([ye({type:Array})],Ci.prototype,"multiTs",void 0),t([ye({type:Boolean})],Ci.prototype,"clickToDownloadMode",void 0),customElements.define("wr-item",Ci);const Ii='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"/></svg>';class Ei extends me{get typeFilter(){return""}get indexParams(){return""}constructor(){super(),this.items=[],this.query="",this.filteredItems=[],this.sortedItems=[],this.hideHeader=!1,this.dateName="Date Loaded",this.headerName="Loaded Archives",this._deleting={},this.hideHeader="1"===localStorage.getItem("index:hideHeader")}get sortKeys(){return[{key:"title",name:"Title"},{key:"sourceUrl",name:"Source"},{key:"ctime",name:this.dateName},{key:"size",name:"Total Size"}]}firstUpdated(){this.loadItems()}updated(e){e.has("hideHeader")&&localStorage.setItem("index:hideHeader",this.hideHeader?"1":"0"),(e.has("items")||e.has("query"))&&this.filter()}filter(){if(this.query){this.filteredItems=[];for(const e of this.items)(e.sourceUrl.indexOf(this.query)>=0||e.filename&&e.filename.indexOf(this.query)>=0||Boolean(e.loadUrl&&e.loadUrl.indexOf(this.query)>=0)||e.title&&e.title.indexOf(this.query)>=0)&&this.filteredItems.push(e)}else this.filteredItems=this.items}loadItems(){return i(this,void 0,void 0,function*(){const e=yield fetch(`${Oe}/coll-index?${this.indexParams}`);try{if(200!==e.status)throw new Error("Invalid API Response, Retry");const t=yield e.json();this.items=t.colls.map(e=>{var t;return e.title=null!==(t=e.title)&&void 0!==t?t:e.filename,e}),this._deleting={},this.sortedItems=[]}catch(e){setTimeout(()=>this.loadItems(),500)}})}onDeleteItem(e){return i(this,void 0,void 0,function*(){if(e.preventDefault(),e.stopPropagation(),!this.sortedItems)return;const t=Number(e.currentTarget.getAttribute("data-coll-index")),i=this.sortedItems[t];if(!i||this._deleting[i.sourceUrl])return;this._deleting[i.sourceUrl]=!0,this.requestUpdate();const o=yield fetch(`${Oe}/c/${i.id}`,{method:"DELETE"});if(200===o.status){const e=yield o.json();this.items=e.colls}return!1})}static get styles(){return Ne(Ei.compStyles)}static get compStyles(){return h`
+    `}skipMenu(e){var t;e.preventDefault(),null===(t=this.renderRoot.querySelector("#skip-replay-target"))||void 0===t||t.focus()}onKeyDown(e){"Esc"!==e.key&&"Escape"!==e.key||(e.preventDefault(),e.currentTarget.value=this.url)}onMenu(e){e.stopPropagation(),this.menuActive=!this.menuActive,this.menuActive&&document.addEventListener("click",()=>{this.menuActive=!1},{once:!0})}onFullscreenToggle(e){e.preventDefault(),this.menuActive=!1,this.isFullscreen?document.exitFullscreen():this.requestFullscreen()}onGoBack(e){e.preventDefault(),this.menuActive=!1,window.history.back()}onGoForward(e){e.preventDefault(),this.menuActive=!1,window.history.forward()}onShowPages(e){e.preventDefault(),this.updateTabData({view:"resources"}),this.showSidebar||document.documentElement.clientWidth>=769?this.showSidebar=!this.showSidebar:(this.showSidebar=!1,this.updateTabData({url:"",ts:"",view:"resources"})),this.browsable||(this.showSidebar=!1)}onFullPageView(e){e.preventDefault(),this.updateTabData({url:"",ts:""})}onHideSidebar(e){e.preventDefault(),this.showSidebar=!1}onReplayLoading(e){var t,o;return i(this,void 0,void 0,function*(){const{loading:i,replayNotFoundError:n}=e.detail;if(this.embed&&window.parent!==window&&this.isLoading!==i){let e;e=i?{loading:i}:{loading:i,replayNotFoundError:null!=n&&n};const r=Object.assign(Object.assign({},e),{type:"page-loading",url:null!==(t=this.tabData.url)&&void 0!==t?t:"",ts:null!==(o=this.tabData.ts)&&void 0!==o?o:""});window.parent.postMessage(r,"*")}this.isLoading=i})}onFavIcons(e){return i(this,void 0,void 0,function*(){this.embed&&window.parent!==window&&window.parent.postMessage(Object.assign({type:"favicons"},e.detail),"*");for(const t of e.detail.icons){const e=yield fetch(t.href);if(200===e.status){const i=e.headers.get("Content-Type");if(i&&!i.startsWith("text/"))return void(this.favIconUrl=t.href)}}this.favIconUrl=""})}onPurgeCache(e){e.preventDefault();const t=!e.detail||void 0===e.detail.reload||e.detail.reload;this.deleteFully(t)}deleteFully(e=!1){return i(this,void 0,void 0,function*(){const t=this.itemInfo.apiPrefix+(e?"?reload=1":""),i=yield fetch(t,{method:"DELETE"});200!==i.status&&console.warn("purge failed: "+i.status),e||this.embed?window.location.reload():window.location.search=""})}onSubmit(e){e.preventDefault();const t=this.renderRoot.querySelector("input");return t.value?this.navigateTo(t.value):t.value=this.url,!1}onLostFocus(e){e.currentTarget.value||(e.currentTarget.value=this.url)}onTimestampDropdownBtnBlur(e){const t=e.currentTarget.closest("sl-dropdown"),i=e.relatedTarget;i&&(null==t?void 0:t.contains(i))||(null==t?void 0:t.open)&&t.hide()}onSelectTimestamp(e){const{item:t}=e.detail;this.updateTabData({ts:t.value})}navigateTo(e){let t;if(e.startsWith("http://")||e.startsWith("https://")){if(t={url:e},e===this.tabData.url){const e=this.renderRoot.querySelector("wr-coll-replay");return void(e&&e.refresh())}}else t=e.startsWith(_i)?this._stringToParams(e):{query:e,view:"pages"};this.updateTabData(t)}_stringToParams(e){const t=new URLSearchParams(e.slice(9)),i={url:"",ts:""};for(const e of["query","view","currList","currMime","urlSearchType"])t.has(e)&&(i[e]=t.get(e));return i}_paramsToString(e){const t=new URLSearchParams;for(const i of["query","view","currList","currMime","urlSearchType"])i in e&&t.set(i,String(e[i]));return t.toString()}onRefresh(e,t=!1){if(e&&e.preventDefault(),this.menuActive=!1,this.tabData.url){const e=this.renderRoot.querySelector("wr-coll-replay");e&&e.refresh()}else t||window.location.reload()}onAbout(){this.dispatchEvent(new CustomEvent("about-show"))}onShowInfoDialog(){var e;null===(e=this.archiveInfoDialog.value)||void 0===e||e.show()}onHideInfoDialog(){var e;null===(e=this.archiveInfoDialog.value)||void 0===e||e.hide()}}t([ye({type:Boolean})],Ci.prototype,"inited",void 0),t([ye({type:String})],Ci.prototype,"sourceUrl",void 0),t([ye({type:String})],Ci.prototype,"downloadUrl",void 0),t([ye({type:Object,attribute:!1})],Ci.prototype,"loadInfo",void 0),t([ye({type:Object})],Ci.prototype,"embedOpts",void 0),t([ye({type:Boolean})],Ci.prototype,"showSidebar",void 0),t([ye({type:Object,attribute:!1})],Ci.prototype,"itemInfo",void 0),t([ye({type:String})],Ci.prototype,"item",void 0),t([ye({type:Boolean})],Ci.prototype,"hasStory",void 0),t([ye({type:Boolean})],Ci.prototype,"isLoading",void 0),t([ye({type:Object,attribute:!1})],Ci.prototype,"tabData",void 0),t([ye({type:String})],Ci.prototype,"url",void 0),t([ye({type:String})],Ci.prototype,"ts",void 0),t([ye({type:Boolean})],Ci.prototype,"isFullscreen",void 0),t([ye({type:Boolean})],Ci.prototype,"menuActive",void 0),t([ye({type:String})],Ci.prototype,"embed",void 0),t([ye({type:Boolean})],Ci.prototype,"embedDropdownActive",void 0),t([ye({type:Boolean})],Ci.prototype,"editable",void 0),t([ye({type:Boolean})],Ci.prototype,"browsable",void 0),t([ye({type:Boolean})],Ci.prototype,"clearable",void 0),t([ye({type:Boolean})],Ci.prototype,"isVisible",void 0),t([ye({type:String})],Ci.prototype,"favIconUrl",void 0),t([ye({type:String})],Ci.prototype,"appName",void 0),t([ye({type:String})],Ci.prototype,"appVersion",void 0),t([ye({type:Number})],Ci.prototype,"autoUpdateInterval",void 0),t([ye({type:String})],Ci.prototype,"swName",void 0),t([ye({type:Boolean})],Ci.prototype,"replayNotFoundError",void 0),t([ye({type:Array})],Ci.prototype,"multiTs",void 0),t([ye({type:Boolean})],Ci.prototype,"clickToDownloadMode",void 0),customElements.define("wr-item",Ci);const Ii='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"/></svg>';class Ei extends me{get typeFilter(){return""}get indexParams(){return""}constructor(){super(),this.items=[],this.query="",this.filteredItems=[],this.sortedItems=[],this.hideHeader=!1,this.dateName="Fecha de carga",this.headerName="Archivos cargados",this._deleting={},this.hideHeader="1"===localStorage.getItem("index:hideHeader")}get sortKeys(){return[{key:"title",name:"Titulo"},{key:"sourceUrl",name:"Fuente"},{key:"ctime",name:this.dateName},{key:"size",name:"Tamano total"}]}firstUpdated(){this.loadItems()}updated(e){e.has("hideHeader")&&localStorage.setItem("index:hideHeader",this.hideHeader?"1":"0"),(e.has("items")||e.has("query"))&&this.filter()}filter(){if(this.query){this.filteredItems=[];for(const e of this.items)(e.sourceUrl.indexOf(this.query)>=0||e.filename&&e.filename.indexOf(this.query)>=0||Boolean(e.loadUrl&&e.loadUrl.indexOf(this.query)>=0)||e.title&&e.title.indexOf(this.query)>=0)&&this.filteredItems.push(e)}else this.filteredItems=this.items}loadItems(){return i(this,void 0,void 0,function*(){const e=yield fetch(`${Oe}/coll-index?${this.indexParams}`);try{if(200!==e.status)throw new Error("Invalid API Response, Retry");const t=yield e.json();this.items=t.colls.map(e=>{var t;return e.title=null!==(t=e.title)&&void 0!==t?t:e.filename,e}),this._deleting={},this.sortedItems=[]}catch(e){setTimeout(()=>this.loadItems(),500)}})}onDeleteItem(e){return i(this,void 0,void 0,function*(){if(e.preventDefault(),e.stopPropagation(),!this.sortedItems)return;const t=Number(e.currentTarget.getAttribute("data-coll-index")),i=this.sortedItems[t];if(!i||this._deleting[i.sourceUrl])return;this._deleting[i.sourceUrl]=!0,this.requestUpdate();const o=yield fetch(`${Oe}/c/${i.id}`,{method:"DELETE"});if(200===o.status){const e=yield o.json();this.items=e.colls}return!1})}static get styles(){return Ne(Ei.compStyles)}static get compStyles(){return h`
       :host {
         overflow-y: auto;
         min-width: 0;
@@ -1558,7 +1527,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
           ${t?Q`
         <button @click=${()=>this.hideHeader=!this.hideHeader} class="collapse button is-small">
           <span class="icon"><fa-icon .svg=${this.hideHeader?'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M143 256.3L7 120.3c-9.4-9.4-9.4-24.6 0-33.9l22.6-22.6c9.4-9.4 24.6-9.4 33.9 0l96.4 96.4 96.4-96.4c9.4-9.4 24.6-9.4 33.9 0L313 86.3c9.4 9.4 9.4 24.6 0 33.9l-136 136c-9.4 9.5-24.6 9.5-34 .1zm34 192l136-136c9.4-9.4 9.4-24.6 0-33.9l-22.6-22.6c-9.4-9.4-24.6-9.4-33.9 0L160 352.1l-96.4-96.4c-9.4-9.4-24.6-9.4-33.9 0L7 278.3c-9.4 9.4-9.4 24.6 0 33.9l136 136c9.4 9.5 24.6 9.5 34 .1z"/></svg>':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M177 255.7l136 136c9.4 9.4 9.4 24.6 0 33.9l-22.6 22.6c-9.4 9.4-24.6 9.4-33.9 0L160 351.9l-96.4 96.4c-9.4 9.4-24.6 9.4-33.9 0L7 425.7c-9.4-9.4-9.4-24.6 0-33.9l136-136c9.4-9.5 24.6-9.5 34-.1zm-34-192L7 199.7c-9.4 9.4-9.4 24.6 0 33.9l22.6 22.6c9.4 9.4 24.6 9.4 33.9 0l96.4-96.4 96.4 96.4c9.4 9.4 24.6 9.4 33.9 0l22.6-22.6c9.4-9.4 9.4-24.6 0-33.9l-136-136c-9.2-9.4-24.4-9.4-33.8 0z"/></svg>'}></span>
-          <span>${this.hideHeader?"Show ":"Hide"} <span class="is-sr-only">Header</span></span>
+          <span>${this.hideHeader?"Mostrar ":"Ocultar"} <span class="is-sr-only">Encabezado</span></span>
         </button>`:""}
         </div>
         <div class="panel">
@@ -1572,7 +1541,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                       class="input is-small"
                       @input="${e=>this.query=e.currentTarget.value}"
                       .value="${this.query}"
-                      placeholder="Search by Archive Title or Source"
+                      placeholder="Buscar por titulo o fuente del archivo"
                     />
                     <span class="icon is-left is-small">
                       <fa-icon .svg="${Ii}"></fa-icon>
@@ -1596,12 +1565,12 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                         ${this._deleting[e.sourceUrl]?Q` <span
                               class="button delete-button is-loading is-static"
                             >
-                              Deleting
+                              Eliminando
                             </span>`:Q`
                               <button
                                 class="delete delete-button"
-                                aria-label="Unload Item"
-                                title="Unload Item"
+                                aria-label="Descargar elemento"
+                                title="Descargar elemento"
                                 data-coll-index="${t}"
                                 @click="${this.onDeleteItem}"
                               ></button>
@@ -1611,22 +1580,22 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                 </div>
               `:Q`
                 <div class="panel-block extra-padding">
-                  ${null===this.sortedItems?Q`<i>Loading Archives...</i>`:this.renderEmpty()}
+                  ${null===this.sortedItems?Q`<i>Cargando archivos...</i>`:this.renderEmpty()}
                 </div>
               `}
         </div>
       </section>
     `}renderItemInfo(e){return Q`<wr-item-info .item=${e}></wr-item-info>`}renderEmpty(){return Q`
       <p>
-        Don't have any web archives yet? Check out
+        Aun no tienes archivos web? Revisa
         <a href="https://webrecorder.net/archivewebpage" target="_blank"
           >ArchiveWeb.page</a
         >
-        to save pages as you browse the web, or
+        para guardar paginas mientras navegas, o
         <a href="https://webrecorder.net/browsertrix" target="_blank"
           >sign up for Browsertrix</a
         >
-        to archive entire websites with automated crawling!
+        para archivar sitios completos con rastreo automatizado.
       </p>
     `}}t([ye({type:Array})],Ei.prototype,"items",void 0),t([ye({type:String})],Ei.prototype,"query",void 0),t([ye({type:Array})],Ei.prototype,"filteredItems",void 0),t([ye({type:Array})],Ei.prototype,"sortedItems",void 0),t([ye({type:Boolean})],Ei.prototype,"hideHeader",void 0),t([ye({type:String})],Ei.prototype,"dateName",void 0),t([ye({type:String})],Ei.prototype,"headerName",void 0),t([xe()],Ei.prototype,"_deleting",void 0),customElements.define("wr-item-index",Ei);let Li=class extends me{constructor(){super(...arguments),this.fileDisplayName="",this.file=null,this.droppedFile=null,this.hasNativeFS=!!window.showOpenFilePicker&&!qe,this.showOpenFilePickerOptions={types:[{description:"WARC, WACZ, and HAR Files",accept:{"application/warc":[".warc",".gz"],"application/har":[".har"],"application/wacz":[".wacz",".wacz.zip"],"application/json":[".json"]}}]},this.newFullImport=!1,this.noHead=!1}updated(e){e.has("droppedFile")&&this.droppedFile&&this.onDropFile()}onDropFile(){const e=this.showOpenFilePickerOptions.types.map(e=>e.accept).map(Object.values).flat(2).some(e=>{var t;return null===(t=this.droppedFile)||void 0===t?void 0:t.name.endsWith(e)});if(e){if(null===this.droppedFile)return;this.setFile(this.droppedFile),this.dispatchEvent(new CustomEvent("did-drop-file",{bubbles:!0,composed:!0})),this.onStartLoad()}}onChooseFile(e){0!==e.currentTarget.files.length&&this.setFile(e.currentTarget.files[0])}setFile(e){var t;if(this.file=e,qe&&(null===(t=window.electron)||void 0===t?void 0:t.getPaths)){const{loadUrl:e,sourceUrl:t}=window.electron.getPaths(this.file);this.file.path=e,this.fileDisplayName=t}else this.fileDisplayName="file://"+e.name}onChooseNativeFile(){return i(this,void 0,void 0,function*(){if(!this.hasNativeFS)return;const[e]=yield window.showOpenFilePicker(this.showOpenFilePickerOptions);this.fileHandle=e,this.file=yield e.getFile(),this.fileDisplayName="file://"+e.name})}randomId(){return Math.random().toString(36).substring(2,15)+Math.random().toString(36).substring(2,15)}onStartLoad(e){e&&e.preventDefault();const t={sourceUrl:this.fileDisplayName,newFullImport:this.newFullImport};return this.file&&(t.isFile=!0,this.file.path?(t.loadUrl=this.file.path,t.sourceUrl=this.fileDisplayName,t.name=this.file.name,t.noCache=!0):this.fileHandle?(t.loadUrl=this.fileDisplayName,t.extra={fileHandle:this.fileHandle},t.noCache=!1):(t.loadUrl=URL.createObjectURL(this.file),t.blob=this.file,t.noCache=!1),t.size=this.file.size,t.name||(t.name=this.fileDisplayName)),this.dispatchEvent(new CustomEvent("load-start",{bubbles:!0,composed:!0,detail:t})),!1}onInput(e){this.fileDisplayName=e.currentTarget.value,this.file&&this.fileDisplayName&&this.fileDisplayName.startsWith("file://")&&(this.file=null,this.fileDisplayName="")}static get styles(){return Ne(h`
       :host {
@@ -1926,7 +1895,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                         role="button"
                         href="#"
                         class="navbar-item arrow-button"
-                        title="Go Forward"
+                        title="Ir adelante"
                         @click="${()=>window.history.forward()}"
                         @keyup="${je}"
                       >
@@ -1936,7 +1905,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                           aria-hidden="true"
                         ></fa-icon
                         ><span class="menu-only is-size-7"
-                          >&nbsp;Go Forward</span
+                          >&nbsp;Ir adelante</span
                         >
                       </a>
                     `:""}
@@ -1944,9 +1913,9 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
               ${this.embed?Q``:Q` <div class="navbar-end">${this.renderNavEnd()}</div>`}
             </div>`}
       </nav>
-      <p id="skip-main-target" tabindex="-1" class="is-sr-only">Skipped</p>`}renderNavEnd(){return Q` <a href="/docs" target="_blank" class="navbar-item is-size-6">
+      <p id="skip-main-target" tabindex="-1" class="is-sr-only">Saltado</p>`}renderNavEnd(){return Q` <a href="/docs" target="_blank" class="navbar-item is-size-6">
         <fa-icon .svg="${'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">\x3c!-- Font Awesome Free 5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) --\x3e<path d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zM262.655 90c-54.497 0-89.255 22.957-116.549 63.758-3.536 5.286-2.353 12.415 2.715 16.258l34.699 26.31c5.205 3.947 12.621 3.008 16.665-2.122 17.864-22.658 30.113-35.797 57.303-35.797 20.429 0 45.698 13.148 45.698 32.958 0 14.976-12.363 22.667-32.534 33.976C247.128 238.528 216 254.941 216 296v4c0 6.627 5.373 12 12 12h56c6.627 0 12-5.373 12-12v-1.333c0-28.462 83.186-29.647 83.186-106.667 0-58.002-60.165-102-116.531-102zM256 338c-25.365 0-46 20.635-46 46 0 25.364 20.635 46 46 46s46-20.636 46-46c0-25.365-20.635-46-46-46z"/></svg>'}" aria-hidden="true"></fa-icon
-        ><span>&nbsp;User Docs</span>
+        ><span>&nbsp;Documentacion</span>
       </a>
       <!--
     -- NB: the About modal is currently inaccessible to people using keyboards or screen readers.
@@ -1956,7 +1925,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
         href="?terms"
         @click="${e=>{e.preventDefault(),this.showAbout=!0}}"
         class="navbar-item is-size-6"
-        >About
+        >Acerca de
       </a>`}renderColl(){return Q` <wr-item
       .loadInfo="${this.loadInfo}"
       sourceUrl="${this.sourceUrl||""}"
@@ -1994,14 +1963,10 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
       ${this.sourceUrl?this.renderColl():this.renderHomeIndex()}
       ${this.showAbout?this.renderAbout():""}
       ${this.showFileDropOverlay?this.renderDropFileOverlay():""}
-    `:Q``}firstUpdated(){this.initRoute();let e=this.swName;const t=new URLSearchParams;let i="";this.useRuffle&&(t.set("injectScripts","ruffle/ruffle.js"),t.set("allowProxyPaths","ruffle/")),this.embed&&t.set("serveIndex","1"),i=t.toString(),i.length&&(e+="?"+i),this.swmanager=new it({name:e,appName:this.appName}),this.swmanager.register().catch(()=>{var e;return this.swErrorMsg=null===(e=this.swmanager)||void 0===e?void 0:e.renderErrorReport()}),window.addEventListener("popstate",()=>{this.initRoute()})}updated(e){e.has("sourceUrl")&&(this.collTitle=null)}onFavIcons(e){We(e.detail)}skipMenu(e){var t;e.preventDefault(),null===(t=this.renderRoot.querySelector("#skip-main-target"))||void 0===t||t.focus()}onNavMenu(e){e.preventDefault(),e.stopPropagation(),this.navMenuShown=!this.navMenuShown,this.navMenuShown&&(document.addEventListener("click",e=>{var t;e.preventDefault(),this.navMenuShown=!1,null===(t=this.renderRoot.querySelector("#menu-button"))||void 0===t||t.focus()},{once:!0}),document.addEventListener("keypress",e=>{var t;"Escape"==e.key&&(e.preventDefault(),this.navMenuShown=!1,null===(t=this.renderRoot.querySelector("#menu-button"))||void 0===t||t.focus())},{once:!0}))}initRoute(){this.inited=!0,this.pageParams=new URLSearchParams(window.location.search);const e=this.pageParams.get("state");if(e)try{const t=JSON.parse(e);if(t.ids instanceof Array&&t.userId&&"open"===t.action)return this.pageParams.set("source","googledrive://"+t.ids[0]),this.pageParams.delete("state"),void(window.location.search=this.pageParams.toString())}catch(e){console.log(e)}if(this.source){this.pageParams.set("source",this.source);const e=new URL(window.location.href);e.search=this.pageParams.toString(),window.history.replaceState({},document.title,e.href)}if(this.sourceUrl=this.pageParams.get("source")||"",this.embed=this.pageParams.get("embed")||"",this.embed?this.useRuffle="1"===this.pageParams.get("ruffle"):this.useRuffle=!this.skipRuffle,this.pageParams.has("terms")&&(this.showAbout=!0),this.pageParams.has("embed")&&(this.loadInfo||(this.loadInfo={}),this.pageParams.has("noMediaDownload")&&(this.embedOpts=Object.assign(Object.assign({},this.embedOpts),{noMediaDownloadUI:!0}))),this.pageParams.get("config"))try{this.loadInfo.extraConfig=JSON.parse(this.pageParams.get("config")||"")}catch(e){console.log("invalid config: "+e)}this.pageParams.get("baseUrlSourcePrefix")&&(this.loadInfo.extraConfig=this.loadInfo.extraConfig||{},this.loadInfo.extraConfig.baseUrlSourcePrefix=this.pageParams.get("baseUrlSourcePrefix")),this.pageParams.get("basePageUrl")&&(this.loadInfo.extraConfig=this.loadInfo.extraConfig||{},this.loadInfo.extraConfig.baseUrl=this.pageParams.get("basePageUrl")),this.pageParams.get("adblockUrl")&&(this.loadInfo.extraConfig=this.loadInfo.extraConfig||{},this.loadInfo.extraConfig.adblockUrl=this.pageParams.get("adblockUrl")),this.pageParams.get("customColl")&&(this.loadInfo.customColl=this.pageParams.get("customColl")),"1"===this.pageParams.get("noWebWorker")&&(this.loadInfo.noWebWorker=!0),"1"===this.pageParams.get("noCache")&&(this.loadInfo.noCache=!0),"1"===this.pageParams.get("hideOffscreen")&&(this.loadInfo.hideOffscreen=!0),"eager"===this.pageParams.get("loading")&&(this.loadInfo.loadEager=!0),this.pageParams.get("swName")&&(this.swName=this.pageParams.get("swName")||void 0)}onStartLoad(e){this.pageParams.set("source",e.detail.sourceUrl);const t=new URL(window.location.href);t.search=this.pageParams.toString(),this.collPageUrl=t.toString(),e.detail.isFile?(window.history.pushState({},"",this.collPageUrl),this.sourceUrl=e.detail.sourceUrl,this.loadInfo=e.detail):window.location.search=this.pageParams.toString()}onCollLoaded(e){this.loadInfo=null,e.detail.collInfo&&(this.collTitle=e.detail.collInfo.name||e.detail.collInfo.title),e.detail.alreadyLoaded||e.detail.sourceUrl!==this.sourceUrl&&(this.pageParams.set("source",e.detail.sourceUrl),window.location.search=this.pageParams.toString())}onCollLoadCancel(){this.sourceUrl=null,this.loadInfo=null,window.history.pushState({},"",new URL(window.location.href).origin)}onTitle(e){e.detail.title&&(this.pageTitle=e.detail.title,this.pageReplay=e.detail.replayTitle,document.title=(e.detail.replayTitle?"Archive of ":"")+this.pageTitle+" | "+this.appName)}safariKeyframes(){const e=document.createElement("style");document.head.appendChild(e),e.appendChild(document.createTextNode("\n    @keyframes spinAround {\n      from {\n        transform: rotate(0deg);\n      }\n      to {\n        transform: rotate(359deg);\n      }\n    }\n    "))}renderAbout(){return Q`
+    `:Q``}firstUpdated(){this.initRoute();let e=this.swName;const t=new URLSearchParams;let i="";this.useRuffle&&(t.set("injectScripts","ruffle/ruffle.js"),t.set("allowProxyPaths","ruffle/")),this.embed&&t.set("serveIndex","1"),i=t.toString(),i.length&&(e+="?"+i),this.swmanager=new it({name:e,appName:this.appName}),this.swmanager.register().catch(()=>{var e;return this.swErrorMsg=null===(e=this.swmanager)||void 0===e?void 0:e.renderErrorReport()}),window.addEventListener("popstate",()=>{this.initRoute()})}updated(e){e.has("sourceUrl")&&(this.collTitle=null)}onFavIcons(e){We(e.detail)}skipMenu(e){var t;e.preventDefault(),null===(t=this.renderRoot.querySelector("#skip-main-target"))||void 0===t||t.focus()}onNavMenu(e){e.preventDefault(),e.stopPropagation(),this.navMenuShown=!this.navMenuShown,this.navMenuShown&&(document.addEventListener("click",e=>{var t;e.preventDefault(),this.navMenuShown=!1,null===(t=this.renderRoot.querySelector("#menu-button"))||void 0===t||t.focus()},{once:!0}),document.addEventListener("keypress",e=>{var t;"Escape"==e.key&&(e.preventDefault(),this.navMenuShown=!1,null===(t=this.renderRoot.querySelector("#menu-button"))||void 0===t||t.focus())},{once:!0}))}initRoute(){this.inited=!0,this.pageParams=new URLSearchParams(window.location.search);const e=this.pageParams.get("state");if(e)try{const t=JSON.parse(e);if(t.ids instanceof Array&&t.userId&&"open"===t.action)return this.pageParams.set("source","googledrive://"+t.ids[0]),this.pageParams.delete("state"),void(window.location.search=this.pageParams.toString())}catch(e){console.log(e)}if(this.source){this.pageParams.set("source",this.source);const e=new URL(window.location.href);e.search=this.pageParams.toString(),window.history.replaceState({},document.title,e.href)}if(this.sourceUrl=this.pageParams.get("source")||"",this.embed=this.pageParams.get("embed")||"",this.embed?this.useRuffle="1"===this.pageParams.get("ruffle"):this.useRuffle=!this.skipRuffle,this.pageParams.has("terms")&&(this.showAbout=!0),this.pageParams.has("embed")&&(this.loadInfo||(this.loadInfo={}),this.pageParams.has("noMediaDownload")&&(this.embedOpts=Object.assign(Object.assign({},this.embedOpts),{noMediaDownloadUI:!0}))),this.pageParams.get("config"))try{this.loadInfo.extraConfig=JSON.parse(this.pageParams.get("config")||"")}catch(e){console.log("invalid config: "+e)}this.pageParams.get("baseUrlSourcePrefix")&&(this.loadInfo.extraConfig=this.loadInfo.extraConfig||{},this.loadInfo.extraConfig.baseUrlSourcePrefix=this.pageParams.get("baseUrlSourcePrefix")),this.pageParams.get("basePageUrl")&&(this.loadInfo.extraConfig=this.loadInfo.extraConfig||{},this.loadInfo.extraConfig.baseUrl=this.pageParams.get("basePageUrl")),this.pageParams.get("adblockUrl")&&(this.loadInfo.extraConfig=this.loadInfo.extraConfig||{},this.loadInfo.extraConfig.adblockUrl=this.pageParams.get("adblockUrl")),this.pageParams.get("customColl")&&(this.loadInfo.customColl=this.pageParams.get("customColl")),"1"===this.pageParams.get("noWebWorker")&&(this.loadInfo.noWebWorker=!0),"1"===this.pageParams.get("noCache")&&(this.loadInfo.noCache=!0),"1"===this.pageParams.get("hideOffscreen")&&(this.loadInfo.hideOffscreen=!0),"eager"===this.pageParams.get("loading")&&(this.loadInfo.loadEager=!0),this.pageParams.get("swName")&&(this.swName=this.pageParams.get("swName")||void 0)}onStartLoad(e){this.pageParams.set("source",e.detail.sourceUrl);const t=new URL(window.location.href);t.search=this.pageParams.toString(),this.collPageUrl=t.toString(),e.detail.isFile?(window.history.pushState({},"",this.collPageUrl),this.sourceUrl=e.detail.sourceUrl,this.loadInfo=e.detail):window.location.search=this.pageParams.toString()}onCollLoaded(e){this.loadInfo=null,e.detail.collInfo&&(this.collTitle=e.detail.collInfo.name||e.detail.collInfo.title),e.detail.alreadyLoaded||e.detail.sourceUrl!==this.sourceUrl&&(this.pageParams.set("source",e.detail.sourceUrl),window.location.search=this.pageParams.toString())}onCollLoadCancel(){this.sourceUrl=null,this.loadInfo=null,window.history.pushState({},"",new URL(window.location.href).origin)}onTitle(e){e.detail.title&&(this.pageTitle=e.detail.title,this.pageReplay=e.detail.replayTitle,document.title=(e.detail.replayTitle?"Archivo de ":"")+this.pageTitle+" | "+this.appName)}safariKeyframes(){const e=document.createElement("style");document.head.appendChild(e),e.appendChild(document.createTextNode("\n    @keyframes spinAround {\n      from {\n        transform: rotate(0deg);\n      }\n      to {\n        transform: rotate(359deg);\n      }\n    }\n    "))}renderAbout(){return Q`
       <div class="modal is-active">
         <div class="modal-background" @click="${this.onAboutClose}"></div>
           <div class="modal-card">
-            <header class="modal-card-head">
-              <p class="modal-card-title">About ReplayWeb.page ${qe?"App":""}</p>
-              <button class="delete" aria-label="close" @click="${this.onAboutClose}"></button>
-            </header>
             <section class="modal-card-body">
               <div class="container">
                 <div class="content">
@@ -2010,7 +1975,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                       <fa-icon
                         size="3rem"
                         .svg=${Ke}
-                        aria-label="ReplayWeb.page Logo"
+                        aria-label="Logo de ReplayWeb.page"
                         role="img"
                       ></fa-icon>
                       <div style="font-size: smaller; margin-bottom: 1em">${qe?"App":""} v${He}</div>
@@ -2018,35 +1983,35 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
 
                     ${qe?Q`
                             <p>
-                              ReplayWeb.page App is a standalone app for Mac,
-                              Windows and Linux that loads web archive files
-                              provided by the user and renders them for replay.
+                              ReplayWeb.page App es una aplicacion independiente
+                              para Mac, Windows y Linux que carga archivos web
+                              del usuario y los muestra para su reproduccion.
                             </p>
                           `:Q` <p>
                             <a href="https://replayweb.page" target="_blank"
                               >ReplayWeb.page</a
                             >
-                            is a browser-based viewer that loads web archive
-                            files provided by the user and renders them for
-                            replay in the browser.
+                            es un visor en el navegador que carga archivos web
+                            proporcionados por el usuario y los muestra para su
+                            reproduccion en el navegador.
                           </p>`}
                   </div>
 
-                  <p>Full source code is available 
-                    <a href="https://github.com/webrecorder/replayweb.page" target="_blank">on GitHub</a>.
+                  <p>El codigo fuente completo esta disponible
+                    <a href="https://github.com/webrecorder/replayweb.page" target="_blank">en GitHub</a>.
                   </p>
 
-                  <p>See the <a target="_blank" href="./docs">documentation</a> for more info on how it works.</p>
+                  <p>Consulta la <a target="_blank" href="./docs">documentacion</a> para mas informacion sobre como funciona.</p>
 
-                  <p>ReplayWeb.page is developed by <a href="https://webrecorder.net/" target="_blank">Webrecorder</a>.</p>
+                  <p>ReplayWeb.page es desarrollado por <a href="https://webrecorder.net/" target="_blank">Webrecorder</a>.</p>
 
-                  <h3>Privacy</h3>
-                  <p><b>No data is uploaded anywhere and no information is collected.</b></p>
-                  <p>All content rendered stays directly in your browser.<br/>When loading an archive from Google Drive,
-                  the site may ask for account authorization to download the specified file only.</p>
+                  <h3>Privacidad</h3>
+                  <p><b>No se suben datos a ningun lugar ni se recopila informacion.</b></p>
+                  <p>Todo el contenido mostrado permanece directamente en tu navegador.<br/>Al cargar un archivo desde Google Drive,
+                  el sitio puede pedir autorizacion de cuenta para descargar solo el archivo especificado.</p>
 
-                  <h4>Disclaimer of Warranties</h4>
-                  <p>The application is provided "as is" without any guarantees.</p>
+                  <h4>Exencion de garantias</h4>
+                  <p>La aplicacion se ofrece "tal cual", sin garantias.</p>
                   <details>
                     <summary>Legalese:</summary>
                     <p style="font-size: 0.8rem">DISCLAIMER OF SOFTWARE WARRANTY. WEBRECORDER SOFTWARE PROVIDES THIS SOFTWARE TO YOU "AS AVAILABLE"
@@ -2054,7 +2019,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                     INCLUDING WITHOUT LIMITATION ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.</p>
                   </details>
                   <div class="has-text-centered">
-                    <a class="button is-warning" href="#" @click="${this.onAboutClose}">Close</a>
+                    <a class="button is-warning" href="#" @click="${this.onAboutClose}">Cerrar</a>
                   </div>
                 </div>
               </div>
@@ -2168,7 +2133,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
         role="heading"
         aria-level="${this.isSidebar?"2":"1"}"
       >
-        Story for ${this.collInfo.title}
+        Historia de ${this.collInfo.title}
       </div>
       <div class="columns">
         <div class="column sidebar is-one-fifth">
@@ -2300,7 +2265,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
             size="5rem"
             style="margin-bottom: 1rem;"
             .svg=${ko.includes(this.state)?Ke:xo}
-            aria-label="ReplayWeb.page Logo"
+            aria-label="Logo de ReplayWeb.page"
             role="img"
           ></fa-icon>
         </div>
@@ -2361,7 +2326,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
 
             ${this.extraMsg&&Q` <p class="extra-msg">(${this.extraMsg})</p> `}
           </div>`:Q``}
-    `}onAskPermission(){var e;return i(this,void 0,void 0,function*(){"granted"===(yield null===(e=this.fileHandle)||void 0===e?void 0:e.requestPermission({mode:"read"}))&&this.doLoad()})}}t([ye({type:String})],So.prototype,"sourceUrl",void 0),t([ye({type:Object})],So.prototype,"loadInfo",void 0),t([ye({type:String})],So.prototype,"state",void 0),t([ye({type:Number})],So.prototype,"progress",void 0),t([ye({type:Number})],So.prototype,"percent",void 0),t([ye({type:Number})],So.prototype,"currentSize",void 0),t([ye({type:Number})],So.prototype,"totalSize",void 0),t([ye({type:String})],So.prototype,"error",void 0),t([ye({type:Number})],So.prototype,"total",void 0),t([ye({type:String})],So.prototype,"status",void 0),t([ye({type:String})],So.prototype,"coll",void 0),t([ye({type:String})],So.prototype,"embed",void 0),t([ye({type:Boolean})],So.prototype,"tryFileHandle",void 0),t([ye({type:Boolean})],So.prototype,"errorAllowRetry",void 0),t([ye({type:String})],So.prototype,"extraMsg",void 0),t([ye({type:String})],So.prototype,"swName",void 0),customElements.define("wr-loader",So);var $o=__webpack_require__(563),zo=__webpack_require__.n($o),_o=__webpack_require__(112);class Co extends me{constructor(){super(...arguments),this.filteredPages=[],this.sortedPages=[],this.query="",this.flex=null,this.textPages=null,this.newQuery=null,this.loading=!1,this.updatingSearch=!1,this.showAllPages=!1,this.hasExtraPages=!1,this.currList=0,this.active=!1,this.editable=!1,this.changeNeeded=!1,this.selectedPages=new Set,this.menuActive=!1,this.sortKey="date",this.sortDesc=!0,this.isSidebar=!1,this.url="",this.ts="",this.editing=!1,this.toDeletePages=null,this.toDeletePage=null,this.collInfo=null,this.allSelected=!1,this.defaultKey="",this.dynamicPagesQuery=!1,this.totalPages=0,this.dynamicPageCount=1,this.skipScrollMore=!1}static get sortKeys(){return[{key:"",name:"Best Match"},{key:"title",name:"Title"},{key:"date",name:"Date"}]}_timedUpdate(){null!==this.newQuery&&(this.query=this.newQuery,this.newQuery=null,this.filter())}updated(e){return i(this,void 0,void 0,function*(){if(e.has("collInfo")?this.updateTextSearch():(e.has("query")||e.has("currList")||e.has("showAllPages"))&&this.filter(),e.has("active")&&this.active&&this.changeNeeded&&this.filter(),e.has("query")){this.query?(this.sortKey="",this.sortDesc=!1):(this.sortKey="date",this.sortDesc=!0);const e=this.renderRoot.querySelector("wr-sorter");e&&(e.sortKey=this.sortKey,e.sortDesc=this.sortDesc)}if(e.has("sortedPages")&&this.isSidebar){const e=this.renderRoot.querySelector(".current");if(e){const t={behavior:"smooth",block:"nearest",inline:"nearest"};setTimeout(()=>e.scrollIntoView(t),100)}}})}onChangeQuery(e){this.newQuery=e.currentTarget.value,this._ival&&window.clearTimeout(this._ival),this._ival=window.setTimeout(()=>this._timedUpdate(),250)}filter(){return i(this,void 0,void 0,function*(){if(this.loading)return;if(this.active||(this.changeNeeded=!0),this.loading=!0,this.flex&&this.query&&this.textPages){const e=yield this.flex.searchAsync(this.query,25);this.filteredPages=e.map(e=>this.textPages[e])}else this.showAllPages&&this.hasExtraPages?this.filteredPages=[...this.textPages]:this.dynamicPagesQuery||(this.filteredPages=[...this.collInfo.pages]);if(this.totalPages=this.filteredPages.length,this.dynamicPagesQuery){if(this.query)this.hasExtraPages=!1;else{const e=this.collInfo.pages.filter(e=>e.isSeed||e.seed);this.filteredPages=this.showAllPages||!e.length?[...this.collInfo.pages]:e,this.hasExtraPages=e.length<this.collInfo.pages.length}this.dynamicPageCount=1,yield this.addDynamicPages()}0!==this.currList&&(yield this.filterCurated());for(const e of this.filteredPages){const{timestamp:t,date:i}=yt(e);e.timestamp=t,e.date=i}this.loading=!1,this.changeNeeded=!1;const e={query:this.query,currList:this.currList};this.sendChangeEvent(e)})}addDynamicPages(){return i(this,void 0,void 0,function*(){const e=new URLSearchParams;this.query&&e.set("search",this.query),e.set("page",this.dynamicPageCount+""),e.set("pageSize","25");const t=yield fetch(`${this.collInfo.apiPrefix}/pages?${e.toString()}`),i=yield t.json();if(!i.pages)return;i.pages.length||(this.skipScrollMore=!0);const o=new Set;this.filteredPages.forEach(e=>o.add(e.id));const n=[];for(const{id:e,url:t,title:r,mime:s,status:a,ts:l,favIconUrl:c,waczhash:d,isSeed:h,size:u}of i.pages){if(o.has(e))continue;if(!this.showAllPages&&this.hasExtraPages&&!this.query&&!h)continue;let i,f;"string"==typeof l?(f=new Date(l),i=new Date(l).getTime()):(i=l,f=new Date(i));const p={id:e,url:t,title:r,mime:s,status:a,ts:i,favIconUrl:c,waczhash:d,timestamp:xt(f.toISOString()),size:u,date:f};n.push(p)}n.length&&(this.filteredPages=[...this.filteredPages,...n]),this.totalPages=this.filteredPages.length})}filterCurated(){return i(this,void 0,void 0,function*(){const e=yield fetch(`${this.collInfo.apiPrefix}/curated/${this.currList}`),t=(yield e.json()).curated;this.filteredPages=t})}sendChangeEvent(e){this.dispatchEvent(new CustomEvent("coll-tab-nav",{detail:{data:e}}))}addPages(e){var t;const i=new _o.Index;return this.flex=i,this.textPages=e,this.dynamicPagesQuery||(this.hasExtraPages=Boolean(this.textPages&&(null===(t=this.collInfo)||void 0===t?void 0:t.pages)&&this.textPages.length>this.collInfo.pages.length)),this.collInfo&&(this.dynamicPagesQuery=this.collInfo.canQueryPages||!1),Promise.all(e.map((e,t)=>{let o=e.url;return e.title&&(o+=" "+e.title),e.text&&(o+=" "+e.text),i.addAsync(t,o)}))}updateTextSearch(){var e,t,o,r;return i(this,void 0,void 0,function*(){if(this.updatingSearch)return;this.updatingSearch=!0;let i=0;try{const c=yield caches.open("cache:"+this.collInfo.coll),d=`${this.collInfo.apiPrefix}/textIndex`;let h=yield c.match(d);h&&Number(h.headers.get("Content-Length"))||(h=yield fetch(d),200===h.status&&Number(h.headers.get("Content-Length"))&&c.put(d,h.clone()));const u=[];try{for(var s,a=!0,l=n(zo()(h.body.getReader()));s=yield l.next(),!(e=s.done);a=!0){r=s.value,a=!1;const e=r;e.url&&(e.id=++i,u.push(e))}}catch(e){t={error:e}}finally{try{a||e||!(o=l.return)||(yield o.call(l))}finally{if(t)throw t.error}}yield this.addPages(u)}catch(e){console.warn(e)}finally{0===i&&(yield this.addPages(this.collInfo.pages)),this.updatingSearch=!1}yield this.filter()})}static get styles(){return Ne(h`
+    `}onAskPermission(){var e;return i(this,void 0,void 0,function*(){"granted"===(yield null===(e=this.fileHandle)||void 0===e?void 0:e.requestPermission({mode:"read"}))&&this.doLoad()})}}t([ye({type:String})],So.prototype,"sourceUrl",void 0),t([ye({type:Object})],So.prototype,"loadInfo",void 0),t([ye({type:String})],So.prototype,"state",void 0),t([ye({type:Number})],So.prototype,"progress",void 0),t([ye({type:Number})],So.prototype,"percent",void 0),t([ye({type:Number})],So.prototype,"currentSize",void 0),t([ye({type:Number})],So.prototype,"totalSize",void 0),t([ye({type:String})],So.prototype,"error",void 0),t([ye({type:Number})],So.prototype,"total",void 0),t([ye({type:String})],So.prototype,"status",void 0),t([ye({type:String})],So.prototype,"coll",void 0),t([ye({type:String})],So.prototype,"embed",void 0),t([ye({type:Boolean})],So.prototype,"tryFileHandle",void 0),t([ye({type:Boolean})],So.prototype,"errorAllowRetry",void 0),t([ye({type:String})],So.prototype,"extraMsg",void 0),t([ye({type:String})],So.prototype,"swName",void 0),customElements.define("wr-loader",So);var $o=__webpack_require__(563),zo=__webpack_require__.n($o),_o=__webpack_require__(112);class Co extends me{constructor(){super(...arguments),this.filteredPages=[],this.sortedPages=[],this.query="",this.flex=null,this.textPages=null,this.newQuery=null,this.loading=!1,this.updatingSearch=!1,this.showAllPages=!1,this.hasExtraPages=!1,this.currList=0,this.active=!1,this.editable=!1,this.changeNeeded=!1,this.selectedPages=new Set,this.menuActive=!1,this.sortKey="date",this.sortDesc=!0,this.isSidebar=!1,this.url="",this.ts="",this.editing=!1,this.toDeletePages=null,this.toDeletePage=null,this.collInfo=null,this.allSelected=!1,this.defaultKey="",this.dynamicPagesQuery=!1,this.totalPages=0,this.dynamicPageCount=1,this.skipScrollMore=!1}static get sortKeys(){return[{key:"",name:"Mejor coincidencia"},{key:"title",name:"Titulo"},{key:"date",name:"Fecha"}]}_timedUpdate(){null!==this.newQuery&&(this.query=this.newQuery,this.newQuery=null,this.filter())}updated(e){return i(this,void 0,void 0,function*(){if(e.has("collInfo")?this.updateTextSearch():(e.has("query")||e.has("currList")||e.has("showAllPages"))&&this.filter(),e.has("active")&&this.active&&this.changeNeeded&&this.filter(),e.has("query")){this.query?(this.sortKey="",this.sortDesc=!1):(this.sortKey="date",this.sortDesc=!0);const e=this.renderRoot.querySelector("wr-sorter");e&&(e.sortKey=this.sortKey,e.sortDesc=this.sortDesc)}if(e.has("sortedPages")&&this.isSidebar){const e=this.renderRoot.querySelector(".current");if(e){const t={behavior:"smooth",block:"nearest",inline:"nearest"};setTimeout(()=>e.scrollIntoView(t),100)}}})}onChangeQuery(e){this.newQuery=e.currentTarget.value,this._ival&&window.clearTimeout(this._ival),this._ival=window.setTimeout(()=>this._timedUpdate(),250)}filter(){return i(this,void 0,void 0,function*(){if(this.loading)return;if(this.active||(this.changeNeeded=!0),this.loading=!0,this.flex&&this.query&&this.textPages){const e=yield this.flex.searchAsync(this.query,25);this.filteredPages=e.map(e=>this.textPages[e])}else this.showAllPages&&this.hasExtraPages?this.filteredPages=[...this.textPages]:this.dynamicPagesQuery||(this.filteredPages=[...this.collInfo.pages]);if(this.totalPages=this.filteredPages.length,this.dynamicPagesQuery){if(this.query)this.hasExtraPages=!1;else{const e=this.collInfo.pages.filter(e=>e.isSeed||e.seed);this.filteredPages=this.showAllPages||!e.length?[...this.collInfo.pages]:e,this.hasExtraPages=e.length<this.collInfo.pages.length}this.dynamicPageCount=1,yield this.addDynamicPages()}0!==this.currList&&(yield this.filterCurated());for(const e of this.filteredPages){const{timestamp:t,date:i}=yt(e);e.timestamp=t,e.date=i}this.loading=!1,this.changeNeeded=!1;const e={query:this.query,currList:this.currList};this.sendChangeEvent(e)})}addDynamicPages(){return i(this,void 0,void 0,function*(){const e=new URLSearchParams;this.query&&e.set("search",this.query),e.set("page",this.dynamicPageCount+""),e.set("pageSize","25");const t=yield fetch(`${this.collInfo.apiPrefix}/pages?${e.toString()}`),i=yield t.json();if(!i.pages)return;i.pages.length||(this.skipScrollMore=!0);const o=new Set;this.filteredPages.forEach(e=>o.add(e.id));const n=[];for(const{id:e,url:t,title:r,mime:s,status:a,ts:l,favIconUrl:c,waczhash:d,isSeed:h,size:u}of i.pages){if(o.has(e))continue;if(!this.showAllPages&&this.hasExtraPages&&!this.query&&!h)continue;let i,f;"string"==typeof l?(f=new Date(l),i=new Date(l).getTime()):(i=l,f=new Date(i));const p={id:e,url:t,title:r,mime:s,status:a,ts:i,favIconUrl:c,waczhash:d,timestamp:xt(f.toISOString()),size:u,date:f};n.push(p)}n.length&&(this.filteredPages=[...this.filteredPages,...n]),this.totalPages=this.filteredPages.length})}filterCurated(){return i(this,void 0,void 0,function*(){const e=yield fetch(`${this.collInfo.apiPrefix}/curated/${this.currList}`),t=(yield e.json()).curated;this.filteredPages=t})}sendChangeEvent(e){this.dispatchEvent(new CustomEvent("coll-tab-nav",{detail:{data:e}}))}addPages(e){var t;const i=new _o.Index;return this.flex=i,this.textPages=e,this.dynamicPagesQuery||(this.hasExtraPages=Boolean(this.textPages&&(null===(t=this.collInfo)||void 0===t?void 0:t.pages)&&this.textPages.length>this.collInfo.pages.length)),this.collInfo&&(this.dynamicPagesQuery=this.collInfo.canQueryPages||!1),Promise.all(e.map((e,t)=>{let o=e.url;return e.title&&(o+=" "+e.title),e.text&&(o+=" "+e.text),i.addAsync(t,o)}))}updateTextSearch(){var e,t,o,r;return i(this,void 0,void 0,function*(){if(this.updatingSearch)return;this.updatingSearch=!0;let i=0;try{const c=yield caches.open("cache:"+this.collInfo.coll),d=`${this.collInfo.apiPrefix}/textIndex`;let h=yield c.match(d);h&&Number(h.headers.get("Content-Length"))||(h=yield fetch(d),200===h.status&&Number(h.headers.get("Content-Length"))&&c.put(d,h.clone()));const u=[];try{for(var s,a=!0,l=n(zo()(h.body.getReader()));s=yield l.next(),!(e=s.done);a=!0){r=s.value,a=!1;const e=r;e.url&&(e.id=++i,u.push(e))}}catch(e){t={error:e}}finally{try{a||e||!(o=l.return)||(yield o.call(l))}finally{if(t)throw t.error}}yield this.addPages(u)}catch(e){console.warn(e)}finally{0===i&&(yield this.addPages(this.collInfo.pages)),this.updatingSearch=!1}yield this.filter()})}static get styles(){return Ne(h`
       :host {
         width: 100%;
         flex: 1 1 auto;
@@ -2624,7 +2589,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
               @input="${this.onChangeQuery}"
               .value="${this.query}"
               type="text"
-              placeholder="Search by Page URL, Title, or Text"
+              placeholder="Buscar por Titulo, o texto"
             />
             <span class="icon is-left"
               ><fa-icon .svg="${Ii}" aria-hidden="true"></fa-icon
@@ -2657,7 +2622,7 @@ function*(e,t){if(void 0!==e){let i=0;for(const o of e)yield t(o,i++)}}(e.resour
                   ${this.collInfo.name||this.collInfo.title}
                 </div>
                 ${this.collInfo.description?Q` <div class="index-bar-label  is-hidden-mobile">
-                        About This Collection
+                        Acerca de esta coleccion
                       </div>
                       <div
                         class="index-bar-description  is-hidden-mobile"

@@ -59,7 +59,7 @@ class HemerotecaController extends Controller
         html, body {
             margin: 0;
             height: 100%;
-            background: #0b1020;
+            background: #dfd4c5;
             color: #e5e7eb;
             font-family: ui-sans-serif, -apple-system, Segoe UI, sans-serif;
         }
@@ -126,16 +126,6 @@ HTML;
 
         if (preg_match('/^[A-Za-z0-9_\-\.\/]+$/', $normalizedAsset) !== 1) {
             abort(404);
-        }
-
-        if (in_array($normalizedAsset, ['sw.js', 'sw.min.js'], true)) {
-            $localSwPath = public_path('js/sw.min.js');
-            abort_unless(File::exists($localSwPath), 404);
-
-            return response(File::get($localSwPath), 200, [
-                'Content-Type' => 'application/javascript; charset=UTF-8',
-                'Cache-Control' => 'public, max-age=3600',
-            ]);
         }
 
         if (in_array($normalizedAsset, ['ui.js', 'ui.min.js'], true)) {
