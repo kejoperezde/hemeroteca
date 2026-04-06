@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Services\BackupPathResolver;
-use App\Services\BrowsertrixCaptureService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as BaseResponse;
 use Inertia\Inertia;
@@ -20,7 +24,6 @@ use Illuminate\Support\Str;
 class HemerotecaController extends Controller
 {
     public function __construct(
-        private readonly BrowsertrixCaptureService $captureService,
         private readonly BackupPathResolver $pathResolver,
     ) {
     }
@@ -192,45 +195,196 @@ HTML;
 
     public function store(Request $request): RedirectResponse
     {
+        $result = $this->persistSourceWithWacz($request);
+
+        return redirect()
+            ->route('hemeroteca')
+            ->with('status', $result['ok'] ? 'success' : 'error')
+            ->with('message', $result['message']);
+    }
+
+    public function storeApi(Request $request): JsonResponse
+    {
+        $result = $this->persistSourceWithWacz($request);
+
+        if (!$result['ok']) {
+            return response()->json([
+                'message' => $result['message'],
+                'sourceId' => $result['sourceId'],
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => $result['message'],
+            'sourceId' => $result['sourceId'],
+            'backupPath' => $result['backupPath'],
+        ], 201);
+    }
+
+    public function uploadDraftApi(Request $request): JsonResponse
+    {
+        if ($request->hasFile('wacz') && !$request->hasFile('waczFile')) {
+            $request->files->set('waczFile', $request->file('wacz'));
+        }
+
         $validated = $request->validate([
             'url' => ['required', 'url', 'max:2048'],
-            'name' => ['required', 'string', 'max:255'],
+            'waczFile' => [
+                'required',
+                'file',
+                'max:307200',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (!$value instanceof UploadedFile) {
+                        $fail('Debes enviar un archivo WACZ valido.');
+
+                        return;
+                    }
+
+                    $originalName = strtolower($value->getClientOriginalName());
+
+                    if (!Str::endsWith($originalName, ['.wacz', '.wacz.zip'])) {
+                        $fail('El archivo debe tener extension .wacz o .wacz.zip.');
+                    }
+                },
+            ],
+        ]);
+
+        /** @var UploadedFile $uploadedWacz */
+        $uploadedWacz = $validated['waczFile'];
+        $token = (string) Str::uuid();
+        $fileName = Str::endsWith(strtolower($uploadedWacz->getClientOriginalName()), '.wacz.zip')
+            ? "{$token}.wacz.zip"
+            : "{$token}.wacz";
+
+        $draftPath = $uploadedWacz->storeAs('capturas/drafts', $fileName, ['disk' => 'local']);
+
+        if (!is_string($draftPath) || $draftPath === '') {
+            return response()->json([
+                'message' => 'No se pudo guardar el WACZ temporal.',
+            ], 500);
+        }
+
+        Cache::put($this->buildDraftCacheKey($token), [
+            'token' => $token,
+            'user_id' => (int) $request->user()->id,
+            'url' => (string) $validated['url'],
+            'wacz_original_name' => $uploadedWacz->getClientOriginalName(),
+            'stored_path' => str_replace('\\', '/', $draftPath),
+        ], now()->addMinutes(60));
+
+        return response()->json([
+            'message' => 'WACZ recibido. Abre la URL para completar el formulario.',
+            'draftToken' => $token,
+            'openUrl' => route('hemeroteca', ['draftToken' => $token]),
+        ], 201);
+    }
+
+    private function persistSourceWithWacz(Request $request): array
+    {
+        if ($request->hasFile('wacz') && !$request->hasFile('waczFile')) {
+            $request->files->set('waczFile', $request->file('wacz'));
+        }
+
+        $isApiRequest = $request->routeIs('hemeroteca.sources.store-api');
+
+        $validated = $request->validate([
+            'url' => ['required', 'url', 'max:2048'],
+            'name' => $isApiRequest
+                ? ['nullable', 'string', 'max:255']
+                : ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:100'],
             'isRequestLetter' => ['nullable', 'boolean'],
             'oficioNumber' => ['nullable', 'string', 'max:255', 'required_if:isRequestLetter,true'],
+            'draftToken' => ['nullable', 'string', 'max:120'],
+            'waczFile' => [
+                'nullable',
+                'file',
+                'max:307200',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if ($value === null) {
+                        return;
+                    }
+
+                    if (!$value instanceof UploadedFile) {
+                        $fail('Debes enviar un archivo WACZ valido.');
+
+                        return;
+                    }
+
+                    $originalName = strtolower($value->getClientOriginalName());
+
+                    if (!Str::endsWith($originalName, ['.wacz', '.wacz.zip'])) {
+                        $fail('El archivo debe tener extension .wacz o .wacz.zip.');
+                    }
+                },
+            ],
         ]);
+
+        $draftToken = trim((string) ($validated['draftToken'] ?? ''));
+        $uploadedWacz = $validated['waczFile'] ?? null;
+
+        if (!$uploadedWacz instanceof UploadedFile && $draftToken === '') {
+            throw ValidationException::withMessages([
+                'waczFile' => 'Debes enviar un archivo WACZ o un token de precarga.',
+            ]);
+        }
+
+        $draftPayload = null;
+        if (!$uploadedWacz instanceof UploadedFile && $draftToken !== '') {
+            $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) $request->user()->id);
+
+            if ($draftPayload === null) {
+                throw ValidationException::withMessages([
+                    'draftToken' => 'El token de precarga no existe, expiro o no pertenece al usuario autenticado.',
+                ]);
+            }
+        }
 
         $sourceId = $this->createSource($validated, (int) $request->user()->id);
 
-        Log::info('Fuente registrada. Iniciando proceso de captura de respaldo.', [
+        Log::info('Fuente registrada. Iniciando carga de archivo WACZ.', [
             'source_id' => $sourceId,
             'url' => $validated['url'],
             'has_description' => filled($validated['description'] ?? null),
             'tags_count' => count($validated['tags'] ?? []),
             'is_request_letter' => !empty($validated['isRequestLetter']),
+            'uploaded_wacz_name' => $uploadedWacz instanceof UploadedFile ? $uploadedWacz->getClientOriginalName() : ($draftPayload['wacz_original_name'] ?? null),
+            'uploaded_wacz_size' => $uploadedWacz instanceof UploadedFile ? $uploadedWacz->getSize() : null,
+            'used_draft_token' => $draftToken !== '',
         ]);
 
-        $captureSucceeded = false;
+        $uploadSucceeded = false;
+        $storedBackupPath = null;
 
         try {
-            $storedBackupPath = $this->captureService->capture($sourceId, $validated['url']);
+            $storedBackupPath = $uploadedWacz instanceof UploadedFile
+                ? $this->storeWaczFile($sourceId, $uploadedWacz)
+                : $this->storeWaczDraft($sourceId, $draftPayload);
+
+            $absolutePath = $this->pathResolver->resolveBackupAbsolutePath($storedBackupPath);
+            $contentHash = File::exists($absolutePath) ? hash_file('sha256', $absolutePath) : null;
 
             DB::table('fuentes')
                 ->where('id', $sourceId)
                 ->update([
                     'ruta_archivo' => $storedBackupPath,
-                    'estado_captura' => 'capturada',
+                    'estado_captura' => 'cargada',
                     'capturado_en' => now(),
+                    'hash_contenido' => $contentHash,
                     'updated_at' => now(),
                 ]);
 
-            $captureSucceeded = true;
-        } catch (\Throwable $exception) {
-            $this->markCaptureAsFailed($sourceId);
+            if ($draftToken !== '') {
+                $this->forgetDraftPayload($draftToken, $draftPayload);
+            }
 
-            Log::error('Fallo la captura de respaldo.', [
+            $uploadSucceeded = true;
+        } catch (\Throwable $exception) {
+            $this->markUploadAsFailed($sourceId);
+
+            Log::error('Fallo la carga del archivo WACZ.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
                 'exception_class' => $exception::class,
@@ -238,15 +392,89 @@ HTML;
             ]);
         }
 
-        return redirect()
-            ->route('hemeroteca')
-            ->with('status', $captureSucceeded ? 'success' : 'error')
-            ->with(
-                'message',
-                $captureSucceeded
-                    ? 'Respaldo capturado y guardado correctamente.'
-                    : 'La fuente se guardo, pero fallo la captura del respaldo.',
-            );
+        return [
+            'ok' => $uploadSucceeded,
+            'sourceId' => $sourceId,
+            'backupPath' => $storedBackupPath,
+            'message' => $uploadSucceeded
+                ? 'Archivo WACZ cargado y guardado correctamente.'
+                : 'La fuente se guardo, pero fallo la carga del archivo WACZ.',
+        ];
+    }
+
+    private function storeWaczFile(int $sourceId, UploadedFile $uploadedFile): string
+    {
+        $directory = "capturas/fuente_{$sourceId}";
+
+        $originalName = strtolower($uploadedFile->getClientOriginalName());
+        $fileName = Str::endsWith($originalName, '.wacz.zip')
+            ? "fuente_{$sourceId}.wacz.zip"
+            : "fuente_{$sourceId}.wacz";
+
+        $storedPath = $uploadedFile->storeAs($directory, $fileName, ['disk' => 'local']);
+
+        if (!is_string($storedPath) || $storedPath === '') {
+            throw new \RuntimeException('No se pudo guardar el archivo WACZ en almacenamiento local.');
+        }
+
+        return str_replace('\\', '/', $storedPath);
+    }
+
+    private function storeWaczDraft(int $sourceId, ?array $draftPayload): string
+    {
+        if (!is_array($draftPayload)) {
+            throw new \RuntimeException('No se encontro el archivo WACZ temporal para completar el registro.');
+        }
+
+        $draftPath = (string) ($draftPayload['stored_path'] ?? '');
+        if ($draftPath === '' || !Storage::disk('local')->exists($draftPath)) {
+            throw new \RuntimeException('El archivo WACZ temporal no esta disponible.');
+        }
+
+        $suffix = Str::endsWith(strtolower($draftPath), '.wacz.zip') ? '.wacz.zip' : '.wacz';
+        $targetPath = "capturas/fuente_{$sourceId}/fuente_{$sourceId}{$suffix}";
+
+        Storage::disk('local')->makeDirectory("capturas/fuente_{$sourceId}");
+
+        if (!Storage::disk('local')->copy($draftPath, $targetPath)) {
+            throw new \RuntimeException('No se pudo mover el WACZ temporal al respaldo final.');
+        }
+
+        return $targetPath;
+    }
+
+    private function getDraftPayloadForUser(string $draftToken, int $userId): ?array
+    {
+        $payload = Cache::get($this->buildDraftCacheKey($draftToken));
+
+        if (!is_array($payload) || (int) ($payload['user_id'] ?? 0) !== $userId) {
+            return null;
+        }
+
+        $storedPath = (string) ($payload['stored_path'] ?? '');
+
+        if ($storedPath === '' || !Storage::disk('local')->exists($storedPath)) {
+            return null;
+        }
+
+        return $payload;
+    }
+
+    private function forgetDraftPayload(string $draftToken, ?array $draftPayload): void
+    {
+        if (is_array($draftPayload)) {
+            $storedPath = (string) ($draftPayload['stored_path'] ?? '');
+            if ($storedPath !== '' && Storage::disk('local')->exists($storedPath)) {
+                Storage::disk('local')->delete($storedPath);
+            }
+        }
+
+        Cache::forget($this->buildDraftCacheKey($draftToken));
+    }
+
+    private function buildDraftCacheKey(string $draftToken): string
+    {
+        return 'hemeroteca:draft:'.$draftToken;
     }
 
     private function createSource(array $validated, int $userId): int
@@ -254,7 +482,7 @@ HTML;
         return DB::transaction(function () use ($validated, $userId): int {
             $createdSourceId = DB::table('fuentes')->insertGetId([
                 'url' => $validated['url'],
-                'titulo' => $validated['name'],
+                'titulo' => $this->resolveSourceTitle($validated),
                 'descripcion' => $validated['description'] ?? null,
                 'estado_captura' => 'pendiente',
                 'capturado_en' => null,
@@ -304,13 +532,25 @@ HTML;
         });
     }
 
-    private function markCaptureAsFailed(int $sourceId): void
+    private function resolveSourceTitle(array $validated): string
+    {
+        $providedName = trim((string) ($validated['name'] ?? ''));
+        if ($providedName !== '') {
+            return $providedName;
+        }
+
+        $host = (string) parse_url((string) ($validated['url'] ?? ''), PHP_URL_HOST);
+
+        return $host !== '' ? $host : 'Sin titulo';
+    }
+
+    private function markUploadAsFailed(int $sourceId): void
     {
         DB::table('fuentes')
             ->where('id', $sourceId)
             ->update([
                 'ruta_archivo' => null,
-                'estado_captura' => 'error',
+                'estado_captura' => 'error_carga',
                 'capturado_en' => null,
                 'updated_at' => now(),
             ]);
@@ -340,6 +580,21 @@ HTML;
 
     public function __invoke(): Response
     {
+        $prefillDraft = null;
+        $draftToken = trim((string) request()->query('draftToken', ''));
+
+        if ($draftToken !== '' && request()->user()) {
+            $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) request()->user()->id);
+
+            if (is_array($draftPayload)) {
+                $prefillDraft = [
+                    'draftToken' => $draftToken,
+                    'url' => (string) ($draftPayload['url'] ?? ''),
+                    'waczFileName' => (string) ($draftPayload['wacz_original_name'] ?? 'archivo.wacz'),
+                ];
+            }
+        }
+
         $isSqlite = DB::connection()->getDriverName() === 'sqlite';
         $tagSeparator = $isSqlite ? ',' : '||';
         $tagAggregateSql = $isSqlite
@@ -387,6 +642,7 @@ HTML;
         return Inertia::render('hemeroteca', [
             'sources' => $sources,
             'suggestedTags' => $suggestedTags,
+            'prefillDraft' => $prefillDraft,
         ]);
     }
 }

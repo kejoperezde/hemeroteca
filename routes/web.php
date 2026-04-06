@@ -11,6 +11,8 @@ Route::inertia('/', 'welcome', [
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('hemeroteca', HemerotecaController::class)->name('hemeroteca');
     Route::post('hemeroteca/sources', [HemerotecaController::class, 'store'])->name('hemeroteca.sources.store');
+    Route::post('hemeroteca/api/sources/draft', [HemerotecaController::class, 'uploadDraftApi'])->name('hemeroteca.sources.upload-draft-api');
+    Route::post('hemeroteca/api/sources', [HemerotecaController::class, 'storeApi'])->name('hemeroteca.sources.store-api');
     Route::get('hemeroteca/sources/{sourceId}/replay/{asset}', [HemerotecaController::class, 'replayAsset'])
         ->whereNumber('sourceId')
         ->where('asset', '.*')

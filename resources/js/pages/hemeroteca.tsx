@@ -45,13 +45,18 @@ type Source = {
 type HemerotecaProps = {
     sources: Source[];
     suggestedTags: string[];
+    prefillDraft?: {
+        draftToken: string;
+        url: string;
+        waczFileName: string;
+    } | null;
 };
 
 type SortKey = 'name' | 'description' | 'tags' | 'capturedBy' | 'date';
 type SortDirection = 'asc' | 'desc';
 type ViewMode = 'list' | 'grid';
 
-export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) {
+export default function Hemeroteca({ sources, suggestedTags, prefillDraft }: HemerotecaProps) {
     const fromDateRef = useRef<HTMLInputElement>(null);
     const toDateRef = useRef<HTMLInputElement>(null);
     const tagSearchInputRef = useRef<HTMLInputElement>(null);
@@ -280,7 +285,7 @@ export default function Hemeroteca({ sources, suggestedTags }: HemerotecaProps) 
                         </p>
                     </div>
                     <div className="shrink-0">
-                        <RegisterSourceModal />
+                        <RegisterSourceModal prefillDraft={prefillDraft} />
                     </div>
                 </header>
 

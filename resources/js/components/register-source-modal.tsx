@@ -25,9 +25,20 @@ type FlashProps = {
     };
 };
 
-export function RegisterSourceModal() {
+type PrefillDraft = {
+    draftToken: string;
+    url: string;
+    waczFileName: string;
+};
+
+type RegisterSourceModalProps = {
+    prefillDraft?: PrefillDraft | null;
+};
+
+export function RegisterSourceModal({ prefillDraft = null }: RegisterSourceModalProps) {
     const { flash } = usePage<FlashProps>().props;
     const lastFlashMessageRef = useRef<string | null>(null);
+    const waczFileInputRef = useRef<HTMLInputElement>(null);
 
     const [open, setOpen] = useState(false);
     const [url, setUrl] = useState('');
@@ -39,6 +50,9 @@ export function RegisterSourceModal() {
     const [requestLetterNumber, setRequestLetterNumber] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [waczFile, setWaczFile] = useState<File | null>(null);
+    const [draftToken, setDraftToken] = useState('');
+    const [draftFileName, setDraftFileName] = useState('');
 
     useEffect(() => {
         if (!flash?.message || lastFlashMessageRef.current === flash.message) {
@@ -53,6 +67,22 @@ export function RegisterSourceModal() {
 
         lastFlashMessageRef.current = flash.message;
     }, [flash]);
+
+    useEffect(() => {
+        if (!prefillDraft) {
+            return;
+        }
+
+        setOpen(true);
+        setUrl(prefillDraft.url ?? '');
+        setDraftToken(prefillDraft.draftToken ?? '');
+        setDraftFileName(prefillDraft.waczFileName ?? 'archivo.wacz');
+        setWaczFile(null);
+
+        if (waczFileInputRef.current) {
+            waczFileInputRef.current.value = '';
+        }
+    }, [prefillDraft]);
 
     const addTag = (value: string) => {
         const nextTag = value.trim();
@@ -87,6 +117,13 @@ export function RegisterSourceModal() {
         setIsRequestLetter(false);
         setRequestLetterNumber('');
         setErrorMessage(null);
+        setWaczFile(null);
+        setDraftToken('');
+        setDraftFileName('');
+
+        if (waczFileInputRef.current) {
+            waczFileInputRef.current.value = '';
+        }
     };
 
     const handleCancel = () => {
@@ -107,6 +144,12 @@ export function RegisterSourceModal() {
             return;
         }
 
+        if (!waczFile && !draftToken) {
+            setErrorMessage('Debes seleccionar un archivo WACZ o usar uno precargado por la extension.');
+
+            return;
+        }
+
         setIsSaving(true);
         setErrorMessage(null);
 
@@ -119,9 +162,12 @@ export function RegisterSourceModal() {
                 tags,
                 isRequestLetter,
                 oficioNumber: requestLetterNumber.trim() || null,
+                waczFile,
+                draftToken: draftToken || null,
             },
             {
                 preserveScroll: true,
+                forceFormData: true,
                 onSuccess: () => {
                     setOpen(false);
                     clearForm();
@@ -152,7 +198,7 @@ export function RegisterSourceModal() {
                         Registrar Nueva Fuente
                     </DialogTitle>
                     <DialogDescription className="sr-only">
-                        Captura los datos para registrar una nueva fuente.
+                        Captura los datos para registrar una nueva fuente con su archivo WACZ.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -172,9 +218,15 @@ export function RegisterSourceModal() {
                             />
                         </div>
                         <p className="text-muted-foreground text-xs">
-                            Ingrese la URL completa del sitio o recurso a capturar
+                            Ingrese la URL original del sitio o recurso archivado
                         </p>
                     </div>
+
+                    {draftToken ? (
+                        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                            WACZ precargado desde extension: {draftFileName || 'archivo.wacz'}
+                        </div>
+                    ) : null}
 
                     <div className="space-y-2">
                         <Label htmlFor="source-name" className="text-sm font-semibold">
@@ -238,6 +290,26 @@ export function RegisterSourceModal() {
                     </div>
 
                     <div className="space-y-2">
+                        <Label htmlFor="source-wacz" className="text-sm font-semibold">
+                            Archivo WACZ {draftToken ? '(opcional para reemplazar)' : <span className="text-destructive">*</span>}
+                        </Label>
+                        <Input
+                            ref={waczFileInputRef}
+                            id="source-wacz"
+                            type="file"
+                            accept=".wacz,.zip,application/zip,application/octet-stream"
+                            className="h-11"
+                            onChange={(event) => {
+                                const selectedFile = event.target.files?.[0] ?? null;
+                                setWaczFile(selectedFile);
+                            }}
+                        />
+                        <p className="text-muted-foreground text-xs">
+                            Sube el respaldo web en formato .wacz o .wacz.zip
+                        </p>
+                    </div>
+
+                    <div className="space-y-2">
                         <Label htmlFor="source-request-letter" className="text-sm font-semibold">
                             Oficio de peticion
                         </Label>
@@ -290,7 +362,7 @@ export function RegisterSourceModal() {
                     </DialogClose>
                     <Button className="h-10 gap-2 px-6" onClick={handleSave} disabled={isSaving}>
                         <CloudUpload className="size-4" />
-                        {isSaving ? 'Guardando...' : 'Capturar y Guardar'}
+                        {isSaving ? 'Guardando...' : 'Guardar con WACZ'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

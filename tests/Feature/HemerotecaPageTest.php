@@ -2,7 +2,10 @@
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
@@ -64,4 +67,136 @@ it('renders hemeroteca data including oficio number', function (): void {
             ->where('sources.0.tags.0', 'archivo')
             ->has('suggestedTags')
         );
+});
+
+it('stores a source with an uploaded wacz file', function (): void {
+    Storage::fake('local');
+
+    $user = User::factory()->create();
+    $waczFile = UploadedFile::fake()->create('evidencia.wacz', 512, 'application/octet-stream');
+
+    $response = $this->actingAs($user)
+        ->post(route('hemeroteca.sources.store'), [
+            'url' => 'https://example.com/nota',
+            'name' => 'Nota archivada',
+            'description' => 'Descripcion de prueba',
+            'tags' => ['archivo', 'hemeroteca'],
+            'waczFile' => $waczFile,
+        ]);
+
+    $response
+        ->assertRedirect(route('hemeroteca'))
+        ->assertSessionHas('status', 'success');
+
+    $source = DB::table('fuentes')
+        ->where('url', 'https://example.com/nota')
+        ->first();
+
+    expect($source)->not->toBeNull();
+    expect($source->estado_captura)->toBe('cargada');
+    expect($source->ruta_archivo)->toBe("capturas/fuente_{$source->id}/fuente_{$source->id}.wacz");
+
+    Storage::disk('local')->assertExists($source->ruta_archivo);
+});
+
+it('stores a source through the authenticated upload api', function (): void {
+    Storage::fake('local');
+
+    $user = User::factory()->create();
+    $waczFile = UploadedFile::fake()->create('capture.wacz.zip', 256, 'application/zip');
+
+    $response = $this->actingAs($user)
+        ->post(route('hemeroteca.sources.store-api'), [
+            'url' => 'https://example.com/reporte',
+            'description' => 'Carga por API',
+            'waczFile' => $waczFile,
+        ]);
+
+    $response
+        ->assertCreated()
+        ->assertJsonStructure([
+            'message',
+            'sourceId',
+            'backupPath',
+        ]);
+
+    $backupPath = (string) $response->json('backupPath');
+    $sourceId = (int) $response->json('sourceId');
+
+    Storage::disk('local')->assertExists($backupPath);
+
+    $source = DB::table('fuentes')->where('id', $sourceId)->first();
+
+    expect($source)->not->toBeNull();
+    expect($source->titulo)->toBe('example.com');
+});
+
+it('uploads wacz draft and returns browser open url', function (): void {
+    Storage::fake('local');
+    Cache::flush();
+
+    $user = User::factory()->create();
+    $waczFile = UploadedFile::fake()->create('draft.wacz', 128, 'application/octet-stream');
+
+    $response = $this->actingAs($user)
+        ->post(route('hemeroteca.sources.upload-draft-api'), [
+            'url' => 'https://example.com/desde-extension',
+            'waczFile' => $waczFile,
+        ]);
+
+    $response
+        ->assertCreated()
+        ->assertJsonStructure([
+            'message',
+            'draftToken',
+            'openUrl',
+        ]);
+
+    $draftToken = (string) $response->json('draftToken');
+
+    expect($draftToken)->not->toBe('');
+
+    $payload = Cache::get('hemeroteca:draft:'.$draftToken);
+
+    expect($payload)->toBeArray();
+    expect($payload['url'])->toBe('https://example.com/desde-extension');
+
+    Storage::disk('local')->assertExists((string) $payload['stored_path']);
+});
+
+it('stores source with draft token without reuploading file', function (): void {
+    Storage::fake('local');
+    Cache::flush();
+
+    $user = User::factory()->create();
+    $waczFile = UploadedFile::fake()->create('draft.wacz.zip', 128, 'application/zip');
+
+    $draftResponse = $this->actingAs($user)
+        ->post(route('hemeroteca.sources.upload-draft-api'), [
+            'url' => 'https://example.com/final',
+            'waczFile' => $waczFile,
+        ]);
+
+    $draftToken = (string) $draftResponse->json('draftToken');
+
+    $storeResponse = $this->actingAs($user)
+        ->post(route('hemeroteca.sources.store'), [
+            'url' => 'https://example.com/final',
+            'name' => 'Registro final desde extension',
+            'draftToken' => $draftToken,
+        ]);
+
+    $storeResponse
+        ->assertRedirect(route('hemeroteca'))
+        ->assertSessionHas('status', 'success');
+
+    $source = DB::table('fuentes')
+        ->where('url', 'https://example.com/final')
+        ->first();
+
+    expect($source)->not->toBeNull();
+    expect($source->estado_captura)->toBe('cargada');
+
+    Storage::disk('local')->assertExists($source->ruta_archivo);
+    expect(Cache::get('hemeroteca:draft:'.$draftToken))->toBeNull();
 });
