@@ -18,9 +18,10 @@ return new class extends Migration
 
         Schema::create('fuentes', function (Blueprint $table) {
             $table->id();
-            $table->string('url');
+            $table->text('url');
             $table->string('titulo')->nullable();
             $table->text('descripcion')->nullable();
+            $table->longText('texto')->nullable();
             $table->string('estado_captura')->nullable();
             $table->string('ruta_archivo')->nullable();
             $table->timestamp('capturado_en')->nullable();

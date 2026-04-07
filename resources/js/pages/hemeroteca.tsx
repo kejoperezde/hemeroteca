@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
-import { RegisterSourceModal } from '@/components/register-source-modal';
 import { SourceDetailsModal } from '@/components/source-details-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -43,20 +42,15 @@ type Source = {
 };
 
 type HemerotecaProps = {
-    sources: Source[];
-    suggestedTags: string[];
-    prefillDraft?: {
-        draftToken: string;
-        url: string;
-        waczFileName: string;
-    } | null;
+    sources?: Source[];
+    suggestedTags?: string[];
 };
 
 type SortKey = 'name' | 'description' | 'tags' | 'capturedBy' | 'date';
 type SortDirection = 'asc' | 'desc';
 type ViewMode = 'list' | 'grid';
 
-export default function Hemeroteca({ sources, suggestedTags, prefillDraft }: HemerotecaProps) {
+export default function Hemeroteca({ sources = [], suggestedTags = [] }: HemerotecaProps) {
     const fromDateRef = useRef<HTMLInputElement>(null);
     const toDateRef = useRef<HTMLInputElement>(null);
     const tagSearchInputRef = useRef<HTMLInputElement>(null);
@@ -283,9 +277,6 @@ export default function Hemeroteca({ sources, suggestedTags, prefillDraft }: Hem
                         <p className="text-base text-muted-foreground">
                             Archivo digital
                         </p>
-                    </div>
-                    <div className="shrink-0">
-                        <RegisterSourceModal prefillDraft={prefillDraft} />
                     </div>
                 </header>
 

@@ -53,6 +53,7 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
 
 function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails; onClose: () => void }) {
     const [thumbnailUnavailable, setThumbnailUnavailable] = useState(false);
+    const tags = Array.isArray(source.tags) ? source.tags : [];
 
     const formattedCapturedAt = source.capturedAt
         ? source.capturedAt.split('-').reverse().join('/')
@@ -146,6 +147,10 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                         </div>
                         <div>
                             <p className="text-xs uppercase tracking-wide text-muted-foreground">Formato captura</p>
+                            <p className="mt-1 font-medium">WACZ</p>
+                        </div>
+                        <div>
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">Fecha captura</p>
                             <p className="mt-1 font-medium">{formattedCapturedAt}</p>
                         </div>
                         {source.oficioNumber ? (
@@ -178,8 +183,8 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                     <div className="space-y-2">
                         <p className="text-xs uppercase tracking-wide text-muted-foreground">Etiquetas</p>
                         <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200/80 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-                            {source.tags.length > 0 ? (
-                                source.tags.map((tag) => (
+                            {tags.length > 0 ? (
+                                tags.map((tag) => (
                                     <Badge key={`modal-${source.id}-${tag}`} variant="outline">
                                         {tag}
                                     </Badge>

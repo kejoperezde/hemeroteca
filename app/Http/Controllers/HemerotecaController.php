@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Services\BackupPathResolver;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
@@ -14,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as BaseResponse;
 use Inertia\Inertia;
@@ -23,11 +21,6 @@ use Illuminate\Support\Str;
 
 class HemerotecaController extends Controller
 {
-    public function __construct(
-        private readonly BackupPathResolver $pathResolver,
-    ) {
-    }
-
     public function openBackup(int $sourceId): BaseResponse
     {
         $source = DB::table('fuentes')
@@ -37,7 +30,7 @@ class HemerotecaController extends Controller
 
         abort_unless($source && $source->ruta_archivo, 404);
 
-        $absolutePath = $this->pathResolver->resolveBackupAbsolutePath((string) $source->ruta_archivo);
+        $absolutePath = $this->resolveLocalBackupAbsolutePath((string) $source->ruta_archivo);
         abort_unless(File::exists($absolutePath), 404);
 
         if (Str::endsWith(strtolower($absolutePath), '.html')) {
@@ -163,7 +156,7 @@ HTML;
 
         abort_unless($source && $source->ruta_archivo, 404);
 
-        $absolutePath = $this->pathResolver->resolveBackupAbsolutePath((string) $source->ruta_archivo);
+        $absolutePath = $this->resolveLocalBackupAbsolutePath((string) $source->ruta_archivo);
         abort_unless(File::exists($absolutePath), 404);
 
         $extension = pathinfo($absolutePath, PATHINFO_EXTENSION);
@@ -183,7 +176,7 @@ HTML;
 
         abort_unless($source && $source->ruta_archivo, 404);
 
-        $thumbnailAbsolutePath = $this->pathResolver->resolveGeneratedThumbnailPath($sourceId);
+        $thumbnailAbsolutePath = $this->resolveLocalThumbnailAbsolutePath((string) $source->ruta_archivo);
 
         abort_unless(is_string($thumbnailAbsolutePath) && File::exists($thumbnailAbsolutePath), 404);
 
@@ -203,32 +196,23 @@ HTML;
             ->with('message', $result['message']);
     }
 
-    public function storeApi(Request $request): JsonResponse
-    {
-        $result = $this->persistSourceWithWacz($request);
-
-        if (!$result['ok']) {
-            return response()->json([
-                'message' => $result['message'],
-                'sourceId' => $result['sourceId'],
-            ], 500);
-        }
-
-        return response()->json([
-            'message' => $result['message'],
-            'sourceId' => $result['sourceId'],
-            'backupPath' => $result['backupPath'],
-        ], 201);
-    }
-
     public function uploadDraftApi(Request $request): JsonResponse
     {
         if ($request->hasFile('wacz') && !$request->hasFile('waczFile')) {
             $request->files->set('waczFile', $request->file('wacz'));
         }
 
+        if ($request->hasFile('thumbnail') && !$request->hasFile('thumbnailFile')) {
+            $request->files->set('thumbnailFile', $request->file('thumbnail'));
+        }
+
+        if ($request->hasFile('screenshot') && !$request->hasFile('thumbnailFile')) {
+            $request->files->set('thumbnailFile', $request->file('screenshot'));
+        }
+
         $validated = $request->validate([
             'url' => ['required', 'url', 'max:2048'],
+            'text' => ['required', 'string'],
             'waczFile' => [
                 'required',
                 'file',
@@ -241,26 +225,30 @@ HTML;
                     }
 
                     $originalName = strtolower($value->getClientOriginalName());
-
                     if (!Str::endsWith($originalName, ['.wacz', '.wacz.zip'])) {
                         $fail('El archivo debe tener extension .wacz o .wacz.zip.');
                     }
                 },
             ],
+            'thumbnailFile' => ['required', 'file', 'max:10240', 'mimes:png'],
         ]);
 
         /** @var UploadedFile $uploadedWacz */
         $uploadedWacz = $validated['waczFile'];
+        /** @var UploadedFile $uploadedThumbnail */
+        $uploadedThumbnail = $validated['thumbnailFile'];
+
         $token = (string) Str::uuid();
-        $fileName = Str::endsWith(strtolower($uploadedWacz->getClientOriginalName()), '.wacz.zip')
+        $waczFileName = Str::endsWith(strtolower($uploadedWacz->getClientOriginalName()), '.wacz.zip')
             ? "{$token}.wacz.zip"
             : "{$token}.wacz";
 
-        $draftPath = $uploadedWacz->storeAs('capturas/drafts', $fileName, ['disk' => 'local']);
+        $waczDraftPath = $uploadedWacz->storeAs('capturas/drafts', $waczFileName, ['disk' => 'local']);
+        $thumbnailDraftPath = $uploadedThumbnail->storeAs('capturas/drafts', "{$token}_preview.png", ['disk' => 'local']);
 
-        if (!is_string($draftPath) || $draftPath === '') {
+        if (!is_string($waczDraftPath) || $waczDraftPath === '' || !is_string($thumbnailDraftPath) || $thumbnailDraftPath === '') {
             return response()->json([
-                'message' => 'No se pudo guardar el WACZ temporal.',
+                'message' => 'No se pudo guardar el borrador temporal.',
             ], 500);
         }
 
@@ -268,102 +256,131 @@ HTML;
             'token' => $token,
             'user_id' => (int) $request->user()->id,
             'url' => (string) $validated['url'],
+            'text' => trim((string) $validated['text']),
             'wacz_original_name' => $uploadedWacz->getClientOriginalName(),
-            'stored_path' => str_replace('\\', '/', $draftPath),
+            'stored_path' => str_replace('\\', '/', $waczDraftPath),
+            'thumbnail_path' => str_replace('\\', '/', $thumbnailDraftPath),
         ], now()->addMinutes(60));
 
         return response()->json([
-            'message' => 'WACZ recibido. Abre la URL para completar el formulario.',
+            'message' => 'Borrador recibido. Abre la URL para completar el formulario.',
             'draftToken' => $token,
-            'openUrl' => route('hemeroteca', ['draftToken' => $token]),
+            'openUrl' => route('hemeroteca.register', ['draftToken' => $token]),
         ], 201);
+    }
+
+    public function discardDraftApi(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'draftToken' => ['required', 'string', 'max:120'],
+        ]);
+
+        $draftToken = trim((string) $validated['draftToken']);
+        $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) $request->user()->id);
+
+        $this->forgetDraftPayload($draftToken, $draftPayload);
+
+        return response()->json([
+            'message' => 'Borrador eliminado.',
+        ], 200);
+    }
+
+    public function thumbnailDraft(string $draftToken): BinaryFileResponse
+    {
+        if (!request()->user()) {
+            abort(401);
+        }
+
+        $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) request()->user()->id);
+        if ($draftPayload === null || empty($draftPayload['thumbnail_path'])) {
+            abort(404);
+        }
+
+        $thumbnailPath = (string) $draftPayload['thumbnail_path'];
+        $absolutePath = Storage::disk('local')->path($thumbnailPath);
+        abort_unless(File::exists($absolutePath), 404);
+
+        return response()->file($absolutePath, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'private, max-age=300',
+        ]);
+    }
+
+
+    public function showRegisterForm(): Response
+    {
+        $prefillDraft = null;
+        $draftToken = trim((string) request()->query('draftToken', ''));
+        $suggestedTags = DB::table('etiquetas')
+            ->select('nombre')
+            ->orderBy('nombre')
+            ->pluck('nombre')
+            ->map(static fn (mixed $name): string => trim((string) $name))
+            ->filter(static fn (string $name): bool => $name !== '')
+            ->values();
+
+        if ($draftToken !== '' && request()->user()) {
+            $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) request()->user()->id);
+
+            if (is_array($draftPayload)) {
+                $prefillDraft = [
+                    'draftToken' => $draftToken,
+                    'url' => (string) ($draftPayload['url'] ?? ''),
+                    'waczFileName' => (string) ($draftPayload['wacz_original_name'] ?? 'archivo.wacz'),
+                    'screenshotUrl' => route('hemeroteca.sources.draft.thumbnail', ['draftToken' => $draftToken]),
+                    'previewText' => (string) ($draftPayload['text'] ?? ''),
+                ];
+            }
+        }
+
+        return Inertia::render('register-source', [
+            'prefillDraft' => $prefillDraft,
+            'suggestedTags' => $suggestedTags,
+        ]);
     }
 
     private function persistSourceWithWacz(Request $request): array
     {
-        if ($request->hasFile('wacz') && !$request->hasFile('waczFile')) {
-            $request->files->set('waczFile', $request->file('wacz'));
-        }
-
-        $isApiRequest = $request->routeIs('hemeroteca.sources.store-api');
-
         $validated = $request->validate([
             'url' => ['required', 'url', 'max:2048'],
-            'name' => $isApiRequest
-                ? ['nullable', 'string', 'max:255']
-                : ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'tags' => ['nullable', 'array'],
-            'tags.*' => ['string', 'max:100'],
-            'isRequestLetter' => ['nullable', 'boolean'],
-            'oficioNumber' => ['nullable', 'string', 'max:255', 'required_if:isRequestLetter,true'],
-            'draftToken' => ['nullable', 'string', 'max:120'],
-            'waczFile' => [
-                'nullable',
-                'file',
-                'max:307200',
-                function (string $attribute, mixed $value, \Closure $fail): void {
-                    if ($value === null) {
-                        return;
-                    }
-
-                    if (!$value instanceof UploadedFile) {
-                        $fail('Debes enviar un archivo WACZ valido.');
-
-                        return;
-                    }
-
-                    $originalName = strtolower($value->getClientOriginalName());
-
-                    if (!Str::endsWith($originalName, ['.wacz', '.wacz.zip'])) {
-                        $fail('El archivo debe tener extension .wacz o .wacz.zip.');
-                    }
-                },
-            ],
+            'tags.*' => ['string', 'max:120'],
+            'draftToken' => ['required', 'string', 'max:120'],
         ]);
 
-        $draftToken = trim((string) ($validated['draftToken'] ?? ''));
-        $uploadedWacz = $validated['waczFile'] ?? null;
+        $tagNames = $this->normalizeTags($validated['tags'] ?? []);
 
-        if (!$uploadedWacz instanceof UploadedFile && $draftToken === '') {
-            throw ValidationException::withMessages([
-                'waczFile' => 'Debes enviar un archivo WACZ o un token de precarga.',
-            ]);
+        $draftToken = trim((string) $validated['draftToken']);
+        $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) $request->user()->id);
+
+        if ($draftPayload === null) {
+            return [
+                'ok' => false,
+                'sourceId' => null,
+                'backupPath' => null,
+                'message' => 'El borrador no existe, expiro o no pertenece al usuario autenticado.',
+            ];
         }
 
-        $draftPayload = null;
-        if (!$uploadedWacz instanceof UploadedFile && $draftToken !== '') {
-            $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) $request->user()->id);
-
-            if ($draftPayload === null) {
-                throw ValidationException::withMessages([
-                    'draftToken' => 'El token de precarga no existe, expiro o no pertenece al usuario autenticado.',
-                ]);
-            }
-        }
-
-        $sourceId = $this->createSource($validated, (int) $request->user()->id);
+        $sourceId = $this->createSource($validated, (int) $request->user()->id, $tagNames);
 
         Log::info('Fuente registrada. Iniciando carga de archivo WACZ.', [
             'source_id' => $sourceId,
             'url' => $validated['url'],
             'has_description' => filled($validated['description'] ?? null),
-            'tags_count' => count($validated['tags'] ?? []),
-            'is_request_letter' => !empty($validated['isRequestLetter']),
-            'uploaded_wacz_name' => $uploadedWacz instanceof UploadedFile ? $uploadedWacz->getClientOriginalName() : ($draftPayload['wacz_original_name'] ?? null),
-            'uploaded_wacz_size' => $uploadedWacz instanceof UploadedFile ? $uploadedWacz->getSize() : null,
-            'used_draft_token' => $draftToken !== '',
+            'uploaded_wacz_name' => $draftPayload['wacz_original_name'] ?? null,
         ]);
 
         $uploadSucceeded = false;
         $storedBackupPath = null;
 
         try {
-            $storedBackupPath = $uploadedWacz instanceof UploadedFile
-                ? $this->storeWaczFile($sourceId, $uploadedWacz)
-                : $this->storeWaczDraft($sourceId, $draftPayload);
+            $storedBackupPath = $this->storeWaczDraft($sourceId, $draftPayload);
+            $this->storeThumbnailDraft($sourceId, $draftPayload);
 
-            $absolutePath = $this->pathResolver->resolveBackupAbsolutePath($storedBackupPath);
+            $absolutePath = $this->resolveLocalBackupAbsolutePath($storedBackupPath);
             $contentHash = File::exists($absolutePath) ? hash_file('sha256', $absolutePath) : null;
 
             DB::table('fuentes')
@@ -373,12 +390,11 @@ HTML;
                     'estado_captura' => 'cargada',
                     'capturado_en' => now(),
                     'hash_contenido' => $contentHash,
+                    'texto' => filled($draftPayload['text'] ?? null) ? (string) $draftPayload['text'] : null,
                     'updated_at' => now(),
                 ]);
 
-            if ($draftToken !== '') {
-                $this->forgetDraftPayload($draftToken, $draftPayload);
-            }
+            $this->forgetDraftPayload($draftToken, $draftPayload);
 
             $uploadSucceeded = true;
         } catch (\Throwable $exception) {
@@ -402,58 +418,59 @@ HTML;
         ];
     }
 
-    private function storeWaczFile(int $sourceId, UploadedFile $uploadedFile): string
+    private function storeWaczDraft(int $sourceId, array $draftPayload): string
     {
-        $directory = "capturas/fuente_{$sourceId}";
-
-        $originalName = strtolower($uploadedFile->getClientOriginalName());
-        $fileName = Str::endsWith($originalName, '.wacz.zip')
-            ? "fuente_{$sourceId}.wacz.zip"
-            : "fuente_{$sourceId}.wacz";
-
-        $storedPath = $uploadedFile->storeAs($directory, $fileName, ['disk' => 'local']);
-
-        if (!is_string($storedPath) || $storedPath === '') {
-            throw new \RuntimeException('No se pudo guardar el archivo WACZ en almacenamiento local.');
-        }
-
-        return str_replace('\\', '/', $storedPath);
-    }
-
-    private function storeWaczDraft(int $sourceId, ?array $draftPayload): string
-    {
-        if (!is_array($draftPayload)) {
-            throw new \RuntimeException('No se encontro el archivo WACZ temporal para completar el registro.');
-        }
-
         $draftPath = (string) ($draftPayload['stored_path'] ?? '');
         if ($draftPath === '' || !Storage::disk('local')->exists($draftPath)) {
             throw new \RuntimeException('El archivo WACZ temporal no esta disponible.');
         }
 
-        $suffix = Str::endsWith(strtolower($draftPath), '.wacz.zip') ? '.wacz.zip' : '.wacz';
-        $targetPath = "capturas/fuente_{$sourceId}/fuente_{$sourceId}{$suffix}";
+        $directory = "capturas/fuente_{$sourceId}";
+        Storage::disk('local')->makeDirectory($directory);
 
-        Storage::disk('local')->makeDirectory("capturas/fuente_{$sourceId}");
+        $originalName = strtolower((string) ($draftPayload['wacz_original_name'] ?? ''));
+        $suffix = Str::endsWith($originalName, '.wacz.zip') ? '.wacz.zip' : '.wacz';
+        $targetPath = "{$directory}/fuente_{$sourceId}{$suffix}";
 
         if (!Storage::disk('local')->copy($draftPath, $targetPath)) {
             throw new \RuntimeException('No se pudo mover el WACZ temporal al respaldo final.');
         }
 
-        return $targetPath;
+        return str_replace('\\', '/', $targetPath);
+    }
+
+    private function storeThumbnailDraft(int $sourceId, array $draftPayload): ?string
+    {
+        $thumbnailPath = (string) ($draftPayload['thumbnail_path'] ?? '');
+        if ($thumbnailPath === '' || !Storage::disk('local')->exists($thumbnailPath)) {
+            return null;
+        }
+
+        $directory = "capturas/fuente_{$sourceId}";
+        Storage::disk('local')->makeDirectory($directory);
+
+        $targetPath = "{$directory}/preview.png";
+        if (!Storage::disk('local')->copy($thumbnailPath, $targetPath)) {
+            throw new \RuntimeException('No se pudo mover el thumbnail temporal al respaldo final.');
+        }
+
+        return str_replace('\\', '/', $targetPath);
     }
 
     private function getDraftPayloadForUser(string $draftToken, int $userId): ?array
     {
         $payload = Cache::get($this->buildDraftCacheKey($draftToken));
-
         if (!is_array($payload) || (int) ($payload['user_id'] ?? 0) !== $userId) {
             return null;
         }
 
         $storedPath = (string) ($payload['stored_path'] ?? '');
-
         if ($storedPath === '' || !Storage::disk('local')->exists($storedPath)) {
+            return null;
+        }
+
+        $thumbnailPath = (string) ($payload['thumbnail_path'] ?? '');
+        if ($thumbnailPath === '' || !Storage::disk('local')->exists($thumbnailPath)) {
             return null;
         }
 
@@ -467,6 +484,11 @@ HTML;
             if ($storedPath !== '' && Storage::disk('local')->exists($storedPath)) {
                 Storage::disk('local')->delete($storedPath);
             }
+
+            $thumbnailPath = (string) ($draftPayload['thumbnail_path'] ?? '');
+            if ($thumbnailPath !== '' && Storage::disk('local')->exists($thumbnailPath)) {
+                Storage::disk('local')->delete($thumbnailPath);
+            }
         }
 
         Cache::forget($this->buildDraftCacheKey($draftToken));
@@ -477,59 +499,38 @@ HTML;
         return 'hemeroteca:draft:'.$draftToken;
     }
 
-    private function createSource(array $validated, int $userId): int
+    private function resolveLocalBackupAbsolutePath(string $backupPath): string
     {
-        return DB::transaction(function () use ($validated, $userId): int {
-            $createdSourceId = DB::table('fuentes')->insertGetId([
-                'url' => $validated['url'],
-                'titulo' => $this->resolveSourceTitle($validated),
-                'descripcion' => $validated['description'] ?? null,
-                'estado_captura' => 'pendiente',
-                'capturado_en' => null,
-                'user_id' => $userId,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        $normalizedPath = str_replace('\\', '/', trim($backupPath));
+        abort_unless($normalizedPath !== '' && !str_contains($normalizedPath, '..'), 404);
 
-            $tags = collect($validated['tags'] ?? [])
-                ->map(fn (string $tag): string => trim($tag))
-                ->filter()
-                ->unique()
-                ->values();
+        return Storage::disk('local')->path(ltrim($normalizedPath, '/'));
+    }
 
-            foreach ($tags as $tag) {
-                $tagId = DB::table('etiquetas')->where('nombre', $tag)->value('id');
+    private function resolveLocalThumbnailAbsolutePath(string $backupPath): ?string
+    {
+        $backupAbsolutePath = $this->resolveLocalBackupAbsolutePath($backupPath);
+        $backupDirectory = dirname($backupAbsolutePath);
 
-                if (!$tagId) {
-                    $tagId = DB::table('etiquetas')->insertGetId([
-                        'nombre' => $tag,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
+        if (!File::isDirectory($backupDirectory)) {
+            return null;
+        }
 
-                DB::table('etiqueta_fuente')->insertOrIgnore([
-                    'fuente_id' => $createdSourceId,
-                    'etiqueta_id' => $tagId,
-                ]);
+        $candidates = [
+            $backupDirectory.DIRECTORY_SEPARATOR.'thumbnail.png',
+            $backupDirectory.DIRECTORY_SEPARATOR.'thumb.png',
+            $backupDirectory.DIRECTORY_SEPARATOR.'preview.png',
+        ];
+
+        foreach ($candidates as $candidatePath) {
+            if (File::exists($candidatePath)) {
+                return $candidatePath;
             }
+        }
 
-            if (!empty($validated['isRequestLetter'])) {
-                $oficioId = DB::table('libro_oficios')->insertGetId([
-                    'oficio_peticion' => trim((string) ($validated['oficioNumber'] ?? '1')),
-                    'fecha_oficio' => now()->toDateString(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+        $pngFiles = File::glob($backupDirectory.DIRECTORY_SEPARATOR.'*.png') ?: [];
 
-                DB::table('fuente_oficio')->insertOrIgnore([
-                    'fuente_id' => $createdSourceId,
-                    'oficio_id' => $oficioId,
-                ]);
-            }
-
-            return $createdSourceId;
-        });
+        return $pngFiles[0] ?? null;
     }
 
     private function resolveSourceTitle(array $validated): string
@@ -556,13 +557,20 @@ HTML;
             ]);
     }
 
-    private function formatSource(object $source, string $tagSeparator): array
+    private function formatSource(object $source): array
     {
-        $tagList = $source->tags ? explode($tagSeparator, (string) $source->tags) : [];
         $capturedAt = $source->capturado_en ? Carbon::parse($source->capturado_en) : null;
         $capturedAtLabel = $capturedAt
             ? $capturedAt->locale('es')->translatedFormat('j M Y')
             : 'Sin captura';
+        $tags = [];
+
+        if (isset($source->tags_concat) && is_string($source->tags_concat) && $source->tags_concat !== '') {
+            $tags = array_values(array_filter(array_map(
+                static fn (string $tag): string => trim($tag),
+                explode('||', $source->tags_concat),
+            )));
+        }
 
         return [
             'id' => (int) $source->id,
@@ -570,43 +578,20 @@ HTML;
             'description' => $source->descripcion ?: 'Sin descripcion.',
             'url' => (string) $source->url,
             'backupPath' => $source->ruta_archivo ?: null,
-            'tags' => array_values(array_filter($tagList)),
+            'tags' => $tags,
             'date' => $capturedAt ? $capturedAt->locale('es')->translatedFormat('d/m/Y H:i') : $capturedAtLabel,
             'capturedAt' => $capturedAt?->format('Y-m-d'),
             'capturedBy' => $source->captured_by ?: 'Sin usuario',
-            'oficioNumber' => $source->oficio_number ? (string) $source->oficio_number : null,
+            'oficioNumber' => null,
         ];
     }
 
     public function __invoke(): Response
     {
-        $prefillDraft = null;
-        $draftToken = trim((string) request()->query('draftToken', ''));
-
-        if ($draftToken !== '' && request()->user()) {
-            $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) request()->user()->id);
-
-            if (is_array($draftPayload)) {
-                $prefillDraft = [
-                    'draftToken' => $draftToken,
-                    'url' => (string) ($draftPayload['url'] ?? ''),
-                    'waczFileName' => (string) ($draftPayload['wacz_original_name'] ?? 'archivo.wacz'),
-                ];
-            }
-        }
-
-        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
-        $tagSeparator = $isSqlite ? ',' : '||';
-        $tagAggregateSql = $isSqlite
-            ? 'GROUP_CONCAT(DISTINCT etiquetas.nombre) AS tags'
-            : "GROUP_CONCAT(DISTINCT etiquetas.nombre ORDER BY etiquetas.nombre SEPARATOR '{$tagSeparator}') AS tags";
-
         $sources = DB::table('fuentes')
             ->leftJoin('users', 'fuentes.user_id', '=', 'users.id')
             ->leftJoin('etiqueta_fuente', 'fuentes.id', '=', 'etiqueta_fuente.fuente_id')
             ->leftJoin('etiquetas', 'etiqueta_fuente.etiqueta_id', '=', 'etiquetas.id')
-            ->leftJoin('fuente_oficio', 'fuentes.id', '=', 'fuente_oficio.fuente_id')
-            ->leftJoin('libro_oficios', 'fuente_oficio.oficio_id', '=', 'libro_oficios.id')
             ->select(
                 'fuentes.id',
                 'fuentes.url',
@@ -615,8 +600,7 @@ HTML;
                 'fuentes.ruta_archivo',
                 'fuentes.capturado_en',
                 'users.name as captured_by',
-                DB::raw($tagAggregateSql),
-                DB::raw('MAX(libro_oficios.oficio_peticion) AS oficio_number'),
+                DB::raw("GROUP_CONCAT(etiquetas.nombre ORDER BY etiquetas.nombre SEPARATOR '||') as tags_concat"),
             )
             ->groupBy(
                 'fuentes.id',
@@ -630,19 +614,120 @@ HTML;
             ->orderByDesc('fuentes.capturado_en')
             ->orderByDesc('fuentes.id')
             ->get()
-            ->map(fn (object $source): array => $this->formatSource($source, $tagSeparator))
+            ->map(fn (object $source): array => $this->formatSource($source))
             ->values();
 
         $suggestedTags = DB::table('etiquetas')
+            ->select('nombre')
             ->orderBy('nombre')
             ->pluck('nombre')
-            ->map(fn (string $tag): string => mb_convert_case($tag, MB_CASE_TITLE, 'UTF-8'))
+            ->map(static fn (mixed $name): string => trim((string) $name))
+            ->filter(static fn (string $name): bool => $name !== '')
             ->values();
 
         return Inertia::render('hemeroteca', [
             'sources' => $sources,
             'suggestedTags' => $suggestedTags,
-            'prefillDraft' => $prefillDraft,
         ]);
+    }
+
+    private function createSource(array $validated, int $userId, array $tagNames = []): int
+    {
+        return DB::transaction(function () use ($validated, $userId, $tagNames): int {
+            $createdSourceId = DB::table('fuentes')->insertGetId([
+                'url' => $validated['url'],
+                'titulo' => $this->resolveSourceTitle($validated),
+                'descripcion' => $validated['description'] ?? null,
+                'estado_captura' => 'pendiente',
+                'capturado_en' => null,
+                'user_id' => $userId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $this->syncSourceTags($createdSourceId, $tagNames);
+
+            return $createdSourceId;
+        });
+    }
+
+    /**
+     * @param  array<int, mixed>  $rawTags
+     * @return array<int, string>
+     */
+    private function normalizeTags(array $rawTags): array
+    {
+        $normalizedTags = [];
+        $seen = [];
+
+        foreach ($rawTags as $rawTag) {
+            $tag = preg_replace('/\s+/u', ' ', trim((string) $rawTag));
+
+            if (!is_string($tag) || $tag === '') {
+                continue;
+            }
+
+            $key = mb_strtolower($tag, 'UTF-8');
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+            $normalizedTags[] = $tag;
+        }
+
+        return $normalizedTags;
+    }
+
+    /**
+     * @param  array<int, string>  $tagNames
+     */
+    private function syncSourceTags(int $sourceId, array $tagNames): void
+    {
+        if ($tagNames === []) {
+            return;
+        }
+
+        $pivotRows = [];
+
+        foreach ($tagNames as $tagName) {
+            $pivotRows[] = [
+                'fuente_id' => $sourceId,
+                'etiqueta_id' => $this->resolveTagId($tagName),
+            ];
+        }
+
+        DB::table('etiqueta_fuente')->insertOrIgnore($pivotRows);
+    }
+
+    private function resolveTagId(string $tagName): int
+    {
+        $normalizedKey = mb_strtolower(trim($tagName), 'UTF-8');
+
+        $existingTagId = DB::table('etiquetas')
+            ->whereRaw('LOWER(nombre) = ?', [$normalizedKey])
+            ->value('id');
+
+        if (is_numeric($existingTagId)) {
+            return (int) $existingTagId;
+        }
+
+        try {
+            return (int) DB::table('etiquetas')->insertGetId([
+                'nombre' => $tagName,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $exception) {
+            $existingTagId = DB::table('etiquetas')
+                ->whereRaw('LOWER(nombre) = ?', [$normalizedKey])
+                ->value('id');
+
+            if (is_numeric($existingTagId)) {
+                return (int) $existingTagId;
+            }
+
+            throw $exception;
+        }
     }
 }
