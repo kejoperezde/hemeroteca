@@ -184,6 +184,7 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
         if (mergedTags !== tags) {
             setTags(mergedTags);
         }
+
         if (pendingTag) {
             setTagInput('');
         }
@@ -290,10 +291,10 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
                                     Complete los datos para registrar la fuente capturada.
                                 </p>
                             </div>
-                            <div className="flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-2 text-sm font-medium text-amber-700 dark:border-amber-800/50 dark:bg-amber-900/30 dark:text-amber-400">
+                            <div className="flex items-center gap-2 rounded-full border border-[#8f7f67]/35 bg-[#8f7f67]/12 px-3.5 py-2 text-sm font-medium text-[#8f7f67] dark:border-[#8f7f67]/45 dark:bg-[#8f7f67]/20 dark:text-[#8f7f67]">
                                 <span className="relative flex h-2 w-2">
-                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
-                                    <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
+                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8f7f67]/70 opacity-75"></span>
+                                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8f7f67]"></span>
                                 </span>
                                 Archivos preparados
                             </div>

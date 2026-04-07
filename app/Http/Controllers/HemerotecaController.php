@@ -24,7 +24,7 @@ class HemerotecaController extends Controller
     public function openBackup(int $sourceId): BaseResponse
     {
         $source = DB::table('fuentes')
-            ->select('id', 'ruta_archivo', 'url')
+            ->select('id', 'ruta_archivo', 'url', 'titulo')
             ->where('id', $sourceId)
             ->first();
 
@@ -38,6 +38,11 @@ class HemerotecaController extends Controller
         }
 
                 if (Str::endsWith(strtolower($absolutePath), '.wacz')) {
+                    $sourceName = trim((string) ($source->titulo ?? ''));
+                    if ($sourceName === '') {
+                        $sourceName = (string) (parse_url((string) $source->url, PHP_URL_HOST) ?: 'Sin nombre');
+                    }
+
                         $downloadUrl = route('hemeroteca.sources.backup.download', ['sourceId' => $sourceId]);
                         $uiAssetUrl = route('hemeroteca.sources.replay.asset', [
                             'sourceId' => $sourceId,
@@ -63,29 +68,73 @@ class HemerotecaController extends Controller
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            padding: 10px 14px;
-            border-bottom: 1px solid #1f2937;
-            background: #927e61;
+            gap: 16px;
+            padding: 10px 16px;
+            border-bottom: 1px solid #7f6a4f;
+            background: linear-gradient(90deg, #8b775e 0%, #9a8465 100%);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
         }
-        .toolbar a {
+        .toolbar-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .toolbar-logo {
+            width: 30px;
+            height: 30px;
+            display: block;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 3px;
+            box-sizing: border-box;
+        }
+        .toolbar-title {
+            color: #ffffff;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .toolbar-meta {
+            color: #f8f6f1;
+            font-size: 12px;
+            line-height: 1.1;
+            opacity: 0.95;
+        }
+        .toolbar-action {
             color: #ffffff;
             text-decoration: none;
             font-weight: 600;
+            background: rgba(0, 0, 0, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 8px;
+            padding: 8px 12px;
+            line-height: 1;
         }
-        .toolbar a:hover { text-decoration: underline; }
+        .toolbar-action:hover {
+            background: rgba(0, 0, 0, 0.28);
+            text-decoration: none;
+        }
         replay-web-page {
             display: block;
             width: 100%;
-            height: calc(100% - 48px);
+            height: calc(100% - 52px);
         }
     </style>
     <script src="__UI_ASSET_URL__" type="module"></script>
 </head>
 <body>
     <div class="toolbar">
-        <strong>Respaldo __SOURCE_ID__</strong>
-        <a href="__DOWNLOAD_URL__">Descargar .wacz</a>
+        <div class="toolbar-brand">
+            <img class="toolbar-logo" src="/favicon.svg" alt="Logo Fiscalía" />
+            <div>
+                <strong class="toolbar-title">Respaldo __SOURCE_ID__</strong>
+                <div class="toolbar-meta">Nombre: __SOURCE_NAME__</div>
+            </div>
+        </div>
+        <a class="toolbar-action" href="__DOWNLOAD_URL__">Descargar .wacz</a>
     </div>
     <replay-web-page source="__DOWNLOAD_URL__" url="__ORIGINAL_URL__"></replay-web-page>
 </body>
@@ -93,9 +142,10 @@ class HemerotecaController extends Controller
 HTML;
 
                         $viewerHtml = str_replace(
-                            ['__SOURCE_ID__', '__DOWNLOAD_URL__', '__ORIGINAL_URL__', '__UI_ASSET_URL__'],
+                            ['__SOURCE_ID__', '__SOURCE_NAME__', '__DOWNLOAD_URL__', '__ORIGINAL_URL__', '__UI_ASSET_URL__'],
                                 [
                                         (string) $sourceId,
+                                        e($sourceName),
                                         e($downloadUrl),
                                         e((string) $source->url),
                                 e($uiAssetUrl),
@@ -564,6 +614,33 @@ HTML;
             ? $capturedAt->locale('es')->translatedFormat('j M Y')
             : 'Sin captura';
         $tags = [];
+        $hasBackupPath = is_string($source->ruta_archivo ?? null) && trim((string) $source->ruta_archivo) !== '';
+        $storedHash = is_string($source->hash_contenido ?? null) ? trim((string) $source->hash_contenido) : null;
+        $currentHash = null;
+        $hashStatus = $hasBackupPath ? 'sin_verificar' : 'sin_respaldo';
+
+        if ($hasBackupPath) {
+            try {
+                $absolutePath = $this->resolveLocalBackupAbsolutePath((string) $source->ruta_archivo);
+                if (File::exists($absolutePath)) {
+                    $currentHash = hash_file('sha256', $absolutePath) ?: null;
+
+                    if ($storedHash && $currentHash) {
+                        $hashStatus = hash_equals(strtolower($storedHash), strtolower($currentHash))
+                            ? 'valido'
+                            : 'invalido';
+                    } elseif ($storedHash) {
+                        $hashStatus = 'sin_verificar';
+                    } else {
+                        $hashStatus = 'sin_hash';
+                    }
+                } else {
+                    $hashStatus = 'sin_respaldo';
+                }
+            } catch (\Throwable $exception) {
+                $hashStatus = 'sin_verificar';
+            }
+        }
 
         if (isset($source->tags_concat) && is_string($source->tags_concat) && $source->tags_concat !== '') {
             $tags = array_values(array_filter(array_map(
@@ -583,6 +660,9 @@ HTML;
             'capturedAt' => $capturedAt?->format('Y-m-d'),
             'capturedBy' => $source->captured_by ?: 'Sin usuario',
             'oficioNumber' => null,
+            'hash' => $storedHash,
+            'currentHash' => $currentHash,
+            'hashStatus' => $hashStatus,
         ];
     }
 
@@ -598,6 +678,7 @@ HTML;
                 'fuentes.titulo',
                 'fuentes.descripcion',
                 'fuentes.ruta_archivo',
+                'fuentes.hash_contenido',
                 'fuentes.capturado_en',
                 'users.name as captured_by',
                 DB::raw("GROUP_CONCAT(etiquetas.nombre ORDER BY etiquetas.nombre SEPARATOR '||') as tags_concat"),
@@ -608,6 +689,7 @@ HTML;
                 'fuentes.titulo',
                 'fuentes.descripcion',
                 'fuentes.ruta_archivo',
+                'fuentes.hash_contenido',
                 'fuentes.capturado_en',
                 'users.name',
             )

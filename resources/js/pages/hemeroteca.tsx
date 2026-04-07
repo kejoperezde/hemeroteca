@@ -39,6 +39,9 @@ type Source = {
     capturedAt: string | null;
     capturedBy: string;
     oficioNumber: string | null;
+    hash: string | null;
+    currentHash: string | null;
+    hashStatus: 'valido' | 'invalido' | 'sin_hash' | 'sin_respaldo' | 'sin_verificar';
 };
 
 type HemerotecaProps = {

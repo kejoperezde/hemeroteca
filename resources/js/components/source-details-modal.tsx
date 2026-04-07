@@ -14,6 +14,9 @@ type SourceDetails = {
     capturedAt: string | null;
     capturedBy: string;
     oficioNumber: string | null;
+    hash: string | null;
+    currentHash: string | null;
+    hashStatus: 'valido' | 'invalido' | 'sin_hash' | 'sin_respaldo' | 'sin_verificar';
 };
 
 type SourceDetailsModalProps = {
@@ -60,6 +63,37 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
         : 'Sin captura';
     const canShowThumbnail = Boolean(source.backupPath) && !thumbnailUnavailable;
     const thumbnailUrl = `/hemeroteca/sources/${source.id}/backup/thumbnail`;
+    const hashStatusConfig: Record<
+        SourceDetails['hashStatus'],
+        { label: string; className: string; description: string }
+    > = {
+        valido: {
+            label: 'Valido',
+            className: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300',
+            description: 'El contenido actual coincide con el hash registrado.',
+        },
+        invalido: {
+            label: 'Invalido',
+            className: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300',
+            description: 'El contenido actual no coincide con el hash guardado en BD.',
+        },
+        sin_hash: {
+            label: 'Sin hash',
+            className: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300',
+            description: 'No existe hash registrado para esta fuente.',
+        },
+        sin_respaldo: {
+            label: 'Sin respaldo',
+            className: 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300',
+            description: 'No se encontro el archivo para validar integridad.',
+        },
+        sin_verificar: {
+            label: 'Sin verificar',
+            className: 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300',
+            description: 'No fue posible calcular o comparar el hash.',
+        },
+    };
+    const hashStatus = hashStatusConfig[source.hashStatus];
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
@@ -153,19 +187,21 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                             <p className="text-xs uppercase tracking-wide text-muted-foreground">Fecha captura</p>
                             <p className="mt-1 font-medium">{formattedCapturedAt}</p>
                         </div>
+                        <div>
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">Integridad</p>
+                            <div className="mt-1 flex items-center gap-2">
+                                <Badge variant="outline" className={hashStatus.className}>
+                                    {hashStatus.label}
+                                </Badge>
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">{hashStatus.description}</p>
+                        </div>
                         {source.oficioNumber ? (
                             <div>
                                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Numero de oficio</p>
                                 <p className="mt-1 font-medium">{source.oficioNumber}</p>
                             </div>
                         ) : null}
-                    </div>
-
-                    <div className="space-y-2">
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Descripcion</p>
-                        <p className="rounded-lg border border-slate-200/80 bg-white p-4 text-sm leading-relaxed dark:border-slate-800 dark:bg-slate-950">
-                            {source.description}
-                        </p>
                     </div>
 
                     <div className="space-y-2">
@@ -181,6 +217,13 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                     </div>
 
                     <div className="space-y-2">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Descripcion</p>
+                        <p className="rounded-lg border border-slate-200/80 bg-white p-4 text-sm leading-relaxed dark:border-slate-800 dark:bg-slate-950">
+                            {source.description}
+                        </p>
+                    </div>
+
+                    <div className="space-y-2">
                         <p className="text-xs uppercase tracking-wide text-muted-foreground">Etiquetas</p>
                         <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200/80 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
                             {tags.length > 0 ? (
@@ -193,6 +236,20 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                                 <span className="text-sm text-muted-foreground">Sin etiquetas</span>
                             )}
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Hash registrado (SHA-256)</p>
+                        <p className="break-all rounded-lg border border-slate-200/80 bg-white p-4 text-xs leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
+                            {source.hash ?? 'No disponible'}
+                        </p>
+                    </div>
+
+                    <div className="space-y-2">
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Hash actual (SHA-256)</p>
+                        <p className="break-all rounded-lg border border-slate-200/80 bg-white p-4 text-xs leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
+                            {source.currentHash ?? 'No disponible'}
+                        </p>
                     </div>
                 </div>
             </div>
