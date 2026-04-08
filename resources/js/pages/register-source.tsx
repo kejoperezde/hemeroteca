@@ -2,11 +2,11 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { AlertCircle, ArrowLeft, Loader2, Save, Tag, X, ZoomIn } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from '@/components/ui/sonner';
 import AppLayout from '@/layouts/app-layout';
 
 type FlashProps = {
@@ -94,9 +94,11 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
             payload.append('draftToken', draftToken);
             // Include CSRF token so Laravel doesn't reject the beacon request with 419
             const xsrf = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1];
+
             if (xsrf) {
                 payload.append('_token', decodeURIComponent(xsrf));
             }
+
             navigator.sendBeacon('/hemeroteca/sources/draft/discard', payload);
         };
 
@@ -147,17 +149,27 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
 
         setIsDiscarding(true);
 
-        router.post(
-            '/hemeroteca/sources/draft/discard',
-            { draftToken },
-            {
-                preserveScroll: true,
-                onFinish: () => {
-                    setIsDiscarding(false);
-                    router.visit('/hemeroteca');
-                },
+        const xsrfCookie = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1];
+        const csrfToken = xsrfCookie ? decodeURIComponent(xsrfCookie) : '';
+
+        void fetch('/hemeroteca/sources/draft/discard', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                ...(csrfToken ? { 'X-XSRF-TOKEN': csrfToken } : {}),
             },
-        );
+            credentials: 'same-origin',
+            body: JSON.stringify({ draftToken }),
+        })
+            .catch(() => {
+                toast.error('No se pudo descartar el borrador.');
+            })
+            .finally(() => {
+                setIsDiscarding(false);
+                router.visit('/hemeroteca');
+            });
     };
 
     const handleSave = () => {

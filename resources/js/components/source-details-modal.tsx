@@ -55,10 +55,6 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
 function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails; onClose: () => void }) {
     const [thumbnailUnavailable, setThumbnailUnavailable] = useState(false);
     const tags = Array.isArray(source.tags) ? source.tags : [];
-
-    const formattedCapturedAt = source.capturedAt
-        ? source.capturedAt.split('-').reverse().join('/')
-        : null;
     const canShowThumbnail = Boolean(source.backupPath) && !thumbnailUnavailable;
     const thumbnailUrl = `/hemeroteca/sources/${source.id}/backup/thumbnail`;
 
@@ -88,7 +84,7 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                                 >
                                     {source.name}
                                 </h2>
-                                <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                                     #{source.id}
                                 </span>
                             </div>
@@ -161,12 +157,12 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
 
                         {/* Metadata grid */}
                         <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
-                            <div className="grid grid-cols-2 divide-x divide-y divide-slate-100 dark:divide-slate-800 sm:grid-cols-3">
+                            <div className="grid grid-cols-2 divide-x divide-y divide-slate-100 dark:divide-slate-800 sm:grid-cols-2">
                                 <div className="bg-slate-50/50 px-4 py-3 dark:bg-slate-900/30">
                                     <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                                         ID
                                     </p>
-                                    <p className="mt-1 font-mono text-sm font-semibold text-foreground">
+                                    <p className="mt-1 text-sm font-semibold text-foreground">
                                         #{source.id}
                                     </p>
                                 </div>
@@ -187,14 +183,6 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                                         Capturado por
                                     </p>
                                     <p className="mt-1 text-sm font-medium text-foreground">{source.capturedBy}</p>
-                                </div>
-                                <div className="bg-slate-50/50 px-4 py-3 dark:bg-slate-900/30">
-                                    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                                        Fecha captura
-                                    </p>
-                                    <p className="mt-1 text-sm font-medium text-foreground">
-                                        {formattedCapturedAt ?? '—'}
-                                    </p>
                                 </div>
                                 {source.oficioNumber && (
                                     <div className="bg-slate-50/50 px-4 py-3 dark:bg-slate-900/30">

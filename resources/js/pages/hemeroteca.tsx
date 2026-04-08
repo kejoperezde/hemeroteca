@@ -890,7 +890,7 @@ export default function Hemeroteca({
                                                             onClick={() => setSelectedSource(source)}
                                                         >
                                                             <td className="px-4 py-3.5 align-middle">
-                                                                <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                                                <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                                                                     #{source.id}
                                                                 </span>
                                                             </td>
@@ -973,7 +973,7 @@ export default function Hemeroteca({
                                                     )}
                                                     {/* ID badge */}
                                                     <div className="absolute left-2.5 top-2.5">
-                                                        <span className="rounded-md bg-black/55 px-2 py-0.5 font-mono text-xs font-semibold text-white backdrop-blur-sm">
+                                                        <span className="rounded-md bg-black/55 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
                                                             #{source.id}
                                                         </span>
                                                     </div>
