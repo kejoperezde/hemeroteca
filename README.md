@@ -40,6 +40,12 @@ Está construida con Laravel + Inertia + React, y permite trabajar con capturas 
 - Node.js 20+ y npm
 - Base de datos configurada en `.env`
 
+## Extensión requerida
+
+Este sistema requiere la extensión de captura para completar el flujo de archivado.
+
+- Repositorio: https://github.com/HectorUwO/webarchiver-extension-fisnay
+
 ## Instalación
 
 1. Instalar dependencias de PHP:
