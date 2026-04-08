@@ -13,6 +13,7 @@ return new class extends Migration
             $table->id();
             $table->string('oficio_peticion')->nullable();
             $table->date('fecha_oficio')->nullable();
+            $table->index('fecha_oficio');
             $table->timestamps();
         });
 
@@ -27,6 +28,12 @@ return new class extends Migration
             $table->timestamp('capturado_en')->nullable();
             $table->string('hash_contenido')->nullable();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->index(['capturado_en', 'id']);
+            $table->index(['titulo', 'id']);
+            $table->index(['user_id', 'capturado_en']);
+            $table->index('estado_captura');
+            $table->index('hash_contenido');
+            $table->fullText(['titulo', 'descripcion', 'texto'], 'fuentes_search_fulltext');
             $table->timestamps();
         });
 
@@ -34,6 +41,7 @@ return new class extends Migration
             $table->foreignId('fuente_id')->constrained('fuentes')->cascadeOnDelete();
             $table->foreignId('oficio_id')->constrained('libro_oficios')->cascadeOnDelete();
             $table->primary(['fuente_id', 'oficio_id']);
+            $table->index(['oficio_id', 'fuente_id']);
         });
 
         Schema::create('etiquetas', function (Blueprint $table) {
@@ -46,6 +54,11 @@ return new class extends Migration
             $table->foreignId('fuente_id')->constrained('fuentes')->cascadeOnDelete();
             $table->foreignId('etiqueta_id')->constrained('etiquetas')->cascadeOnDelete();
             $table->primary(['fuente_id', 'etiqueta_id']);
+            $table->index(['etiqueta_id', 'fuente_id']);
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->index('name');
         });
     }
 
@@ -56,6 +69,9 @@ return new class extends Migration
         Schema::dropIfExists('fuente_oficio');
         Schema::dropIfExists('fuentes');
         Schema::dropIfExists('libro_oficios');
-        Schema::dropIfExists('users');
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropIndex(['name']);
+        });
     }
 };

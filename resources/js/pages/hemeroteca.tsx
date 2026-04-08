@@ -8,12 +8,14 @@ import {
     Filter,
     Grid3X3,
     List,
+    Loader2,
     Plus,
     Search,
     Upload,
     X,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import * as XLSX from 'xlsx-js-style';
 import { SourceDetailsModal } from '@/components/source-details-modal';
 import { Button } from '@/components/ui/button';
@@ -33,6 +35,7 @@ type Source = {
     id: number;
     name: string;
     description: string;
+    contentSnippet?: string | null;
     url: string;
     backupPath: string | null;
     tags: string[];
@@ -66,6 +69,13 @@ type HemerotecaProps = {
 };
 
 type ViewMode = 'list' | 'grid';
+type LocalSortKey = 'name_asc' | 'name_desc' | 'date_desc' | 'date_asc';
+
+const foldSearchText = (value: string): string =>
+    value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
 
 export default function Hemeroteca({
     sources,
@@ -80,6 +90,7 @@ export default function Hemeroteca({
     const toDateRef = useRef<HTMLInputElement>(null);
     const tagSearchInputRef = useRef<HTMLInputElement>(null);
     const searchDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
+    const syncDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
 
     const [viewMode, setViewMode] = useState<ViewMode>(filters.view ?? 'grid');
     const [selectedSource, setSelectedSource] = useState<Source | null>(null);
@@ -91,9 +102,12 @@ export default function Hemeroteca({
     const [selectedTags, setSelectedTags] = useState<string[]>(filters.tags);
     const [sortKey, setSortKey] = useState<Filters['sort']>(filters.sort);
     const [sortDirection, setSortDirection] = useState<Filters['direction']>(filters.direction);
+    const [quickFilter, setQuickFilter] = useState('');
+    const [localSortKey, setLocalSortKey] = useState<LocalSortKey>('date_desc');
 
     const [isTagSearchOpen, setIsTagSearchOpen] = useState(false);
     const [tagSearchTerm, setTagSearchTerm] = useState('');
+    const [isSyncing, setIsSyncing] = useState(false);
 
     useEffect(() => {
         if (isTagSearchOpen) {
@@ -102,7 +116,11 @@ export default function Hemeroteca({
     }, [isTagSearchOpen]);
 
     const navigate = useCallback(
-        (params: Partial<Filters & { page: number }>) => {
+        (params: Partial<Filters & { page: number }>, immediate = false) => {
+            if (immediate) {
+                clearTimeout(syncDebounce.current);
+            }
+
             const merged = {
                 search: searchInput,
                 from: fromDate,
@@ -151,37 +169,50 @@ export default function Hemeroteca({
             }
 
             router.get(hemeroteca().url, query, {
-                preserveState: false,
+                preserveState: true,
                 preserveScroll: true,
                 replace: true,
+                only: ['sources', 'suggestedTags', 'total', 'perPage', 'currentPage', 'lastPage', 'filters'],
+                onStart: () => setIsSyncing(true),
+                onFinish: () => setIsSyncing(false),
             });
         },
         [searchInput, fromDate, toDate, selectedTags, sortKey, sortDirection, viewMode],
+    );
+
+    const scheduleSync = useCallback(
+        (params: Partial<Filters & { page: number }>, delay = 250) => {
+            clearTimeout(syncDebounce.current);
+            syncDebounce.current = setTimeout(() => {
+                navigate(params, false);
+            }, delay);
+        },
+        [navigate],
     );
 
     const handleSearchChange = (value: string) => {
         setSearchInput(value);
         clearTimeout(searchDebounce.current);
         searchDebounce.current = setTimeout(() => {
-            navigate({ search: value, page: 1 });
+            scheduleSync({ search: value, page: 1 }, 320);
         }, 400);
     };
 
     const handleFromDateChange = (value: string) => {
         setFromDate(value);
-        navigate({ from: value, page: 1 });
+        scheduleSync({ from: value, page: 1 }, 220);
     };
 
     const handleToDateChange = (value: string) => {
         setToDate(value);
-        navigate({ to: value, page: 1 });
+        scheduleSync({ to: value, page: 1 }, 220);
     };
 
     const handleSort = (key: Filters['sort']) => {
         const newDirection = sortKey === key && sortDirection === 'asc' ? 'desc' : sortKey === key ? 'asc' : 'desc';
         setSortKey(key);
         setSortDirection(newDirection);
-        navigate({ sort: key, direction: newDirection, page: 1 });
+        navigate({ sort: key, direction: newDirection, page: 1 }, true);
     };
 
     const addTag = (tag: string) => {
@@ -196,13 +227,13 @@ export default function Hemeroteca({
         setSelectedTags(next);
         setIsTagSearchOpen(false);
         setTagSearchTerm('');
-        navigate({ tags: next, page: 1 });
+        scheduleSync({ tags: next, page: 1 }, 180);
     };
 
     const removeTag = (tag: string) => {
         const next = selectedTags.filter((t) => t !== tag);
         setSelectedTags(next);
-        navigate({ tags: next, page: 1 });
+        scheduleSync({ tags: next, page: 1 }, 180);
     };
 
     const clearFilters = () => {
@@ -210,8 +241,16 @@ export default function Hemeroteca({
         setFromDate('');
         setToDate('');
         setSelectedTags([]);
-        navigate({ search: '', from: '', to: '', tags: [], page: 1 });
+        clearTimeout(searchDebounce.current);
+        scheduleSync({ search: '', from: '', to: '', tags: [], page: 1 }, 80);
     };
+
+    useEffect(() => {
+        return () => {
+            clearTimeout(searchDebounce.current);
+            clearTimeout(syncDebounce.current);
+        };
+    }, []);
 
     const hasActiveFilters =
         searchInput.trim().length > 0 ||
@@ -255,12 +294,169 @@ export default function Hemeroteca({
         />
     );
 
+    const activeHighlightQuery = quickFilter.trim() !== '' ? quickFilter : searchInput;
+
+    const highlightText = useCallback((text: string, query: string): ReactNode => {
+        const normalized = query.trim();
+
+        if (!normalized) {
+            return text;
+        }
+
+        const tokens = Array.from(
+            new Set(
+                normalized
+                    .split(/\s+/)
+                    .map((token) => token.trim())
+                    .filter((token) => token.length >= 2),
+            ),
+        ).sort((a, b) => b.length - a.length);
+
+        if (tokens.length === 0) {
+            return text;
+        }
+
+        const foldedTokens = tokens.map((token) => foldSearchText(token));
+        const textChars = Array.from(text);
+        const foldedToOriginalMap: number[] = [];
+        let foldedText = '';
+        let originalOffset = 0;
+
+        for (const char of textChars) {
+            const foldedChar = foldSearchText(char);
+
+            if (foldedChar !== '') {
+                for (const foldedPiece of Array.from(foldedChar)) {
+                    foldedText += foldedPiece;
+                    foldedToOriginalMap.push(originalOffset);
+                }
+            }
+
+            originalOffset += char.length;
+        }
+
+        const ranges: Array<{ start: number; end: number }> = [];
+
+        for (const token of foldedTokens) {
+            if (token === '') {
+                continue;
+            }
+
+            let startIndex = foldedText.indexOf(token);
+
+            while (startIndex !== -1) {
+                const endIndex = startIndex + token.length - 1;
+                const start = foldedToOriginalMap[startIndex];
+                const end = endIndex + 1 < foldedToOriginalMap.length
+                    ? foldedToOriginalMap[endIndex + 1]
+                    : text.length;
+
+                ranges.push({ start, end });
+                startIndex = foldedText.indexOf(token, startIndex + 1);
+            }
+        }
+
+        if (ranges.length === 0) {
+            return text;
+        }
+
+        ranges.sort((a, b) => a.start - b.start || a.end - b.end);
+        const merged: Array<{ start: number; end: number }> = [];
+
+        for (const range of ranges) {
+            const last = merged[merged.length - 1];
+
+            if (!last || range.start > last.end) {
+                merged.push({ ...range });
+            } else {
+                last.end = Math.max(last.end, range.end);
+            }
+        }
+
+        const nodes: ReactNode[] = [];
+        let cursor = 0;
+        merged.forEach((range, index) => {
+            if (range.start > cursor) {
+                nodes.push(<span key={`text-${index}-${cursor}`}>{text.slice(cursor, range.start)}</span>);
+            }
+
+            nodes.push(
+                <mark key={`mark-${index}-${range.start}`} className="rounded-sm bg-amber-200/80 px-0.5 font-bold text-inherit dark:bg-amber-500/40">
+                    {text.slice(range.start, range.end)}
+                </mark>,
+            );
+
+            cursor = range.end;
+        });
+
+        if (cursor < text.length) {
+            nodes.push(<span key={`text-tail-${cursor}`}>{text.slice(cursor)}</span>);
+        }
+
+        return nodes;
+    }, []);
+
+    const renderContentSnippet = useCallback((source: Source): ReactNode => {
+        const snippet = source.contentSnippet?.trim();
+
+        if (!snippet) {
+            return null;
+        }
+
+        return (
+            <p className="mt-1 line-clamp-4 whitespace-normal break-words text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                ...{highlightText(snippet, activeHighlightQuery)}...
+            </p>
+        );
+    }, [activeHighlightQuery, highlightText]);
+
+    const displayedSources = useMemo(() => {
+        const normalizedQuick = foldSearchText(quickFilter.trim());
+
+        const refined = normalizedQuick
+            ? sources.filter((source) => {
+                  const haystack = [
+                      source.name,
+                      source.description,
+                      source.url,
+                      source.capturedBy,
+                      source.tags.join(' '),
+                      source.contentSnippet ?? '',
+                  ]
+                      .join(' ')
+                      .normalize('NFD')
+                      .replace(/[\u0300-\u036f]/g, '')
+                      .toLowerCase();
+
+                  return haystack.includes(normalizedQuick);
+              })
+            : [...sources];
+
+        const sorted = [...refined];
+        sorted.sort((a, b) => {
+            if (localSortKey === 'name_asc') {
+                return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+            }
+
+            if (localSortKey === 'name_desc') {
+                return b.name.localeCompare(a.name, 'es', { sensitivity: 'base' });
+            }
+
+            const aDate = a.capturedAt ? new Date(a.capturedAt).getTime() : 0;
+            const bDate = b.capturedAt ? new Date(b.capturedAt).getTime() : 0;
+
+            return localSortKey === 'date_desc' ? bDate - aDate : aDate - bDate;
+        });
+
+        return sorted;
+    }, [sources, quickFilter, localSortKey]);
+
     const handleExportToExcel = () => {
-        if (sources.length === 0) {
+        if (displayedSources.length === 0) {
             return;
         }
 
-        const rows = sources.map((s) => ({
+        const rows = displayedSources.map((s) => ({
             ID: s.id,
             TITULO: s.name,
             DESCRIPCIÓN: s.description,
@@ -309,6 +505,8 @@ export default function Hemeroteca({
         const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
         XLSX.writeFile(wb, `hemeroteca_${ts}.xlsx`);
     };
+
+    const refinedCount = displayedSources.length;
 
     const firstItem = total === 0 ? 0 : (currentPage - 1) * perPage + 1;
     const lastItem = Math.min(currentPage * perPage, total);
@@ -536,18 +734,64 @@ export default function Hemeroteca({
                                                 {total.toLocaleString('es-MX')}
                                             </span>{' '}
                                             resultados
+                                            {quickFilter.trim() !== '' && (
+                                                <>
+                                                    {' '}· refinado local:{' '}
+                                                    <span className="font-semibold tabular-nums text-foreground">
+                                                        {refinedCount}
+                                                    </span>
+                                                </>
+                                            )}
                                         </>
                                     ) : (
                                         <span>Sin resultados</span>
                                     )}
                                 </p>
                                 <div className="flex items-center gap-2">
+                                    {isSyncing && (
+                                        <div className="hidden items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-muted-foreground sm:flex dark:border-slate-700 dark:bg-slate-900">
+                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                            Actualizando
+                                        </div>
+                                    )}
+                                    <div className="hidden items-center gap-2 md:flex">
+                                        <div className="relative">
+                                            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                value={quickFilter}
+                                                onChange={(e) => setQuickFilter(e.target.value)}
+                                                placeholder="Refinar en esta página…"
+                                                className="h-8 w-56 pl-8 pr-8 text-xs"
+                                            />
+                                            {quickFilter !== '' && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setQuickFilter('')}
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                    aria-label="Limpiar refinamiento local"
+                                                >
+                                                    <X className="h-3.5 w-3.5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                        <select
+                                            value={localSortKey}
+                                            onChange={(e) => setLocalSortKey(e.target.value as LocalSortKey)}
+                                            className="h-8 rounded-md border border-slate-200 bg-white px-2 text-xs text-foreground shadow-sm outline-none transition-colors focus:border-slate-400 dark:border-slate-700 dark:bg-slate-900"
+                                            aria-label="Orden local"
+                                        >
+                                            <option value="date_desc">Fecha reciente</option>
+                                            <option value="date_asc">Fecha antigua</option>
+                                            <option value="name_asc">Nombre A-Z</option>
+                                            <option value="name_desc">Nombre Z-A</option>
+                                        </select>
+                                    </div>
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         className="h-8 gap-1.5 text-xs"
                                         onClick={handleExportToExcel}
-                                        disabled={sources.length === 0}
+                                        disabled={displayedSources.length === 0}
                                     >
                                         <Upload className="h-3.5 w-3.5" />
                                         Exportar
@@ -557,7 +801,7 @@ export default function Hemeroteca({
                                             type="button"
                                             onClick={() => {
                                                 setViewMode('list');
-                                                navigate({ view: 'list', page: 1 });
+                                                navigate({ view: 'list', page: 1 }, true);
                                             }}
                                             aria-label="Vista lista"
                                             className={`flex h-7 w-7 items-center justify-center rounded transition-all ${
@@ -572,7 +816,7 @@ export default function Hemeroteca({
                                             type="button"
                                             onClick={() => {
                                                 setViewMode('grid');
-                                                navigate({ view: 'grid', page: 1 });
+                                                navigate({ view: 'grid', page: 1 }, true);
                                             }}
                                             aria-label="Vista cuadrícula"
                                             className={`flex h-7 w-7 items-center justify-center rounded transition-all ${
@@ -638,7 +882,7 @@ export default function Hemeroteca({
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                                                {sources.map((source) => {
+                                                {displayedSources.map((source) => {
                                                     return (
                                                         <tr
                                                             key={source.id}
@@ -654,21 +898,24 @@ export default function Hemeroteca({
                                                                 <div className="flex items-center gap-2.5">
                                                                     <div className="min-w-0">
                                                                         <p className="max-w-[200px] truncate text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
-                                                                            {source.name}
+                                                                            {highlightText(source.name, activeHighlightQuery)}
                                                                         </p>
                                                                         <p className="max-w-[200px] truncate text-xs text-muted-foreground">
-                                                                            {source.url}
+                                                                            {highlightText(source.url, activeHighlightQuery)}
                                                                         </p>
                                                                     </div>
                                                                 </div>
                                                             </td>
-                                                            <td className="hidden max-w-xs px-4 py-3.5 align-middle md:table-cell">
-                                                                <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                                                                    {source.description}
-                                                                </p>
+                                                            <td className="hidden min-w-[320px] px-4 py-3.5 align-middle md:table-cell">
+                                                                <div>
+                                                                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                                                                        {highlightText(source.description, activeHighlightQuery)}
+                                                                    </p>
+                                                                    {renderContentSnippet(source)}
+                                                                </div>
                                                             </td>
                                                             <td className="hidden px-4 py-3.5 align-middle text-sm text-muted-foreground xl:table-cell">
-                                                                {source.capturedBy}
+                                                                {highlightText(source.capturedBy, activeHighlightQuery)}
                                                             </td>
                                                             <td className="whitespace-nowrap px-4 py-3.5 align-middle text-sm tabular-nums text-muted-foreground">
                                                                 {source.date}
@@ -676,7 +923,7 @@ export default function Hemeroteca({
                                                         </tr>
                                                     );
                                                 })}
-                                                {sources.length === 0 && (
+                                                {displayedSources.length === 0 && (
                                                     <tr>
                                                         <td colSpan={5} className="px-4 py-20 text-center">
                                                             <div className="mx-auto flex max-w-sm flex-col items-center gap-3">
@@ -700,7 +947,7 @@ export default function Hemeroteca({
                             ) : (
                                 /* Grid view */
                                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                                    {sources.map((source) => {
+                                    {displayedSources.map((source) => {
                                         return (
                                             <div
                                                 key={source.id}
@@ -736,11 +983,12 @@ export default function Hemeroteca({
                                                 <div className="space-y-3 p-4">
                                                     <div>
                                                         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
-                                                            {source.name}
+                                                            {highlightText(source.name, activeHighlightQuery)}
                                                         </h3>
                                                         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-                                                            {source.description}
+                                                            {highlightText(source.description, activeHighlightQuery)}
                                                         </p>
+                                                        {renderContentSnippet(source)}
                                                     </div>
                                                     <a
                                                         href={source.url}
@@ -749,7 +997,7 @@ export default function Hemeroteca({
                                                         className="block truncate rounded-md bg-slate-50 px-2.5 py-1.5 text-[11px] text-sky-600 transition-colors hover:bg-slate-100 hover:text-sky-700 dark:bg-slate-900 dark:text-sky-400 dark:hover:bg-slate-800"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
-                                                        {source.url}
+                                                        {highlightText(source.url, activeHighlightQuery)}
                                                     </a>
                                                     {source.tags.length > 0 && (
                                                         <div className="flex flex-wrap gap-1">
@@ -758,7 +1006,7 @@ export default function Hemeroteca({
                                                                     key={`${source.id}-${tag}`}
                                                                     className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                                                                 >
-                                                                    {tag}
+                                                                    {highlightText(tag, activeHighlightQuery)}
                                                                 </span>
                                                             ))}
                                                             {source.tags.length > 4 && (
@@ -770,13 +1018,13 @@ export default function Hemeroteca({
                                                     )}
                                                     <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 dark:border-slate-800">
                                                         <p className="text-[11px] tabular-nums text-muted-foreground">{source.date}</p>
-                                                        <p className="text-[11px] text-muted-foreground">{source.capturedBy}</p>
+                                                        <p className="text-[11px] text-muted-foreground">{highlightText(source.capturedBy, activeHighlightQuery)}</p>
                                                     </div>
                                                 </div>
                                             </div>
                                         );
                                     })}
-                                    {sources.length === 0 && (
+                                    {displayedSources.length === 0 && (
                                         <div className="col-span-full flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white py-20 text-center dark:border-slate-700 dark:bg-slate-950">
                                             <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-slate-300 dark:border-slate-700">
                                                 <Search className="h-5 w-5 text-muted-foreground" />

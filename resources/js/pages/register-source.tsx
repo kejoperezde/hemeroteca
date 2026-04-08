@@ -92,6 +92,11 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
 
             const payload = new FormData();
             payload.append('draftToken', draftToken);
+            // Include CSRF token so Laravel doesn't reject the beacon request with 419
+            const xsrf = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1];
+            if (xsrf) {
+                payload.append('_token', decodeURIComponent(xsrf));
+            }
             navigator.sendBeacon('/hemeroteca/sources/draft/discard', payload);
         };
 

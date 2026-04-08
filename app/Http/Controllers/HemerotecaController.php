@@ -185,14 +185,18 @@ HTML;
         }
 
         $upstreamUrl = "https://cdn.jsdelivr.net/npm/replaywebpage/{$normalizedAsset}";
-        $upstream = Http::timeout(30)->get($upstreamUrl);
+        $cacheKey = 'hemeroteca:replay-asset:'.md5($normalizedAsset);
 
-        abort_unless($upstream->successful(), 404);
+        /** @var array{0: string, 1: string} $cached */
+        $cached = Cache::remember($cacheKey, 3600, function () use ($upstreamUrl): array {
+            $upstream = Http::timeout(30)->get($upstreamUrl);
+            abort_unless($upstream->successful(), 404);
 
-        $contentType = $upstream->header('content-type') ?: 'application/octet-stream';
+            return [$upstream->body(), $upstream->header('content-type') ?: 'application/octet-stream'];
+        });
 
-        return response($upstream->body(), 200, [
-            'Content-Type' => $contentType,
+        return response($cached[0], 200, [
+            'Content-Type' => $cached[1],
             'Cache-Control' => 'public, max-age=3600',
         ]);
     }
@@ -408,7 +412,9 @@ HTML;
 
         // Acquire an atomic lock to prevent a duplicate form submission with the
         // same draft token from creating two fuentes records simultaneously.
-        $lock = Cache::lock('hemeroteca:draft-redeem:'.$draftToken, 15);
+        // The lock must cover the full operation (read draft + create record + move files)
+        // to prevent two concurrent submissions from creating duplicate fuentes rows.
+        $lock = Cache::lock('hemeroteca:draft-redeem:'.$draftToken, 60);
         if (!$lock->get()) {
             return [
                 'ok' => false,
@@ -418,63 +424,64 @@ HTML;
             ];
         }
 
-        try {
-            $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) $request->user()->id);
-        } finally {
-            $lock->release();
-        }
-
-        if ($draftPayload === null) {
-            return [
-                'ok' => false,
-                'sourceId' => null,
-                'backupPath' => null,
-                'message' => 'El borrador no existe, expiro o no pertenece al usuario autenticado.',
-            ];
-        }
-
-        $sourceId = $this->createSource($validated, (int) $request->user()->id, $tagNames);
-
-        Log::info('Fuente registrada. Iniciando carga de archivo WACZ.', [
-            'source_id' => $sourceId,
-            'url' => $validated['url'],
-            'has_description' => filled($validated['description'] ?? null),
-            'uploaded_wacz_name' => $draftPayload['wacz_original_name'] ?? null,
-        ]);
-
         $uploadSucceeded = false;
         $storedBackupPath = null;
+        $sourceId = null;
 
         try {
-            $storedBackupPath = $this->storeWaczDraft($sourceId, $draftPayload);
-            $this->storeThumbnailDraft($sourceId, $draftPayload);
+            $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) $request->user()->id);
 
-            $absolutePath = $this->resolveLocalBackupAbsolutePath($storedBackupPath);
-            $contentHash = File::exists($absolutePath) ? hash_file('sha256', $absolutePath) : null;
+            if ($draftPayload === null) {
+                return [
+                    'ok' => false,
+                    'sourceId' => null,
+                    'backupPath' => null,
+                    'message' => 'El borrador no existe, expiro o no pertenece al usuario autenticado.',
+                ];
+            }
 
-            DB::table('fuentes')
-                ->where('id', $sourceId)
-                ->update([
-                    'ruta_archivo' => $storedBackupPath,
-                    'estado_captura' => 'cargada',
-                    'capturado_en' => now(),
-                    'hash_contenido' => $contentHash,
-                    'texto' => filled($draftPayload['text'] ?? null) ? (string) $draftPayload['text'] : null,
-                    'updated_at' => now(),
-                ]);
+            $sourceId = $this->createSource($validated, (int) $request->user()->id, $tagNames);
 
-            $this->forgetDraftPayload($draftToken, $draftPayload);
-
-            $uploadSucceeded = true;
-        } catch (\Throwable $exception) {
-            $this->markUploadAsFailed($sourceId);
-
-            Log::error('Fallo la carga del archivo WACZ.', [
+            Log::info('Fuente registrada. Iniciando carga de archivo WACZ.', [
                 'source_id' => $sourceId,
                 'url' => $validated['url'],
-                'exception_class' => $exception::class,
-                'message' => $exception->getMessage(),
+                'has_description' => filled($validated['description'] ?? null),
+                'uploaded_wacz_name' => $draftPayload['wacz_original_name'] ?? null,
             ]);
+
+            try {
+                $storedBackupPath = $this->storeWaczDraft($sourceId, $draftPayload);
+                $this->storeThumbnailDraft($sourceId, $draftPayload);
+
+                $absolutePath = $this->resolveLocalBackupAbsolutePath($storedBackupPath);
+                $contentHash = File::exists($absolutePath) ? hash_file('sha256', $absolutePath) : null;
+
+                DB::table('fuentes')
+                    ->where('id', $sourceId)
+                    ->update([
+                        'ruta_archivo' => $storedBackupPath,
+                        'estado_captura' => 'cargada',
+                        'capturado_en' => now(),
+                        'hash_contenido' => $contentHash,
+                        'texto' => filled($draftPayload['text'] ?? null) ? (string) $draftPayload['text'] : null,
+                        'updated_at' => now(),
+                    ]);
+
+                $this->forgetDraftPayload($draftToken, $draftPayload);
+
+                $uploadSucceeded = true;
+            } catch (\Throwable $exception) {
+                $this->markUploadAsFailed($sourceId);
+
+                Log::error('Fallo la carga del archivo WACZ.', [
+                    'source_id' => $sourceId,
+                    'url' => $validated['url'],
+                    'exception_class' => $exception::class,
+                    'message' => $exception->getMessage(),
+                ]);
+            }
+        } finally {
+            $lock->release();
         }
 
         return [
@@ -645,15 +652,17 @@ HTML;
             'id' => (int) $source->id,
             'name' => $source->titulo ?: parse_url((string) $source->url, PHP_URL_HOST) ?: 'Sin titulo',
             'description' => $source->descripcion ?: 'Sin descripcion.',
+            'contentSnippet' => isset($source->content_snippet) && is_string($source->content_snippet)
+                ? trim($source->content_snippet)
+                : null,
             'url' => (string) $source->url,
             'backupPath' => $source->ruta_archivo ?: null,
             'tags' => $tags,
             'date' => $capturedAt ? $capturedAt->locale('es')->translatedFormat('d/m/Y H:i') : $capturedAtLabel,
-            'capturedAt' => $capturedAt?->format('Y-m-d'),
+            'capturedAt' => $capturedAt?->toIso8601String(),
             'capturedBy' => $source->captured_by ?: 'Sin usuario',
             'oficioNumber' => null,
             'hash' => $source->hash_contenido ?: null,
-            'oficioNumber' => null,
         ];
     }
 
@@ -665,20 +674,73 @@ HTML;
         $search    = trim((string) $request->input('search', ''));
         $from      = trim((string) $request->input('from', ''));
         $to        = trim((string) $request->input('to', ''));
+        // Discard malformed date strings silently to prevent SQL errors
+        if ($from !== '' && strtotime($from) === false) {
+            $from = '';
+        }
+        if ($to !== '' && strtotime($to) === false) {
+            $to = '';
+        }
         $tags      = array_values(array_filter(array_map('trim', (array) $request->input('tags', []))));
         $view      = $request->input('view') === 'list' ? 'list' : 'grid';
         $perPage   = $view === 'grid' ? 6 : 8;
         $page      = max(1, (int) $request->input('page', 1));
+        $normalizedSearch = mb_strtolower($search, 'UTF-8');
+
+        $searchTokens = array_values(array_filter(
+            preg_split('/\s+/u', preg_replace('/[^\pL\pN\s]+/u', ' ', $normalizedSearch) ?? '') ?: [],
+            static fn (string $token): bool => mb_strlen($token, 'UTF-8') >= 2,
+        ));
+
+        $booleanTokens = array_map(
+            static fn (string $token): string => '+'.$token.'*',
+            $searchTokens,
+        );
+
+        $booleanQuery = implode(' ', $booleanTokens);
+        $tagCount = count($tags);
+        $foldedSearch = $this->foldSearchTerm($search);
+        $foldedLike = '%'.$foldedSearch.'%';
+
+        $foldedTitleExpr = $this->foldSqlExpression('fuentes.titulo');
+        $foldedDescriptionExpr = $this->foldSqlExpression('fuentes.descripcion');
+        $foldedTextExpr = $this->foldSqlExpression('fuentes.texto');
+        $foldedUserNameExpr = $this->foldSqlExpression('users.name');
+        $foldedTagNameExpr = $this->foldSqlExpression('etiquetas.nombre');
 
         // Build the filtered ID subquery for counting and as a base for the main query.
         $filteredIds = DB::table('fuentes')->select('id');
 
         if ($search !== '') {
-            $like = '%'.$search.'%';
-            $filteredIds->where(static function ($q) use ($like): void {
-                $q->where('titulo', 'LIKE', $like)
-                    ->orWhere('descripcion', 'LIKE', $like)
-                    ->orWhere('texto', 'LIKE', $like);
+            $filteredIds->where(function ($q) use (
+                $booleanQuery,
+                $foldedLike,
+                $foldedTitleExpr,
+                $foldedDescriptionExpr,
+                $foldedTextExpr,
+                $foldedUserNameExpr,
+                $foldedTagNameExpr,
+            ): void {
+                if ($booleanQuery !== '') {
+                    $q->whereRaw('MATCH(titulo, descripcion, texto) AGAINST (? IN BOOLEAN MODE)', [$booleanQuery]);
+                }
+
+                $q->orWhereRaw("{$foldedTitleExpr} LIKE ?", [$foldedLike])
+                    ->orWhereRaw("{$foldedDescriptionExpr} LIKE ?", [$foldedLike])
+                    ->orWhereRaw("{$foldedTextExpr} LIKE ?", [$foldedLike])
+                    ->orWhereExists(function ($sub) use ($foldedLike, $foldedUserNameExpr): void {
+                        $sub->selectRaw('1')
+                            ->from('users')
+                            ->whereColumn('users.id', 'fuentes.user_id')
+                            ->whereRaw("{$foldedUserNameExpr} LIKE ?", [$foldedLike]);
+                    })
+                    ->orWhereExists(function ($sub) use ($foldedLike, $foldedTagNameExpr): void {
+                        $sub->selectRaw('1')
+                            ->from('etiqueta_fuente')
+                            ->join('etiquetas', 'etiqueta_fuente.etiqueta_id', '=', 'etiquetas.id')
+                            ->whereColumn('etiqueta_fuente.fuente_id', 'fuentes.id')
+                            ->whereRaw("{$foldedTagNameExpr} LIKE ?", [$foldedLike]);
+                    });
             });
         }
 
@@ -690,12 +752,21 @@ HTML;
             $filteredIds->whereDate('capturado_en', '<=', $to);
         }
 
-        foreach ($tags as $tagName) {
-            $filteredIds->whereIn('id', static function ($sub) use ($tagName): void {
+        if ($tagCount > 0) {
+            $normalizedTagNames = array_values(array_unique(array_map(
+                static fn (string $tagName): string => mb_strtolower($tagName, 'UTF-8'),
+                $tags,
+            )));
+
+            $requiredTagCount = count($normalizedTagNames);
+
+            $filteredIds->whereIn('id', static function ($sub) use ($normalizedTagNames, $requiredTagCount): void {
                 $sub->select('etiqueta_fuente.fuente_id')
                     ->from('etiqueta_fuente')
                     ->join('etiquetas', 'etiqueta_fuente.etiqueta_id', '=', 'etiquetas.id')
-                    ->whereRaw('LOWER(etiquetas.nombre) = ?', [mb_strtolower($tagName, 'UTF-8')]);
+                    ->whereIn(DB::raw('LOWER(etiquetas.nombre)'), $normalizedTagNames)
+                    ->groupBy('etiqueta_fuente.fuente_id')
+                    ->havingRaw('COUNT(DISTINCT LOWER(etiquetas.nombre)) = ?', [$requiredTagCount]);
             });
         }
 
@@ -710,7 +781,7 @@ HTML;
             default       => 'fuentes.capturado_en',
         };
 
-        $sources = DB::table('fuentes')
+        $sourcesQuery = DB::table('fuentes')
             ->leftJoin('users', 'fuentes.user_id', '=', 'users.id')
             ->leftJoin('etiqueta_fuente', 'fuentes.id', '=', 'etiqueta_fuente.fuente_id')
             ->leftJoin('etiquetas', 'etiqueta_fuente.etiqueta_id', '=', 'etiquetas.id')
@@ -735,7 +806,51 @@ HTML;
                 'fuentes.capturado_en',
                 'fuentes.hash_contenido',
                 'users.name',
-            )
+            );
+
+        if ($search !== '') {
+            $snippetNeedle = $this->foldSearchTerm($searchTokens[0] ?? $normalizedSearch);
+
+            if ($booleanQuery !== '') {
+                $sourcesQuery->selectRaw(
+                    'MATCH(fuentes.titulo, fuentes.descripcion, fuentes.texto) AGAINST (? IN BOOLEAN MODE) as relevance_score',
+                    [$booleanQuery],
+                );
+            } else {
+                $sourcesQuery->selectRaw('0 as relevance_score');
+            }
+
+            if ($snippetNeedle !== '') {
+                $sourcesQuery->selectRaw(
+                    "CASE
+                        WHEN fuentes.texto IS NULL OR fuentes.texto = '' THEN NULL
+                        WHEN LOCATE(?, {$foldedTextExpr}) > 0
+                            THEN TRIM(SUBSTRING(
+                                fuentes.texto,
+                                GREATEST(1, LOCATE(?, {$foldedTextExpr}) - 70),
+                                280
+                            ))
+                        ELSE NULL
+                    END as content_snippet",
+                    [$snippetNeedle, $snippetNeedle],
+                );
+            }
+
+            $sourcesQuery->selectRaw(
+                "MAX(CASE WHEN {$foldedTagNameExpr} LIKE ? THEN 1 ELSE 0 END) as tag_match_score",
+                [$foldedLike],
+            )->selectRaw(
+                "MAX(CASE WHEN {$foldedUserNameExpr} LIKE ? THEN 1 ELSE 0 END) as user_match_score",
+                [$foldedLike],
+            );
+
+            $sourcesQuery
+                ->orderByDesc('relevance_score')
+                ->orderByDesc('tag_match_score')
+                ->orderByDesc('user_match_score');
+        }
+
+        $sources = $sourcesQuery
             ->orderBy($sortColumn, $direction)
             ->orderBy('fuentes.id', $direction)
             ->skip(($page - 1) * $perPage)
@@ -828,13 +943,33 @@ HTML;
             return;
         }
 
-        $pivotRows = [];
-
+        // Build a normalized-key → original-name map
+        $normalizedMap = [];
         foreach ($tagNames as $tagName) {
-            $pivotRows[] = [
-                'fuente_id' => $sourceId,
-                'etiqueta_id' => $this->resolveTagId($tagName),
-            ];
+            $normalizedMap[mb_strtolower($tagName, 'UTF-8')] = $tagName;
+        }
+
+        $normalizedKeys = array_keys($normalizedMap);
+
+        // Fetch all already-existing tags in a single query instead of N queries
+        $existingRows = DB::table('etiquetas')
+            ->whereRaw(
+                'LOWER(nombre) IN ('.implode(',', array_fill(0, count($normalizedKeys), '?')).')',
+                $normalizedKeys,
+            )
+            ->select('id', DB::raw('LOWER(nombre) as lower_nombre'))
+            ->get();
+
+        $existingIds = [];
+        foreach ($existingRows as $row) {
+            $existingIds[$row->lower_nombre] = (int) $row->id;
+        }
+
+        // Only call resolveTagId (which may INSERT) for tags that don't exist yet
+        $pivotRows = [];
+        foreach ($normalizedMap as $normalizedKey => $originalName) {
+            $tagId = $existingIds[$normalizedKey] ?? $this->resolveTagId($originalName);
+            $pivotRows[] = ['fuente_id' => $sourceId, 'etiqueta_id' => $tagId];
         }
 
         DB::table('etiqueta_fuente')->insertOrIgnore($pivotRows);
@@ -869,5 +1004,50 @@ HTML;
 
             throw $exception;
         }
+    }
+
+    private function foldSearchTerm(string $value): string
+    {
+        return strtr(mb_strtolower($value, 'UTF-8'), [
+            'á' => 'a',
+            'à' => 'a',
+            'ä' => 'a',
+            'â' => 'a',
+            'ã' => 'a',
+            'é' => 'e',
+            'è' => 'e',
+            'ë' => 'e',
+            'ê' => 'e',
+            'í' => 'i',
+            'ì' => 'i',
+            'ï' => 'i',
+            'î' => 'i',
+            'ó' => 'o',
+            'ò' => 'o',
+            'ö' => 'o',
+            'ô' => 'o',
+            'õ' => 'o',
+            'ú' => 'u',
+            'ù' => 'u',
+            'ü' => 'u',
+            'û' => 'u',
+        ]);
+    }
+
+    private function foldSqlExpression(string $columnExpression): string
+    {
+        $expr = "LOWER(COALESCE({$columnExpression}, ''))";
+
+        foreach ([
+            ['á', 'a'], ['à', 'a'], ['ä', 'a'], ['â', 'a'], ['ã', 'a'],
+            ['é', 'e'], ['è', 'e'], ['ë', 'e'], ['ê', 'e'],
+            ['í', 'i'], ['ì', 'i'], ['ï', 'i'], ['î', 'i'],
+            ['ó', 'o'], ['ò', 'o'], ['ö', 'o'], ['ô', 'o'], ['õ', 'o'],
+            ['ú', 'u'], ['ù', 'u'], ['ü', 'u'], ['û', 'u'],
+        ] as [$from, $to]) {
+            $expr = "REPLACE({$expr}, '{$from}', '{$to}')";
+        }
+
+        return $expr;
     }
 }
