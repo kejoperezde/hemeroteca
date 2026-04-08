@@ -262,7 +262,7 @@ HTML;
 
         $validated = $request->validate([
             'url' => ['required', 'url', 'max:2048'],
-            'text' => ['required', 'string'],
+            'text' => ['nullable', 'string', 'max:100000'],
             'waczFile' => [
                 'required',
                 'file',
@@ -280,13 +280,13 @@ HTML;
                     }
                 },
             ],
-            'thumbnailFile' => ['required', 'file', 'max:10240', 'mimes:png'],
+            'thumbnailFile' => ['nullable', 'file', 'max:10240', 'mimes:png'],
         ]);
 
         /** @var UploadedFile $uploadedWacz */
         $uploadedWacz = $validated['waczFile'];
-        /** @var UploadedFile $uploadedThumbnail */
-        $uploadedThumbnail = $validated['thumbnailFile'];
+        /** @var UploadedFile|null $uploadedThumbnail */
+        $uploadedThumbnail = $validated['thumbnailFile'] ?? null;
 
         $token = (string) Str::uuid();
         $waczFileName = Str::endsWith(strtolower($uploadedWacz->getClientOriginalName()), '.wacz.zip')
@@ -294,9 +294,11 @@ HTML;
             : "{$token}.wacz";
 
         $waczDraftPath = $uploadedWacz->storeAs('capturas/drafts', $waczFileName, ['disk' => 'local']);
-        $thumbnailDraftPath = $uploadedThumbnail->storeAs('capturas/drafts', "{$token}_preview.png", ['disk' => 'local']);
+        $thumbnailDraftPath = $uploadedThumbnail
+            ? $uploadedThumbnail->storeAs('capturas/drafts', "{$token}_preview.png", ['disk' => 'local'])
+            : null;
 
-        if (!is_string($waczDraftPath) || $waczDraftPath === '' || !is_string($thumbnailDraftPath) || $thumbnailDraftPath === '') {
+        if (!is_string($waczDraftPath) || $waczDraftPath === '') {
             return response()->json([
                 'message' => 'No se pudo guardar el borrador temporal.',
             ], 500);
@@ -309,7 +311,7 @@ HTML;
             'text' => trim((string) $validated['text']),
             'wacz_original_name' => $uploadedWacz->getClientOriginalName(),
             'stored_path' => str_replace('\\', '/', $waczDraftPath),
-            'thumbnail_path' => str_replace('\\', '/', $thumbnailDraftPath),
+            'thumbnail_path' => $thumbnailDraftPath ? str_replace('\\', '/', $thumbnailDraftPath) : null,
         ], now()->addMinutes(60));
 
         return response()->json([
@@ -403,7 +405,24 @@ HTML;
         $tagNames = $this->normalizeTags($validated['tags'] ?? []);
 
         $draftToken = trim((string) $validated['draftToken']);
-        $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) $request->user()->id);
+
+        // Acquire an atomic lock to prevent a duplicate form submission with the
+        // same draft token from creating two fuentes records simultaneously.
+        $lock = Cache::lock('hemeroteca:draft-redeem:'.$draftToken, 15);
+        if (!$lock->get()) {
+            return [
+                'ok' => false,
+                'sourceId' => null,
+                'backupPath' => null,
+                'message' => 'Este borrador ya está siendo procesado. Espera un momento.',
+            ];
+        }
+
+        try {
+            $draftPayload = $this->getDraftPayloadForUser($draftToken, (int) $request->user()->id);
+        } finally {
+            $lock->release();
+        }
 
         if ($draftPayload === null) {
             return [
@@ -520,7 +539,8 @@ HTML;
         }
 
         $thumbnailPath = (string) ($payload['thumbnail_path'] ?? '');
-        if ($thumbnailPath === '' || !Storage::disk('local')->exists($thumbnailPath)) {
+        if ($thumbnailPath !== '' && !Storage::disk('local')->exists($thumbnailPath)) {
+            // Thumbnail was recorded in the payload but the file is missing — treat as invalid.
             return null;
         }
 
@@ -614,33 +634,6 @@ HTML;
             ? $capturedAt->locale('es')->translatedFormat('j M Y')
             : 'Sin captura';
         $tags = [];
-        $hasBackupPath = is_string($source->ruta_archivo ?? null) && trim((string) $source->ruta_archivo) !== '';
-        $storedHash = is_string($source->hash_contenido ?? null) ? trim((string) $source->hash_contenido) : null;
-        $currentHash = null;
-        $hashStatus = $hasBackupPath ? 'sin_verificar' : 'sin_respaldo';
-
-        if ($hasBackupPath) {
-            try {
-                $absolutePath = $this->resolveLocalBackupAbsolutePath((string) $source->ruta_archivo);
-                if (File::exists($absolutePath)) {
-                    $currentHash = hash_file('sha256', $absolutePath) ?: null;
-
-                    if ($storedHash && $currentHash) {
-                        $hashStatus = hash_equals(strtolower($storedHash), strtolower($currentHash))
-                            ? 'valido'
-                            : 'invalido';
-                    } elseif ($storedHash) {
-                        $hashStatus = 'sin_verificar';
-                    } else {
-                        $hashStatus = 'sin_hash';
-                    }
-                } else {
-                    $hashStatus = 'sin_respaldo';
-                }
-            } catch (\Throwable $exception) {
-                $hashStatus = 'sin_verificar';
-            }
-        }
 
         if (isset($source->tags_concat) && is_string($source->tags_concat) && $source->tags_concat !== '') {
             $tags = array_values(array_filter(array_map(
@@ -648,7 +641,6 @@ HTML;
                 explode('||', $source->tags_concat),
             )));
         }
-
         return [
             'id' => (int) $source->id,
             'name' => $source->titulo ?: parse_url((string) $source->url, PHP_URL_HOST) ?: 'Sin titulo',
@@ -660,14 +652,64 @@ HTML;
             'capturedAt' => $capturedAt?->format('Y-m-d'),
             'capturedBy' => $source->captured_by ?: 'Sin usuario',
             'oficioNumber' => null,
-            'hash' => $storedHash,
-            'currentHash' => $currentHash,
-            'hashStatus' => $hashStatus,
+            'hash' => $source->hash_contenido ?: null,
+            'oficioNumber' => null,
         ];
     }
 
-    public function __invoke(): Response
+    public function __invoke(Request $request): Response
     {
+        $allowedSorts = ['name', 'description', 'capturedBy', 'date'];
+        $sort      = in_array($request->input('sort'), $allowedSorts, true) ? $request->input('sort') : 'date';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+        $search    = trim((string) $request->input('search', ''));
+        $from      = trim((string) $request->input('from', ''));
+        $to        = trim((string) $request->input('to', ''));
+        $tags      = array_values(array_filter(array_map('trim', (array) $request->input('tags', []))));
+        $view      = $request->input('view') === 'list' ? 'list' : 'grid';
+        $perPage   = $view === 'grid' ? 6 : 8;
+        $page      = max(1, (int) $request->input('page', 1));
+
+        // Build the filtered ID subquery for counting and as a base for the main query.
+        $filteredIds = DB::table('fuentes')->select('id');
+
+        if ($search !== '') {
+            $like = '%'.$search.'%';
+            $filteredIds->where(static function ($q) use ($like): void {
+                $q->where('titulo', 'LIKE', $like)
+                    ->orWhere('descripcion', 'LIKE', $like)
+                    ->orWhere('texto', 'LIKE', $like);
+            });
+        }
+
+        if ($from !== '') {
+            $filteredIds->whereDate('capturado_en', '>=', $from);
+        }
+
+        if ($to !== '') {
+            $filteredIds->whereDate('capturado_en', '<=', $to);
+        }
+
+        foreach ($tags as $tagName) {
+            $filteredIds->whereIn('id', static function ($sub) use ($tagName): void {
+                $sub->select('etiqueta_fuente.fuente_id')
+                    ->from('etiqueta_fuente')
+                    ->join('etiquetas', 'etiqueta_fuente.etiqueta_id', '=', 'etiquetas.id')
+                    ->whereRaw('LOWER(etiquetas.nombre) = ?', [mb_strtolower($tagName, 'UTF-8')]);
+            });
+        }
+
+        $total     = (clone $filteredIds)->count();
+        $lastPage  = max(1, (int) ceil($total / $perPage));
+        $page      = min($page, $lastPage);
+
+        $sortColumn = match ($sort) {
+            'name'        => 'fuentes.titulo',
+            'description' => 'fuentes.descripcion',
+            'capturedBy'  => 'users.name',
+            default       => 'fuentes.capturado_en',
+        };
+
         $sources = DB::table('fuentes')
             ->leftJoin('users', 'fuentes.user_id', '=', 'users.id')
             ->leftJoin('etiqueta_fuente', 'fuentes.id', '=', 'etiqueta_fuente.fuente_id')
@@ -678,23 +720,26 @@ HTML;
                 'fuentes.titulo',
                 'fuentes.descripcion',
                 'fuentes.ruta_archivo',
-                'fuentes.hash_contenido',
                 'fuentes.capturado_en',
+                'fuentes.hash_contenido',
                 'users.name as captured_by',
                 DB::raw("GROUP_CONCAT(etiquetas.nombre ORDER BY etiquetas.nombre SEPARATOR '||') as tags_concat"),
             )
+            ->whereIn('fuentes.id', $filteredIds)
             ->groupBy(
                 'fuentes.id',
                 'fuentes.url',
                 'fuentes.titulo',
                 'fuentes.descripcion',
                 'fuentes.ruta_archivo',
-                'fuentes.hash_contenido',
                 'fuentes.capturado_en',
+                'fuentes.hash_contenido',
                 'users.name',
             )
-            ->orderByDesc('fuentes.capturado_en')
-            ->orderByDesc('fuentes.id')
+            ->orderBy($sortColumn, $direction)
+            ->orderBy('fuentes.id', $direction)
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
             ->get()
             ->map(fn (object $source): array => $this->formatSource($source))
             ->values();
@@ -708,8 +753,21 @@ HTML;
             ->values();
 
         return Inertia::render('hemeroteca', [
-            'sources' => $sources,
+            'sources'     => $sources,
             'suggestedTags' => $suggestedTags,
+            'total'       => $total,
+            'perPage'     => $perPage,
+            'currentPage' => $page,
+            'lastPage'    => $lastPage,
+            'filters'     => [
+                'search'    => $search,
+                'from'      => $from,
+                'to'        => $to,
+                'tags'      => $tags,
+                'sort'      => $sort,
+                'direction' => $direction,
+                'view'      => $view,
+            ],
         ]);
     }
 

@@ -429,14 +429,14 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
                                     <label htmlFor="source-request-letter" className="cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300">
                                         Vinculado a oficio de petición
                                     </label>
-                                    {isRequestLetter && (
+                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isRequestLetter ? 'mt-3 max-h-20 opacity-100' : 'max-h-0 opacity-0'}`}>
                                         <Input
                                             value={requestLetterNumber}
                                             onChange={(e) => setRequestLetterNumber(e.target.value)}
                                             placeholder="Número de oficio (ej: FGE/DIC/001/2026)"
-                                            className="mt-3 h-11 rounded-xl border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800"
+                                            className="h-11 rounded-xl border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800"
                                         />
-                                    )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
