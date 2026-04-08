@@ -8,6 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $driver = Schema::getConnection()->getDriverName();
+        $supportsFullText = in_array($driver, ['mysql', 'mariadb', 'pgsql'], true);
 
         Schema::create('libro_oficios', function (Blueprint $table) {
             $table->id();
@@ -17,7 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('fuentes', function (Blueprint $table) {
+        Schema::create('fuentes', function (Blueprint $table) use ($supportsFullText) {
             $table->id();
             $table->text('url');
             $table->string('titulo')->nullable();
@@ -33,7 +35,9 @@ return new class extends Migration
             $table->index(['user_id', 'capturado_en']);
             $table->index('estado_captura');
             $table->index('hash_contenido');
-            $table->fullText(['titulo', 'descripcion', 'texto'], 'fuentes_search_fulltext');
+            if ($supportsFullText) {
+                $table->fullText(['titulo', 'descripcion', 'texto'], 'fuentes_search_fulltext');
+            }
             $table->timestamps();
         });
 
