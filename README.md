@@ -1,5 +1,9 @@
 # Hemeroteca
 
+<p align="center">
+	<img src="public/logfisvertical.png" alt="Logo vertical" width="160">
+</p>
+
 Aplicación web para registrar, organizar y consultar fuentes digitales con su respaldo.
 
 Está construida con Laravel + Inertia + React, y permite trabajar con capturas en formato WACZ para consulta y descarga posterior.
