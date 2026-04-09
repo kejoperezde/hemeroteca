@@ -34,6 +34,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('hemeroteca/sources/{sourceId}/backup/thumbnail', [HemerotecaController::class, 'thumbnailBackup'])
         ->whereNumber('sourceId')
         ->name('hemeroteca.sources.backup.thumbnail');
+    Route::patch('hemeroteca/sources/{sourceId}', [HemerotecaController::class, 'update'])
+        ->whereNumber('sourceId')
+        ->middleware('throttle:20,1')
+        ->name('hemeroteca.sources.update');
+    Route::delete('hemeroteca/sources/{sourceId}', [HemerotecaController::class, 'destroy'])
+        ->whereNumber('sourceId')
+        ->middleware('throttle:20,1')
+        ->name('hemeroteca.sources.destroy');
 });
 
 require __DIR__.'/settings.php';

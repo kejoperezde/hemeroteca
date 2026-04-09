@@ -1,7 +1,9 @@
-import { Download, ExternalLink, FileArchive, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { router } from '@inertiajs/react';
+import { Download, ExternalLink, FileArchive, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type SourceDetails = {
     id: number;
@@ -21,9 +23,12 @@ type SourceDetailsModalProps = {
     source: SourceDetails | null;
     open: boolean;
     onClose: () => void;
+    canEdit?: boolean;
+    canDelete?: boolean;
+    suggestedTags?: string[];
 };
 
-export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModalProps) {
+export function SourceDetailsModal({ source, open, onClose, canEdit, canDelete, suggestedTags }: SourceDetailsModalProps) {
     useEffect(() => {
         if (!open) {
             return;
@@ -49,14 +54,97 @@ export function SourceDetailsModal({ source, open, onClose }: SourceDetailsModal
         return null;
     }
 
-    return <SourceDetailsModalContent key={`${source.id}-${open ? 'open' : 'closed'}`} source={source} onClose={onClose} />;
+    return <SourceDetailsModalContent key={`${source.id}-${open ? 'open' : 'closed'}`} source={source} onClose={onClose} canEdit={canEdit} canDelete={canDelete} suggestedTags={suggestedTags} />;
 }
 
-function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails; onClose: () => void }) {
+function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, suggestedTags = [] }: { source: SourceDetails; onClose: () => void; canEdit?: boolean; canDelete?: boolean; suggestedTags?: string[] }) {
     const [thumbnailUnavailable, setThumbnailUnavailable] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const [editTitle, setEditTitle] = useState(source.name);
+    const [editDescription, setEditDescription] = useState(source.description);
+    const [editUrl, setEditUrl] = useState(source.url);
+    const [editTags, setEditTags] = useState<string[]>(Array.isArray(source.tags) ? source.tags : []);
+    const [tagInput, setTagInput] = useState('');
+    const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+    const tagInputRef = useRef<HTMLInputElement>(null);
+
     const tags = Array.isArray(source.tags) ? source.tags : [];
     const canShowThumbnail = Boolean(source.backupPath) && !thumbnailUnavailable;
     const thumbnailUrl = `/hemeroteca/sources/${source.id}/backup/thumbnail`;
+
+    const startEditing = () => {
+        setEditTitle(source.name);
+        setEditDescription(source.description);
+        setEditUrl(source.url);
+        setEditTags(Array.isArray(source.tags) ? source.tags : []);
+        setTagInput('');
+        setIsEditing(true);
+    };
+
+    const cancelEditing = () => {
+        setIsEditing(false);
+        setTagInput('');
+    };
+
+    const handleSave = () => {
+        setIsSaving(true);
+        router.patch(
+            `/hemeroteca/sources/${source.id}`,
+            {
+                title: editTitle.trim(),
+                description: editDescription.trim(),
+                url: editUrl.trim(),
+                tags: editTags,
+            },
+            {
+                onSuccess: () => {
+                    setIsSaving(false);
+                    setIsEditing(false);
+                    onClose();
+                },
+                onError: () => {
+                    setIsSaving(false);
+                },
+            },
+        );
+    };
+
+    const handleDelete = () => {
+        if (!window.confirm(`Eliminar la fuente #${source.id}? Esta accion no se puede deshacer.`)) {
+            return;
+        }
+
+        setIsDeleting(true);
+        router.delete(`/hemeroteca/sources/${source.id}`, {
+            onSuccess: () => {
+                setIsDeleting(false);
+                onClose();
+            },
+            onError: () => {
+                setIsDeleting(false);
+            },
+        });
+    };
+
+    const addEditTag = (tag: string) => {
+        const trimmed = tag.trim();
+        if (!trimmed || editTags.some((t) => t.toLowerCase() === trimmed.toLowerCase())) return;
+        setEditTags([...editTags, trimmed]);
+        setTagInput('');
+        setShowTagSuggestions(false);
+    };
+
+    const removeEditTag = (tag: string) => {
+        setEditTags(editTags.filter((t) => t !== tag));
+    };
+
+    const filteredSuggestions = suggestedTags
+        .filter((t) => t.trim())
+        .filter((t) => !editTags.some((et) => et.toLowerCase() === t.toLowerCase()))
+        .filter((t) => !tagInput.trim() || t.toLowerCase().includes(tagInput.trim().toLowerCase()));
 
     return (
         <div
@@ -88,19 +176,60 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                                     #{source.id}
                                 </span>
                             </div>
-                            <p className="mt-0.5 text-sm text-muted-foreground">Detalle completo de la fuente</p>
+                            <p className="mt-0.5 text-sm text-muted-foreground">
+                                {isEditing ? 'Editando fuente' : 'Detalle completo de la fuente'}
+                            </p>
                         </div>
                     </div>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={onClose}
-                        aria-label="Cerrar detalle"
-                        className="h-8 w-8 shrink-0 rounded-lg"
-                    >
-                        <X className="h-4 w-4" />
-                    </Button>
+                    <div className="flex shrink-0 items-center gap-1">
+                        {canEdit && !isEditing && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={startEditing}
+                                aria-label="Editar fuente"
+                                className="h-8 w-8 rounded-lg"
+                            >
+                                <Pencil className="h-4 w-4" />
+                            </Button>
+                        )}
+                        {isEditing && (
+                            <>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={cancelEditing}
+                                    disabled={isSaving}
+                                    className="h-8 gap-1.5 rounded-lg text-xs"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={handleSave}
+                                    disabled={isSaving || editTitle.trim() === '' || editUrl.trim() === ''}
+                                    className="h-8 gap-1.5 rounded-lg text-xs"
+                                >
+                                    <Save className="h-3.5 w-3.5" />
+                                    {isSaving ? 'Guardando…' : 'Guardar'}
+                                </Button>
+                            </>
+                        )}
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={onClose}
+                            aria-label="Cerrar detalle"
+                            className="h-8 w-8 rounded-lg"
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Scrollable body */}
@@ -123,6 +252,110 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                         )}
                     </div>
 
+                    {isEditing ? (
+                        <div className="space-y-5 p-6">
+                            {/* Title */}
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground" htmlFor="edit-title">
+                                    Título
+                                </label>
+                                <Input
+                                    id="edit-title"
+                                    value={editTitle}
+                                    onChange={(e) => setEditTitle(e.target.value)}
+                                    className="text-sm"
+                                />
+                            </div>
+
+                            {/* URL */}
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground" htmlFor="edit-url">
+                                    URL
+                                </label>
+                                <Input
+                                    id="edit-url"
+                                    type="url"
+                                    value={editUrl}
+                                    onChange={(e) => setEditUrl(e.target.value)}
+                                    className="text-sm"
+                                />
+                            </div>
+
+                            {/* Description */}
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground" htmlFor="edit-description">
+                                    Descripción
+                                </label>
+                                <textarea
+                                    id="edit-description"
+                                    value={editDescription}
+                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    rows={4}
+                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                />
+                            </div>
+
+                            {/* Tags */}
+                            <div className="space-y-1.5">
+                                <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                                    Etiquetas
+                                </p>
+                                <div className="flex min-h-[40px] flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950">
+                                    {editTags.map((tag) => (
+                                        <Badge key={tag} variant="outline" className="gap-1 rounded-md text-xs font-medium">
+                                            {tag}
+                                            <button
+                                                type="button"
+                                                onClick={() => removeEditTag(tag)}
+                                                aria-label={`Quitar etiqueta ${tag}`}
+                                                className="ml-0.5 text-muted-foreground hover:text-foreground"
+                                            >
+                                                <X className="h-2.5 w-2.5" />
+                                            </button>
+                                        </Badge>
+                                    ))}
+                                </div>
+                                <div className="relative">
+                                    <Input
+                                        ref={tagInputRef}
+                                        value={tagInput}
+                                        onChange={(e) => { setTagInput(e.target.value); setShowTagSuggestions(true); }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') { e.preventDefault(); addEditTag(tagInput); }
+                                        }}
+                                        onFocus={() => setShowTagSuggestions(true)}
+                                        onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}
+                                        placeholder="Añadir etiqueta…"
+                                        className="h-8 pr-8 text-sm"
+                                    />
+                                    <button
+                                        type="button"
+                                        onMouseDown={() => addEditTag(tagInput)}
+                                        aria-label="Añadir etiqueta"
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    >
+                                        <Plus className="h-3.5 w-3.5" />
+                                    </button>
+                                    {showTagSuggestions && filteredSuggestions.length > 0 && (
+                                        <div className="absolute left-0 top-full z-50 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                                            <div className="max-h-40 overflow-y-auto p-1">
+                                                {filteredSuggestions.map((tag) => (
+                                                    <button
+                                                        key={tag}
+                                                        type="button"
+                                                        onMouseDown={() => addEditTag(tag)}
+                                                        className="flex w-full items-center rounded-md px-3 py-1.5 text-left text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                                                    >
+                                                        {tag}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
                     <div className="space-y-5 p-6">
                         {/* Action buttons */}
                         <div className="flex flex-wrap gap-2">
@@ -153,6 +386,19 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                                     Descargar
                                 </a>
                             </Button>
+                            {canDelete && (
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="destructive"
+                                    className="gap-2"
+                                    disabled={isDeleting}
+                                    onClick={handleDelete}
+                                >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                    {isDeleting ? 'Eliminando…' : 'Eliminar fuente'}
+                                </Button>
+                            )}
                         </div>
 
                         {/* Metadata grid */}
@@ -244,9 +490,8 @@ function SourceDetailsModalContent({ source, onClose }: { source: SourceDetails;
                                 )}
                             </div>
                         </div>
-
-
                     </div>
+                    )}
                 </div>
             </div>
         </div>

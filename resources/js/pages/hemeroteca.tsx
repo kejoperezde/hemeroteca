@@ -66,6 +66,8 @@ type HemerotecaProps = {
     currentPage: number;
     lastPage: number;
     filters: Filters;
+    canEdit: boolean;
+    canDelete: boolean;
 };
 
 type ViewMode = 'list' | 'grid';
@@ -85,6 +87,8 @@ export default function Hemeroteca({
     currentPage,
     lastPage,
     filters,
+    canEdit,
+    canDelete,
 }: HemerotecaProps) {
     const fromDateRef = useRef<HTMLInputElement>(null);
     const toDateRef = useRef<HTMLInputElement>(null);
@@ -1103,6 +1107,9 @@ export default function Hemeroteca({
                 source={selectedSource}
                 open={selectedSource !== null}
                 onClose={() => setSelectedSource(null)}
+                canEdit={canEdit}
+                canDelete={canDelete}
+                suggestedTags={suggestedTags}
             />
         </AppLayout>
     );

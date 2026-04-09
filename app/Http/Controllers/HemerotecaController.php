@@ -23,6 +23,8 @@ class HemerotecaController extends Controller
 {
     public function openBackup(int $sourceId): BaseResponse
     {
+        abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
+
         $source = DB::table('fuentes')
             ->select('id', 'ruta_archivo', 'url', 'titulo')
             ->where('id', $sourceId)
@@ -163,6 +165,7 @@ HTML;
 
     public function replayAsset(int $sourceId, string $asset): BaseResponse
     {
+        abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
         abort_unless($sourceId > 0, 404);
 
         $normalizedAsset = trim($asset, '/');
@@ -203,6 +206,8 @@ HTML;
 
     public function downloadBackup(int $sourceId): BinaryFileResponse
     {
+        abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
+
         $source = DB::table('fuentes')
             ->select('id', 'ruta_archivo')
             ->where('id', $sourceId)
@@ -223,6 +228,8 @@ HTML;
 
     public function thumbnailBackup(int $sourceId): BinaryFileResponse
     {
+        abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
+
         $source = DB::table('fuentes')
             ->select('id', 'ruta_archivo')
             ->where('id', $sourceId)
@@ -242,6 +249,8 @@ HTML;
 
     public function store(Request $request): RedirectResponse
     {
+        abort_unless($request->user()->can('abs_hemeroteca_edit'), 403);
+
         $result = $this->persistSourceWithWacz($request);
 
         return redirect()
@@ -252,6 +261,8 @@ HTML;
 
     public function uploadDraftApi(Request $request): JsonResponse
     {
+        abort_unless($request->user()->can('abs_hemeroteca_edit'), 403);
+
         if ($request->hasFile('wacz') && !$request->hasFile('waczFile')) {
             $request->files->set('waczFile', $request->file('wacz'));
         }
@@ -327,6 +338,8 @@ HTML;
 
     public function discardDraftApi(Request $request): JsonResponse
     {
+        abort_unless($request->user()->can('abs_hemeroteca_edit'), 403);
+
         $validated = $request->validate([
             'draftToken' => ['required', 'string', 'max:120'],
         ]);
@@ -365,6 +378,8 @@ HTML;
 
     public function showRegisterForm(): Response
     {
+        abort_unless(request()->user()?->can('abs_hemeroteca_edit'), 403);
+
         $prefillDraft = null;
         $draftToken = trim((string) request()->query('draftToken', ''));
         $suggestedTags = DB::table('etiquetas')
@@ -666,8 +681,81 @@ HTML;
         ];
     }
 
+    public function update(Request $request, int $sourceId): RedirectResponse
+    {
+        abort_unless($request->user()->can('abs_hemeroteca_edit'), 403);
+
+        $source = DB::table('fuentes')->where('id', $sourceId)->first();
+        abort_unless($source, 404);
+
+        $validated = $request->validate([
+            'title'       => ['required', 'string', 'max:500'],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'url'         => ['required', 'url', 'max:2048'],
+            'tags'        => ['nullable', 'array', 'max:30'],
+            'tags.*'      => ['required', 'string', 'max:100'],
+        ]);
+
+        $tagNames = $this->normalizeTags($validated['tags'] ?? []);
+
+        DB::transaction(function () use ($sourceId, $validated, $tagNames): void {
+            DB::table('fuentes')->where('id', $sourceId)->update([
+                'titulo'      => trim($validated['title']),
+                'descripcion' => isset($validated['description']) ? trim($validated['description']) : null,
+                'url'         => $validated['url'],
+                'updated_at'  => now(),
+            ]);
+
+            DB::table('etiqueta_fuente')->where('fuente_id', $sourceId)->delete();
+
+            if ($tagNames !== []) {
+                $this->syncSourceTags($sourceId, $tagNames);
+            }
+        });
+
+        return redirect()->back();
+    }
+
+    public function destroy(Request $request, int $sourceId): RedirectResponse
+    {
+        abort_unless($request->user()->hasRole('root'), 403);
+
+        $source = DB::table('fuentes')
+            ->select('id', 'ruta_archivo')
+            ->where('id', $sourceId)
+            ->first();
+
+        abort_unless($source, 404);
+
+        DB::transaction(function () use ($source): void {
+            DB::table('fuente_oficio')->where('fuente_id', $source->id)->delete();
+            DB::table('etiqueta_fuente')->where('fuente_id', $source->id)->delete();
+            DB::table('fuentes')->where('id', $source->id)->delete();
+        });
+
+        $backupPath = trim((string) ($source->ruta_archivo ?? ''));
+
+        if ($backupPath !== '' && !str_contains($backupPath, '..')) {
+            $normalizedPath = ltrim(str_replace('\\', '/', $backupPath), '/');
+
+            if (Storage::disk('local')->exists($normalizedPath)) {
+                Storage::disk('local')->delete($normalizedPath);
+            }
+
+            $directory = dirname($normalizedPath);
+
+            if ($directory !== '.' && $directory !== '/' && Storage::disk('local')->exists($directory)) {
+                Storage::disk('local')->deleteDirectory($directory);
+            }
+        }
+
+        return redirect()->back()->with('status', 'success')->with('message', 'Fuente eliminada.');
+    }
+
     public function __invoke(Request $request): Response
     {
+        abort_unless($request->user()->can('abs_hemeroteca'), 403);
+
         $allowedSorts = ['name', 'description', 'capturedBy', 'date'];
         $sort      = in_array($request->input('sort'), $allowedSorts, true) ? $request->input('sort') : 'date';
         $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
@@ -874,6 +962,8 @@ HTML;
             'perPage'     => $perPage,
             'currentPage' => $page,
             'lastPage'    => $lastPage,
+            'canEdit'     => $request->user()->can('abs_hemeroteca_edit'),
+            'canDelete'   => $request->user()->hasRole('root'),
             'filters'     => [
                 'search'    => $search,
                 'from'      => $from,
