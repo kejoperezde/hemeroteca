@@ -60,14 +60,14 @@ export function SourceDetailsModal({ source, open, onClose, canEdit, canDelete, 
         return null;
     }
 
-    return <SourceDetailsModalContent key={`${source.id}-${open ? 'open' : 'closed'}`} source={source} onClose={onClose} canEdit={canEdit} canDelete={canDelete} suggestedTags={suggestedTags} />;
+    return <SourceDetailsModalContent key={`${source.id}-${source.backupPath ?? 'no-backup'}-${open ? 'open' : 'closed'}`} source={source} onClose={onClose} canEdit={canEdit} canDelete={canDelete} suggestedTags={suggestedTags} />;
 }
 
 function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, suggestedTags = [] }: { source: SourceDetails; onClose: () => void; canEdit?: boolean; canDelete?: boolean; suggestedTags?: string[] }) {
     const [thumbnailUnavailable, setThumbnailUnavailable] = useState(false);
     const [backupImages, setBackupImages] = useState<BackupImage[]>([]);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-    const [isLoadingBackupImages, setIsLoadingBackupImages] = useState(false);
+    const [isLoadingBackupImages, setIsLoadingBackupImages] = useState(Boolean(source.backupPath));
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -84,16 +84,11 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
     const thumbnailUrl = `/hemeroteca/sources/${source.id}/backup/thumbnail`;
 
     useEffect(() => {
-        setThumbnailUnavailable(false);
-        setBackupImages([]);
-        setSelectedImageIndex(0);
-
         if (!source.backupPath) {
             return;
         }
 
         const controller = new AbortController();
-        setIsLoadingBackupImages(true);
 
         void fetch(`/hemeroteca/sources/${source.id}/backup/images`, {
             headers: {
@@ -197,7 +192,11 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
 
     const addEditTag = (tag: string) => {
         const trimmed = tag.trim();
-        if (!trimmed || editTags.some((t) => t.toLowerCase() === trimmed.toLowerCase())) return;
+
+        if (!trimmed || editTags.some((t) => t.toLowerCase() === trimmed.toLowerCase())) {
+return;
+}
+
         setEditTags([...editTags, trimmed]);
         setTagInput('');
         setShowTagSuggestions(false);
@@ -424,9 +423,13 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
                                     <Input
                                         ref={tagInputRef}
                                         value={tagInput}
-                                        onChange={(e) => { setTagInput(e.target.value); setShowTagSuggestions(true); }}
+                                        onChange={(e) => {
+ setTagInput(e.target.value); setShowTagSuggestions(true); 
+}}
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Enter') { e.preventDefault(); addEditTag(tagInput); }
+                                            if (e.key === 'Enter') {
+ e.preventDefault(); addEditTag(tagInput); 
+}
                                         }}
                                         onFocus={() => setShowTagSuggestions(true)}
                                         onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}

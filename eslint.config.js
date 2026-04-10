@@ -109,6 +109,7 @@ export default [
             'vendor',
             'node_modules',
             'public',
+            'storage/app/tmp/**',
             'bootstrap/ssr',
             'tailwind.config.js',
             'vite.config.ts',
@@ -117,6 +118,14 @@ export default [
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
         ],
+    },
+    {
+        files: ['scripts/**/*.mjs'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+            },
+        },
     },
     prettier, // Turn off all rules that might conflict with Prettier
     {
