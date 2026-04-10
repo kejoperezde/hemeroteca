@@ -254,7 +254,7 @@ class HemerotecaController extends Controller
         <div class="toolbar-actions">
             <span class="toolbar-status" id="integrity-status" aria-live="polite"></span>
             <button class="toolbar-action" id="verify-integrity-button" type="button">Verificar integridad</button>
-            <a class="toolbar-action" href="__DOWNLOAD_URL__">Descargar .wacz</a>
+            <a class="toolbar-action" href="__DOWNLOAD_URL__">Descargar Respaldo</a>
         </div>
     </div>
     <replay-web-page source="__DOWNLOAD_URL__" url="__ORIGINAL_URL__"></replay-web-page>

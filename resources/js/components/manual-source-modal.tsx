@@ -350,7 +350,7 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
                                         value={tagInput}
                                         onChange={(event) => setTagInput(event.target.value)}
                                         onKeyDown={(event) => {
-                                            if (event.key === 'Enter') {
+                                            if (event.key === 'Enter' || (event.key === 'Tab' && tagInput.trim() !== '')) {
                                                 event.preventDefault();
                                                 handleAddTag();
                                             }
@@ -359,7 +359,7 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
                                         onBlur={() => {
                                             window.setTimeout(() => setIsTagInputFocused(false), 120);
                                         }}
-                                        placeholder="Agregar etiqueta"
+                                        placeholder="Agregar etiqueta (Enter o Tab)"
                                     />
                                     {isTagInputFocused && filteredTagSuggestions.length > 0 ? (
                                         <div className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-20 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-600 dark:bg-slate-800">

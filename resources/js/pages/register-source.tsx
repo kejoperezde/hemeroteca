@@ -125,7 +125,7 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
     };
 
     const handleTagKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-        if (event.key !== 'Enter') {
+        if (event.key !== 'Enter' && !(event.key === 'Tab' && tagInput.trim() !== '')) {
             return;
         }
 
@@ -400,7 +400,7 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
                                                     setIsTagInputFocused(false);
                                                 }, 120);
                                             }}
-                                            placeholder={tags.length === 0 ? 'Agregar etiqueta + Enter' : ''}
+                                            placeholder={tags.length === 0 ? 'Agregar etiqueta + Enter o Tab' : ''}
                                             className="h-7 min-w-[140px] flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-slate-400"
                                         />
                                     </div>

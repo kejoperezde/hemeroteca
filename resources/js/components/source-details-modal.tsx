@@ -427,13 +427,13 @@ return;
  setTagInput(e.target.value); setShowTagSuggestions(true); 
 }}
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
+                                            if (e.key === 'Enter' || (e.key === 'Tab' && tagInput.trim() !== '')) {
  e.preventDefault(); addEditTag(tagInput); 
 }
                                         }}
                                         onFocus={() => setShowTagSuggestions(true)}
                                         onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}
-                                        placeholder="Añadir etiqueta…"
+                                        placeholder="Añadir etiqueta (Enter o Tab)…"
                                         className="h-8 pr-8 text-sm"
                                     />
                                     <button
