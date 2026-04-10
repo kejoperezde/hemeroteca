@@ -17,6 +17,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import * as XLSX from 'xlsx-js-style';
+import { ManualSourceModal } from '@/components/manual-source-modal';
 import { SourceDetailsModal } from '@/components/source-details-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -112,6 +113,7 @@ export default function Hemeroteca({
     const [isTagSearchOpen, setIsTagSearchOpen] = useState(false);
     const [tagSearchTerm, setTagSearchTerm] = useState('');
     const [isSyncing, setIsSyncing] = useState(false);
+    const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
     useEffect(() => {
         if (isTagSearchOpen) {
@@ -533,6 +535,16 @@ export default function Hemeroteca({
                                     <p className="text-sm text-muted-foreground">Archivo digital de fuentes capturadas</p>
                                 </div>
                             </div>
+                            {canEdit && (
+                                <Button
+                                    type="button"
+                                    onClick={() => setIsManualModalOpen(true)}
+                                    className="h-9 gap-2 self-start sm:self-auto"
+                                >
+                                    <Plus className="h-3.5 w-3.5" />
+                                    Registro manual
+                                </Button>
+                            )}
 
                         </div>
                     </div>
@@ -675,7 +687,7 @@ export default function Hemeroteca({
                                             {isTagSearchOpen && (
                                                 <div className="absolute left-0 top-full z-50 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
                                                     {filteredSuggestedTags.length > 0 ? (
-                                                        <div className="max-h-52 overflow-y-auto p-1">
+                                                        <div className="max-h-32 overflow-y-auto p-1">
                                                             {filteredSuggestedTags.map((tag) => (
                                                                 <button
                                                                     key={tag}
@@ -704,7 +716,7 @@ export default function Hemeroteca({
                                         </div>
 
                                         {selectedTags.length > 0 && (
-                                            <div className="mt-3 flex flex-wrap gap-1.5">
+                                            <div className="mt-3 flex max-h-32 flex-wrap gap-1.5 overflow-y-auto pr-1">
                                                 {selectedTags.map((tag) => (
                                                     <button
                                                         key={`sel-${tag}`}
@@ -1109,6 +1121,11 @@ export default function Hemeroteca({
                 onClose={() => setSelectedSource(null)}
                 canEdit={canEdit}
                 canDelete={canDelete}
+                suggestedTags={suggestedTags}
+            />
+            <ManualSourceModal
+                open={isManualModalOpen}
+                onClose={() => setIsManualModalOpen(false)}
                 suggestedTags={suggestedTags}
             />
         </AppLayout>

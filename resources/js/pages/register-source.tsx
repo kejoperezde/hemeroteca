@@ -380,7 +380,7 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
                                     Etiquetas de clasificación
                                 </Label>
                                 <div className="relative">
-                                    <div className="flex min-h-[2.75rem] flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 transition-colors focus-within:border-slate-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-slate-400/20 dark:border-slate-600 dark:bg-slate-900/50 dark:focus-within:bg-slate-900">
+                                    <div className="flex min-h-[2.75rem] max-h-32 flex-wrap items-center gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 pr-2 transition-colors focus-within:border-slate-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-slate-400/20 dark:border-slate-600 dark:bg-slate-900/50 dark:focus-within:bg-slate-900">
                                         {tags.map((tag) => (
                                             <Badge key={tag} variant="secondary" className="gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm dark:border-slate-600 dark:bg-slate-700">
                                                 {tag}
@@ -407,19 +407,21 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
 
                                     {isTagInputFocused && filteredTagSuggestions.length > 0 ? (
                                         <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-10 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-600 dark:bg-slate-800">
-                                            {filteredTagSuggestions.map((suggestion) => (
-                                                <button
-                                                    key={suggestion}
-                                                    type="button"
-                                                    onMouseDown={(event) => {
-                                                        event.preventDefault();
-                                                        handleSelectSuggestion(suggestion);
-                                                    }}
-                                                    className="block w-full px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
-                                                >
-                                                    {suggestion}
-                                                </button>
-                                            ))}
+                                            <div className="max-h-32 overflow-y-auto">
+                                                {filteredTagSuggestions.map((suggestion) => (
+                                                    <button
+                                                        key={suggestion}
+                                                        type="button"
+                                                        onMouseDown={(event) => {
+                                                            event.preventDefault();
+                                                            handleSelectSuggestion(suggestion);
+                                                        }}
+                                                        className="block w-full px-4 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+                                                    >
+                                                        {suggestion}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                     ) : null}
                                 </div>

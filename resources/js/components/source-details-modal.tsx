@@ -19,6 +19,12 @@ type SourceDetails = {
 
 };
 
+type BackupImage = {
+    index: number;
+    name: string;
+    url: string;
+};
+
 type SourceDetailsModalProps = {
     source: SourceDetails | null;
     open: boolean;
@@ -59,6 +65,9 @@ export function SourceDetailsModal({ source, open, onClose, canEdit, canDelete, 
 
 function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, suggestedTags = [] }: { source: SourceDetails; onClose: () => void; canEdit?: boolean; canDelete?: boolean; suggestedTags?: string[] }) {
     const [thumbnailUnavailable, setThumbnailUnavailable] = useState(false);
+    const [backupImages, setBackupImages] = useState<BackupImage[]>([]);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [isLoadingBackupImages, setIsLoadingBackupImages] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -72,8 +81,65 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
     const tagInputRef = useRef<HTMLInputElement>(null);
 
     const tags = Array.isArray(source.tags) ? source.tags : [];
-    const canShowThumbnail = Boolean(source.backupPath) && !thumbnailUnavailable;
     const thumbnailUrl = `/hemeroteca/sources/${source.id}/backup/thumbnail`;
+
+    useEffect(() => {
+        setThumbnailUnavailable(false);
+        setBackupImages([]);
+        setSelectedImageIndex(0);
+
+        if (!source.backupPath) {
+            return;
+        }
+
+        const controller = new AbortController();
+        setIsLoadingBackupImages(true);
+
+        void fetch(`/hemeroteca/sources/${source.id}/backup/images`, {
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            signal: controller.signal,
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new Error('No se pudo cargar la galeria de respaldo.');
+                }
+
+                const payload = await response.json();
+                const images = Array.isArray(payload?.images) ? payload.images : [];
+                const normalized = images
+                    .filter((item): item is BackupImage => (
+                        item
+                        && typeof item.index === 'number'
+                        && typeof item.name === 'string'
+                        && typeof item.url === 'string'
+                    ))
+                    .sort((left, right) => left.index - right.index);
+
+                setBackupImages(normalized);
+                setSelectedImageIndex(0);
+            })
+            .catch((error: unknown) => {
+                if (error instanceof Error && error.name === 'AbortError') {
+                    return;
+                }
+
+                setBackupImages([]);
+            })
+            .finally(() => {
+                setIsLoadingBackupImages(false);
+            });
+
+        return () => {
+            controller.abort();
+        };
+    }, [source.id, source.backupPath]);
+
+    const selectedBackupImage = backupImages[selectedImageIndex] ?? backupImages[0] ?? null;
+    const previewImageUrl = selectedBackupImage?.url ?? (source.backupPath && !thumbnailUnavailable ? thumbnailUrl : null);
 
     const startEditing = () => {
         setEditTitle(source.name);
@@ -236,21 +302,60 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
                 <div className="flex-1 overflow-y-auto">
                     {/* Thumbnail */}
                     <div className="relative h-52 w-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 sm:h-60">
-                        {canShowThumbnail ? (
+                        {previewImageUrl ? (
                             <img
-                                src={thumbnailUrl}
+                                src={previewImageUrl}
                                 alt={`Miniatura de ${source.name}`}
                                 className="h-full w-full object-cover object-top"
                                 loading="lazy"
-                                onError={() => setThumbnailUnavailable(true)}
+                                onError={() => {
+                                    if (!selectedBackupImage) {
+                                        setThumbnailUnavailable(true);
+                                    }
+                                }}
                             />
                         ) : (
                             <div className="flex h-full flex-col items-center justify-center gap-2">
                                 <FileArchive className="h-10 w-10 text-slate-300 dark:text-slate-600" />
-                                <p className="text-xs text-muted-foreground">Sin miniatura disponible</p>
+                                <p className="text-xs text-muted-foreground">Sin imagen disponible</p>
                             </div>
                         )}
                     </div>
+                    {backupImages.length > 1 && (
+                        <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+                            <div className="flex gap-2 overflow-x-auto pb-1">
+                                {backupImages.map((image, index) => {
+                                    const isActive = selectedBackupImage?.index === image.index;
+
+                                    return (
+                                        <button
+                                            key={`backup-image-${source.id}-${image.index}`}
+                                            type="button"
+                                            onClick={() => setSelectedImageIndex(index)}
+                                            className={`shrink-0 overflow-hidden rounded-lg border transition-colors ${
+                                                isActive
+                                                    ? 'border-primary ring-2 ring-primary/20'
+                                                    : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'
+                                            }`}
+                                            aria-label={`Ver imagen ${index + 1}`}
+                                        >
+                                            <img
+                                                src={image.url}
+                                                alt={image.name}
+                                                className="h-14 w-20 object-cover object-top"
+                                                loading="lazy"
+                                            />
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                    {isLoadingBackupImages && (
+                        <div className="border-b border-slate-100 px-4 py-2 text-xs text-muted-foreground dark:border-slate-800">
+                            Cargando imagenes del respaldo...
+                        </div>
+                    )}
 
                     {isEditing ? (
                         <div className="space-y-5 p-6">
@@ -300,7 +405,7 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
                                 <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                                     Etiquetas
                                 </p>
-                                <div className="flex min-h-[40px] flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950">
+                                <div className="flex min-h-[40px] max-h-32 flex-wrap gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 pr-2 dark:border-slate-800 dark:bg-slate-950">
                                     {editTags.map((tag) => (
                                         <Badge key={tag} variant="outline" className="gap-1 rounded-md text-xs font-medium">
                                             {tag}
@@ -430,16 +535,14 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
                                     </p>
                                     <p className="mt-1 text-sm font-medium text-foreground">{source.capturedBy}</p>
                                 </div>
-                                {source.oficioNumber && (
-                                    <div className="bg-slate-50/50 px-4 py-3 dark:bg-slate-900/30">
-                                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                                            N.º oficio
-                                        </p>
-                                        <p className="mt-1 text-sm font-medium text-foreground">
-                                            {source.oficioNumber}
-                                        </p>
-                                    </div>
-                                )}
+                                <div className="bg-slate-50/50 px-4 py-3 dark:bg-slate-900/30">
+                                    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                                        N.º oficio
+                                    </p>
+                                    <p className="mt-1 text-sm font-medium text-foreground">
+                                        {source.oficioNumber && source.oficioNumber.trim() !== '' ? source.oficioNumber : 'Sin oficio'}
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -474,7 +577,7 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
                             <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                                 Etiquetas
                             </p>
-                            <div className="flex min-h-[44px] flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950">
+                            <div className="flex min-h-[44px] max-h-32 flex-wrap gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 pr-2 dark:border-slate-800 dark:bg-slate-950">
                                 {tags.length > 0 ? (
                                     tags.map((tag) => (
                                         <Badge

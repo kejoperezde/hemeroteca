@@ -51,11 +51,20 @@ Hemeroteca centraliza el flujo de archivado digital de fuentes web:
 ## Funcionalidades
 
 - Registro de fuentes (URL, titulo, descripcion y contenido).
+- Registro manual desde la aplicacion: permite crear una fuente directamente completando metadatos y contenido desde la interfaz.
+- Registro automatico por extension: la extension de navegador envia la captura y metadatos de la fuente al sistema para archivado inmediato.
 - Carga y gestion de respaldos WACZ.
 - Vista y descarga de respaldos.
 - Filtros y busqueda por texto, fechas y etiquetas.
 - Edicion de metadatos de una fuente.
 - Control de permisos por rol.
+
+### Registro manual y automatico
+
+Hemeroteca soporta dos formas complementarias de alta de fuentes:
+
+- Manual: el usuario registra la fuente desde el formulario interno de la plataforma, util cuando se requiere flexibilidad.
+- Automatico por extension: desde la extension oficial se captura la pagina haciendo uso de tecnicas de web scraping, capaz de capturar interacciones complejas.
 
 ## Arquitectura y estructura principal
 

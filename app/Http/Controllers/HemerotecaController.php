@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as BaseResponse;
+use Symfony\Component\Process\Process;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Str;
@@ -39,19 +40,20 @@ class HemerotecaController extends Controller
             return response(File::get($absolutePath), 200, ['Content-Type' => 'text/html; charset=UTF-8']);
         }
 
-                if (Str::endsWith(strtolower($absolutePath), '.wacz')) {
-                    $sourceName = trim((string) ($source->titulo ?? ''));
-                    if ($sourceName === '') {
-                        $sourceName = (string) (parse_url((string) $source->url, PHP_URL_HOST) ?: 'Sin nombre');
-                    }
+        if (Str::endsWith(strtolower($absolutePath), '.wacz')) {
+            $sourceName = trim((string) ($source->titulo ?? ''));
+            if ($sourceName === '') {
+                $sourceName = (string) (parse_url((string) $source->url, PHP_URL_HOST) ?: 'Sin nombre');
+            }
 
-                        $downloadUrl = route('hemeroteca.sources.backup.download', ['sourceId' => $sourceId]);
-                        $uiAssetUrl = route('hemeroteca.sources.replay.asset', [
-                            'sourceId' => $sourceId,
-                            'asset' => 'ui.js',
-                        ]);
+            $downloadUrl = route('hemeroteca.sources.backup.download', ['sourceId' => $sourceId]);
+            $integrityUrl = route('hemeroteca.sources.backup.integrity', ['sourceId' => $sourceId]);
+            $uiAssetUrl = route('hemeroteca.sources.replay.asset', [
+                'sourceId' => $sourceId,
+                'asset' => 'ui.js',
+            ]);
 
-                        $viewerHtml = <<<'HTML'
+            $viewerHtml = <<<'HTML'
 <!doctype html>
 <html lang="es">
 <head>
@@ -119,6 +121,119 @@ class HemerotecaController extends Controller
             background: rgba(0, 0, 0, 0.28);
             text-decoration: none;
         }
+        .toolbar-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .toolbar-status {
+            min-height: 18px;
+            font-size: 12px;
+            color: #f8f6f1;
+            opacity: 0.95;
+        }
+        .toolbar-status.is-success {
+            color: #ecfccb;
+        }
+        .toolbar-status.is-error {
+            color: #fee2e2;
+        }
+        button.toolbar-action {
+            cursor: pointer;
+            font: inherit;
+        }
+        button.toolbar-action[disabled] {
+            opacity: 0.7;
+            cursor: wait;
+        }
+        .integrity-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background: rgba(16, 12, 8, 0.6);
+        }
+        .integrity-modal[hidden] {
+            display: none;
+        }
+        .integrity-dialog {
+            width: min(680px, 96vw);
+            max-height: calc(100vh - 40px);
+            overflow: auto;
+            background: #f6f2ea;
+            color: #2d2218;
+            border: 1px solid #b49b79;
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        }
+        .integrity-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid #d7c8b3;
+            background: linear-gradient(90deg, #ede2d2 0%, #f6f2ea 100%);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .integrity-body {
+            padding: 14px 16px;
+            display: grid;
+            gap: 10px;
+        }
+        .integrity-message {
+            margin: 0;
+            color: #493728;
+            line-height: 1.45;
+        }
+        .integrity-message.is-success {
+            color: #3f6212;
+        }
+        .integrity-message.is-error {
+            color: #7f1d1d;
+        }
+        .integrity-details {
+            margin: 0;
+            display: grid;
+            gap: 8px;
+        }
+        .integrity-row {
+            display: grid;
+            grid-template-columns: 140px minmax(0, 1fr);
+            gap: 10px;
+            align-items: start;
+        }
+        .integrity-row dt {
+            font-weight: 600;
+            color: #5a4633;
+        }
+        .integrity-row dd {
+            margin: 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 12px;
+            word-break: break-all;
+            color: #2d2218;
+        }
+        .integrity-footer {
+            padding: 12px 16px 16px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .integrity-close {
+            border: 1px solid #b49b79;
+            border-radius: 8px;
+            background: #fff;
+            color: #3c2f24;
+            padding: 8px 12px;
+            font: inherit;
+            cursor: pointer;
+        }
+        .integrity-close:hover {
+            background: #f2ece1;
+        }
         replay-web-page {
             display: block;
             width: 100%;
@@ -136,31 +251,253 @@ class HemerotecaController extends Controller
                 <div class="toolbar-meta">Nombre: __SOURCE_NAME__</div>
             </div>
         </div>
-        <a class="toolbar-action" href="__DOWNLOAD_URL__">Descargar .wacz</a>
+        <div class="toolbar-actions">
+            <span class="toolbar-status" id="integrity-status" aria-live="polite"></span>
+            <button class="toolbar-action" id="verify-integrity-button" type="button">Verificar integridad</button>
+            <a class="toolbar-action" href="__DOWNLOAD_URL__">Descargar .wacz</a>
+        </div>
     </div>
     <replay-web-page source="__DOWNLOAD_URL__" url="__ORIGINAL_URL__"></replay-web-page>
+    <div class="integrity-modal" id="integrity-modal" hidden>
+        <div class="integrity-dialog" role="dialog" aria-modal="true" aria-labelledby="integrity-modal-title">
+            <div class="integrity-header" id="integrity-modal-title">Resultado de integridad</div>
+            <div class="integrity-body">
+                <p class="integrity-message" id="integrity-modal-message"></p>
+                <dl class="integrity-details" id="integrity-modal-details" hidden>
+                    <div class="integrity-row">
+                        <dt>Algoritmo</dt>
+                        <dd id="integrity-algorithm">-</dd>
+                    </div>
+                    <div class="integrity-row">
+                        <dt>Hash en DB</dt>
+                        <dd id="integrity-stored-hash">-</dd>
+                    </div>
+                    <div class="integrity-row">
+                        <dt>Hash actual</dt>
+                        <dd id="integrity-current-hash">-</dd>
+                    </div>
+                    <div class="integrity-row">
+                        <dt>Fecha verificacion</dt>
+                        <dd id="integrity-checked-at">-</dd>
+                    </div>
+                </dl>
+            </div>
+            <div class="integrity-footer">
+                <button class="integrity-close" id="integrity-close-button" type="button">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const verifyButton = document.getElementById('verify-integrity-button');
+        const integrityStatus = document.getElementById('integrity-status');
+        const integrityUrl = '__INTEGRITY_URL__';
+        const integrityModal = document.getElementById('integrity-modal');
+        const integrityModalTitle = document.getElementById('integrity-modal-title');
+        const integrityModalMessage = document.getElementById('integrity-modal-message');
+        const integrityModalDetails = document.getElementById('integrity-modal-details');
+        const integrityAlgorithm = document.getElementById('integrity-algorithm');
+        const integrityStoredHash = document.getElementById('integrity-stored-hash');
+        const integrityCurrentHash = document.getElementById('integrity-current-hash');
+        const integrityCheckedAt = document.getElementById('integrity-checked-at');
+        const integrityCloseButton = document.getElementById('integrity-close-button');
+
+        const setIntegrityStatus = (message, tone) => {
+            if (!integrityStatus) {
+                return;
+            }
+
+            integrityStatus.textContent = message;
+            integrityStatus.classList.remove('is-success', 'is-error');
+
+            if (tone === 'success') {
+                integrityStatus.classList.add('is-success');
+            }
+
+            if (tone === 'error') {
+                integrityStatus.classList.add('is-error');
+            }
+        };
+
+        const openIntegrityModal = ({ title, message, tone, details }) => {
+            if (!integrityModal || !integrityModalTitle || !integrityModalMessage || !integrityModalDetails) {
+                return;
+            }
+
+            integrityModalTitle.textContent = title;
+            integrityModalMessage.textContent = message;
+            integrityModalMessage.classList.remove('is-success', 'is-error');
+
+            if (tone === 'success') {
+                integrityModalMessage.classList.add('is-success');
+            }
+
+            if (tone === 'error') {
+                integrityModalMessage.classList.add('is-error');
+            }
+
+            const hasDetails = details
+                && (details.storedHash || details.currentHash || details.algorithm || details.checkedAt);
+
+            integrityModalDetails.hidden = !hasDetails;
+
+            if (hasDetails) {
+                if (integrityAlgorithm) {
+                    integrityAlgorithm.textContent = details.algorithm || '-';
+                }
+
+                if (integrityStoredHash) {
+                    integrityStoredHash.textContent = details.storedHash || '-';
+                }
+
+                if (integrityCurrentHash) {
+                    integrityCurrentHash.textContent = details.currentHash || '-';
+                }
+
+                if (integrityCheckedAt) {
+                    integrityCheckedAt.textContent = details.checkedAt || '-';
+                }
+            }
+
+            integrityModal.hidden = false;
+        };
+
+        const closeIntegrityModal = () => {
+            if (integrityModal) {
+                integrityModal.hidden = true;
+            }
+        };
+
+        if (integrityCloseButton) {
+            integrityCloseButton.addEventListener('click', closeIntegrityModal);
+        }
+
+        if (integrityModal) {
+            integrityModal.addEventListener('click', (event) => {
+                if (event.target === integrityModal) {
+                    closeIntegrityModal();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && integrityModal && !integrityModal.hidden) {
+                closeIntegrityModal();
+            }
+        });
+
+        if (verifyButton) {
+            verifyButton.addEventListener('click', async () => {
+                verifyButton.disabled = true;
+                setIntegrityStatus('Verificando hash...', null);
+
+                try {
+                    const response = await fetch(integrityUrl, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        credentials: 'same-origin',
+                    });
+
+                    const payload = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(payload.message || 'No se pudo verificar la integridad.');
+                    }
+
+                    if (payload.matches) {
+                        setIntegrityStatus('Integridad verificada.', 'success');
+                        openIntegrityModal({
+                            title: 'Integridad verificada',
+                            message: 'El hash actual coincide con el hash almacenado en la base de datos.',
+                            tone: 'success',
+                            details: payload,
+                        });
+                    } else {
+                        setIntegrityStatus('Integridad no coincide.', 'error');
+                        openIntegrityModal({
+                            title: 'Integridad no coincide',
+                            message: 'El hash actual NO coincide con el hash almacenado en la base de datos.',
+                            tone: 'error',
+                            details: payload,
+                        });
+                    }
+                } catch (error) {
+                    const message = error.message || 'No se pudo verificar la integridad.';
+                    setIntegrityStatus(message, 'error');
+                    openIntegrityModal({
+                        title: 'No se pudo verificar',
+                        message,
+                        tone: 'error',
+                        details: null,
+                    });
+                } finally {
+                    verifyButton.disabled = false;
+                }
+            });
+        }
+    </script>
 </body>
 </html>
 HTML;
 
-                        $viewerHtml = str_replace(
-                            ['__SOURCE_ID__', '__SOURCE_NAME__', '__DOWNLOAD_URL__', '__ORIGINAL_URL__', '__UI_ASSET_URL__'],
-                                [
-                                        (string) $sourceId,
-                                        e($sourceName),
-                                        e($downloadUrl),
-                                        e((string) $source->url),
-                                e($uiAssetUrl),
-                                ],
-                                $viewerHtml,
-                        );
+            $viewerHtml = str_replace(
+                ['__SOURCE_ID__', '__SOURCE_NAME__', '__DOWNLOAD_URL__', '__ORIGINAL_URL__', '__UI_ASSET_URL__', '__INTEGRITY_URL__'],
+                [
+                    (string) $sourceId,
+                    e($sourceName),
+                    e($downloadUrl),
+                    e((string) $source->url),
+                    e($uiAssetUrl),
+                    e($integrityUrl),
+                ],
+                $viewerHtml,
+            );
 
-                        return response($viewerHtml, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
-                }
+            return response($viewerHtml, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+        }
 
         $mimeType = File::mimeType($absolutePath) ?: 'application/octet-stream';
 
         return response()->file($absolutePath, ['Content-Type' => $mimeType]);
+    }
+
+    public function verifyBackupIntegrity(int $sourceId): JsonResponse
+    {
+        abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
+
+        $source = DB::table('fuentes')
+            ->select('id', 'ruta_archivo', 'hash_contenido')
+            ->where('id', $sourceId)
+            ->first();
+
+        abort_unless($source && $source->ruta_archivo, 404);
+
+        $storedHash = trim((string) ($source->hash_contenido ?? ''));
+        if ($storedHash === '') {
+            return response()->json([
+                'message' => 'La fuente no tiene un hash almacenado para verificar la integridad.',
+            ], 409);
+        }
+
+        $absolutePath = $this->resolveLocalBackupAbsolutePath((string) $source->ruta_archivo);
+        abort_unless(File::exists($absolutePath), 404);
+
+        $currentHash = hash_file('sha256', $absolutePath);
+        if (!is_string($currentHash) || $currentHash === '') {
+            return response()->json([
+                'message' => 'No se pudo calcular el hash del archivo respaldado.',
+            ], 500);
+        }
+
+        return response()->json([
+            'matches' => hash_equals(strtolower($storedHash), strtolower($currentHash)),
+            'storedHash' => $storedHash,
+            'currentHash' => $currentHash,
+            'algorithm' => 'sha256',
+            'checkedAt' => now()->toIso8601String(),
+            'message' => 'Verificacion completada.',
+        ]);
     }
 
     public function replayAsset(int $sourceId, string $asset): BaseResponse
@@ -245,6 +582,146 @@ HTML;
             'Content-Type' => 'image/png',
             'Cache-Control' => 'private, max-age=300',
         ]);
+    }
+
+    public function backupImages(int $sourceId): JsonResponse
+    {
+        abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
+
+        $source = DB::table('fuentes')
+            ->select('id', 'ruta_archivo')
+            ->where('id', $sourceId)
+            ->first();
+
+        abort_unless($source && $source->ruta_archivo, 404);
+
+        $imageAbsolutePaths = $this->resolveBackupImageAbsolutePaths((string) $source->ruta_archivo);
+
+        $images = array_map(
+            fn (string $absolutePath, int $index): array => [
+                'index' => $index,
+                'name' => basename($absolutePath),
+                'url' => route('hemeroteca.sources.backup.image', ['sourceId' => $sourceId, 'imageIndex' => $index]),
+            ],
+            $imageAbsolutePaths,
+            array_keys($imageAbsolutePaths),
+        );
+
+        return response()->json([
+            'images' => array_values($images),
+        ]);
+    }
+
+    public function backupImage(int $sourceId, int $imageIndex): BaseResponse
+    {
+        abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
+        abort_unless($imageIndex >= 0, 404);
+
+        $source = DB::table('fuentes')
+            ->select('id', 'ruta_archivo')
+            ->where('id', $sourceId)
+            ->first();
+
+        abort_unless($source && $source->ruta_archivo, 404);
+
+        $imageAbsolutePaths = $this->resolveBackupImageAbsolutePaths((string) $source->ruta_archivo);
+        abort_unless(isset($imageAbsolutePaths[$imageIndex]), 404);
+
+        $targetPath = $imageAbsolutePaths[$imageIndex];
+        $mimeType = File::mimeType($targetPath) ?: 'application/octet-stream';
+
+        return response()->file($targetPath, [
+            'Content-Type' => $mimeType,
+            'Cache-Control' => 'private, max-age=300',
+        ]);
+    }
+
+    public function storeManual(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->can('abs_hemeroteca_edit'), 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'text' => ['nullable', 'string', 'max:1000000'],
+            'isRequestLetter' => ['nullable', 'boolean'],
+            'oficioNumber' => ['nullable', 'string', 'max:120'],
+            'tags' => ['nullable', 'array', 'max:30'],
+            'tags.*' => ['required', 'string', 'max:100'],
+            'images' => ['required', 'array', 'min:1', 'max:20'],
+            'images.*' => ['required', 'file', 'max:10240', 'mimes:jpg,jpeg,png,webp'],
+        ]);
+
+        $validated['url'] = (string) $request->input('url', '');
+
+        $tagNames = $this->normalizeTags($validated['tags'] ?? []);
+        $sourceId = $this->createSource($validated, (int) $request->user()->id, $tagNames);
+
+        $directory = "capturas/fuente_{$sourceId}";
+        Storage::disk('local')->makeDirectory($directory);
+
+        /** @var array<int, UploadedFile> $uploadedImages */
+        $uploadedImages = $validated['images'];
+
+        $storedRelativePaths = [];
+        foreach ($uploadedImages as $index => $uploadedImage) {
+            $extension = strtolower($uploadedImage->getClientOriginalExtension() ?: 'png');
+            $fileName = 'imagen_'.str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT).'.'.$extension;
+            $storedPath = $uploadedImage->storeAs($directory, $fileName, ['disk' => 'local']);
+
+            if (!is_string($storedPath) || $storedPath === '') {
+                throw new \RuntimeException('No se pudo guardar una de las imagenes del respaldo manual.');
+            }
+
+            $storedRelativePaths[] = str_replace('\\', '/', $storedPath);
+        }
+
+        $absoluteImagePaths = array_map(
+            fn (string $relativePath): string => Storage::disk('local')->path($relativePath),
+            $storedRelativePaths,
+        );
+
+        $providedText = trim((string) ($validated['text'] ?? ''));
+        $ocrText = $providedText !== '' ? $providedText : $this->extractOcrTextFromImages($absoluteImagePaths);
+        $hashSourcePath = $absoluteImagePaths[0] ?? null;
+        $contentHash = is_string($hashSourcePath) && File::exists($hashSourcePath)
+            ? hash_file('sha256', $hashSourcePath)
+            : null;
+
+        DB::table('fuentes')
+            ->where('id', $sourceId)
+            ->update([
+                'ruta_archivo' => $storedRelativePaths[0] ?? null,
+                'estado_captura' => 'captura_manual',
+                'capturado_en' => now(),
+                'hash_contenido' => $contentHash,
+                'texto' => $ocrText !== '' ? $ocrText : null,
+                'updated_at' => now(),
+            ]);
+
+        $isRequestLetter = filter_var($validated['isRequestLetter'] ?? false, FILTER_VALIDATE_BOOL);
+        $oficioNumber = trim((string) ($validated['oficioNumber'] ?? ''));
+
+        if ($isRequestLetter && $oficioNumber !== '') {
+            $oficioId = DB::table('libro_oficios')->insertGetId([
+                'oficio_peticion' => $oficioNumber,
+                'fecha_oficio' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::table('fuente_oficio')->insertOrIgnore([
+                'fuente_id' => $sourceId,
+                'oficio_id' => (int) $oficioId,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Fuente manual registrada correctamente.',
+            'sourceId' => $sourceId,
+            'imagesCount' => count($storedRelativePaths),
+            'ocrTextLength' => mb_strlen($ocrText, 'UTF-8'),
+        ], 201);
     }
 
     public function store(Request $request): RedirectResponse
@@ -625,6 +1102,104 @@ HTML;
         return $pngFiles[0] ?? null;
     }
 
+    /**
+     * @return array<int, string>
+     */
+    private function resolveBackupImageAbsolutePaths(string $backupPath): array
+    {
+        $backupAbsolutePath = $this->resolveLocalBackupAbsolutePath($backupPath);
+        $backupDirectory = dirname($backupAbsolutePath);
+
+        if (!File::isDirectory($backupDirectory)) {
+            return [];
+        }
+
+        $imagePaths = [];
+        foreach (['*.png', '*.jpg', '*.jpeg', '*.webp'] as $pattern) {
+            foreach (File::glob($backupDirectory.DIRECTORY_SEPARATOR.$pattern) ?: [] as $absolutePath) {
+                if (File::exists($absolutePath)) {
+                    $imagePaths[] = $absolutePath;
+                }
+            }
+        }
+
+        usort($imagePaths, static fn (string $left, string $right): int => strnatcasecmp(basename($left), basename($right)));
+
+        return array_values(array_unique($imagePaths));
+    }
+
+    /**
+     * @param  array<int, string>  $absoluteImagePaths
+     */
+    private function extractOcrTextFromImages(array $absoluteImagePaths): string
+    {
+        $chunks = [];
+
+        foreach ($absoluteImagePaths as $absoluteImagePath) {
+            $ocrChunk = $this->extractOcrTextFromSingleImage($absoluteImagePath);
+            if ($ocrChunk === '') {
+                continue;
+            }
+
+            $chunks[] = $ocrChunk;
+        }
+
+        return trim(implode("\n\n", $chunks));
+    }
+
+    private function extractOcrTextFromSingleImage(string $absoluteImagePath): string
+    {
+        if (!File::exists($absoluteImagePath)) {
+            return '';
+        }
+
+        $nodeBinary = trim((string) env('OCR_NODE_BIN', 'node'));
+        $ocrScriptPath = base_path('scripts/ocr-image.mjs');
+
+        if (!File::exists($ocrScriptPath)) {
+            Log::warning('OCR script no encontrado para tesseract.js.', [
+                'script_path' => $ocrScriptPath,
+            ]);
+
+            return '';
+        }
+
+        try {
+            $process = new Process([
+                $nodeBinary,
+                $ocrScriptPath,
+                $absoluteImagePath,
+                'spa+eng',
+            ]);
+            $process->setWorkingDirectory(base_path());
+            $process->setTimeout(180);
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                Log::warning('OCR no disponible o fallo al ejecutar tesseract.js via Node.', [
+                    'path' => $absoluteImagePath,
+                    'exit_code' => $process->getExitCode(),
+                    'stderr' => trim($process->getErrorOutput()),
+                    'stdout' => trim($process->getOutput()),
+                ]);
+
+                return '';
+            }
+
+            $output = trim($process->getOutput());
+
+            return preg_replace('/[ \t]+\n/u', "\n", $output) ?? '';
+        } catch (\Throwable $exception) {
+            Log::warning('Error al intentar OCR de imagen.', [
+                'path' => $absoluteImagePath,
+                'exception_class' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return '';
+        }
+    }
+
     private function resolveSourceTitle(array $validated): string
     {
         $providedName = trim((string) ($validated['name'] ?? ''));
@@ -676,7 +1251,9 @@ HTML;
             'date' => $capturedAt ? $capturedAt->locale('es')->translatedFormat('d/m/Y H:i') : $capturedAtLabel,
             'capturedAt' => $capturedAt?->toIso8601String(),
             'capturedBy' => $source->captured_by ?: 'Sin usuario',
-            'oficioNumber' => null,
+                'oficioNumber' => isset($source->oficio_number) && is_string($source->oficio_number) && trim($source->oficio_number) !== ''
+                    ? trim($source->oficio_number)
+                    : null,
             'hash' => $source->hash_contenido ?: null,
         ];
     }
@@ -795,6 +1372,7 @@ HTML;
         $foldedTextExpr = $this->foldSqlExpression('fuentes.texto');
         $foldedUserNameExpr = $this->foldSqlExpression('users.name');
         $foldedTagNameExpr = $this->foldSqlExpression('etiquetas.nombre');
+        $foldedOficioExpr = $this->foldSqlExpression('libro_oficios.oficio_peticion');
 
         // Build the filtered ID subquery for counting and as a base for the main query.
         $filteredIds = DB::table('fuentes')->select('id');
@@ -808,6 +1386,7 @@ HTML;
                 $foldedTextExpr,
                 $foldedUserNameExpr,
                 $foldedTagNameExpr,
+                $foldedOficioExpr,
             ): void {
                 if ($booleanQuery !== '') {
                     $q->whereRaw('MATCH(titulo, descripcion, texto) AGAINST (? IN BOOLEAN MODE)', [$booleanQuery]);
@@ -828,6 +1407,13 @@ HTML;
                             ->join('etiquetas', 'etiqueta_fuente.etiqueta_id', '=', 'etiquetas.id')
                             ->whereColumn('etiqueta_fuente.fuente_id', 'fuentes.id')
                             ->whereRaw("{$foldedTagNameExpr} LIKE ?", [$foldedLike]);
+                    })
+                    ->orWhereExists(function ($sub) use ($foldedLike, $foldedOficioExpr): void {
+                        $sub->selectRaw('1')
+                            ->from('fuente_oficio')
+                            ->join('libro_oficios', 'fuente_oficio.oficio_id', '=', 'libro_oficios.id')
+                            ->whereColumn('fuente_oficio.fuente_id', 'fuentes.id')
+                            ->whereRaw("{$foldedOficioExpr} LIKE ?", [$foldedLike]);
                     });
             });
         }
@@ -873,6 +1459,8 @@ HTML;
             ->leftJoin('users', 'fuentes.user_id', '=', 'users.id')
             ->leftJoin('etiqueta_fuente', 'fuentes.id', '=', 'etiqueta_fuente.fuente_id')
             ->leftJoin('etiquetas', 'etiqueta_fuente.etiqueta_id', '=', 'etiquetas.id')
+            ->leftJoin('fuente_oficio', 'fuentes.id', '=', 'fuente_oficio.fuente_id')
+            ->leftJoin('libro_oficios', 'fuente_oficio.oficio_id', '=', 'libro_oficios.id')
             ->select(
                 'fuentes.id',
                 'fuentes.url',
@@ -883,6 +1471,7 @@ HTML;
                 'fuentes.hash_contenido',
                 'users.name as captured_by',
                 DB::raw("GROUP_CONCAT(etiquetas.nombre ORDER BY etiquetas.nombre SEPARATOR '||') as tags_concat"),
+                DB::raw('MAX(libro_oficios.oficio_peticion) as oficio_number'),
             )
             ->whereIn('fuentes.id', $filteredIds)
             ->groupBy(
@@ -930,10 +1519,14 @@ HTML;
             )->selectRaw(
                 "MAX(CASE WHEN {$foldedUserNameExpr} LIKE ? THEN 1 ELSE 0 END) as user_match_score",
                 [$foldedLike],
+            )->selectRaw(
+                "MAX(CASE WHEN {$foldedOficioExpr} LIKE ? THEN 1 ELSE 0 END) as oficio_match_score",
+                [$foldedLike],
             );
 
             $sourcesQuery
                 ->orderByDesc('relevance_score')
+                ->orderByDesc('oficio_match_score')
                 ->orderByDesc('tag_match_score')
                 ->orderByDesc('user_match_score');
         }
