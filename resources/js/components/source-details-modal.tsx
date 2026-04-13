@@ -111,8 +111,6 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
 
     useEffect(() => {
         if (!source.backupPath) {
-            setBackupAttachments([]);
-            setIsLoadingBackupAttachments(false);
             return;
         }
 
