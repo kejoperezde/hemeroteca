@@ -24,6 +24,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('hemeroteca/sources/manual', [HemerotecaController::class, 'storeManual'])
         ->middleware('throttle:20,1')
         ->name('hemeroteca.sources.store-manual');
+    Route::get('hemeroteca/sources/{sourceId}/replay', [HemerotecaController::class, 'openReplay'])
+        ->whereNumber('sourceId')
+        ->name('hemeroteca.sources.replay.open');
     Route::get('hemeroteca/sources/{sourceId}/replay/{asset}', [HemerotecaController::class, 'replayAsset'])
         ->whereNumber('sourceId')
         ->where('asset', '.*')
@@ -47,6 +50,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->whereNumber('sourceId')
         ->whereNumber('imageIndex')
         ->name('hemeroteca.sources.backup.image');
+    Route::get('hemeroteca/sources/{sourceId}/backup/attachments', [HemerotecaController::class, 'backupAttachments'])
+        ->whereNumber('sourceId')
+        ->name('hemeroteca.sources.backup.attachments');
+    Route::get('hemeroteca/sources/{sourceId}/backup/attachment/{attachmentIndex}', [HemerotecaController::class, 'backupAttachment'])
+        ->whereNumber('sourceId')
+        ->whereNumber('attachmentIndex')
+        ->name('hemeroteca.sources.backup.attachment');
     Route::patch('hemeroteca/sources/{sourceId}', [HemerotecaController::class, 'update'])
         ->whereNumber('sourceId')
         ->middleware('throttle:20,1')

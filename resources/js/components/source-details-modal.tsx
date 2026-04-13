@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Download, ExternalLink, FileArchive, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
+import { Download, ExternalLink, FileArchive, FileText, Pencil, Plus, Save, Trash2, Video, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,15 @@ type BackupImage = {
     index: number;
     name: string;
     url: string;
+};
+
+type BackupAttachment = {
+    index: number;
+    name: string;
+    url: string;
+    mimeType: string;
+    sizeBytes: number;
+    kind: 'video' | 'document';
 };
 
 type SourceDetailsModalProps = {
@@ -66,8 +75,10 @@ export function SourceDetailsModal({ source, open, onClose, canEdit, canDelete, 
 function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, suggestedTags = [] }: { source: SourceDetails; onClose: () => void; canEdit?: boolean; canDelete?: boolean; suggestedTags?: string[] }) {
     const [thumbnailUnavailable, setThumbnailUnavailable] = useState(false);
     const [backupImages, setBackupImages] = useState<BackupImage[]>([]);
+    const [backupAttachments, setBackupAttachments] = useState<BackupAttachment[]>([]);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isLoadingBackupImages, setIsLoadingBackupImages] = useState(Boolean(source.backupPath));
+    const [isLoadingBackupAttachments, setIsLoadingBackupAttachments] = useState(Boolean(source.backupPath));
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -75,22 +86,42 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
     const [editTitle, setEditTitle] = useState(source.name);
     const [editDescription, setEditDescription] = useState(source.description);
     const [editUrl, setEditUrl] = useState(source.url);
+    const [editOficioNumber, setEditOficioNumber] = useState(source.oficioNumber ?? '');
     const [editTags, setEditTags] = useState<string[]>(Array.isArray(source.tags) ? source.tags : []);
+    const [newAttachments, setNewAttachments] = useState<File[]>([]);
     const [tagInput, setTagInput] = useState('');
     const [showTagSuggestions, setShowTagSuggestions] = useState(false);
     const tagInputRef = useRef<HTMLInputElement>(null);
+    const backdropPointerDownRef = useRef(false);
 
     const tags = Array.isArray(source.tags) ? source.tags : [];
     const thumbnailUrl = `/hemeroteca/sources/${source.id}/backup/thumbnail`;
 
+    const formatFileSize = (sizeBytes: number): string => {
+        if (sizeBytes < 1024) {
+            return `${sizeBytes} B`;
+        }
+
+        if (sizeBytes < 1024 * 1024) {
+            return `${(sizeBytes / 1024).toFixed(1)} KB`;
+        }
+
+        return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
     useEffect(() => {
         if (!source.backupPath) {
+            setBackupAttachments([]);
+            setIsLoadingBackupAttachments(false);
             return;
         }
 
+        setIsLoadingBackupImages(true);
+        setIsLoadingBackupAttachments(true);
+
         const controller = new AbortController();
 
-        void fetch(`/hemeroteca/sources/${source.id}/backup/images`, {
+        const imagesRequest = fetch(`/hemeroteca/sources/${source.id}/backup/images`, {
             headers: {
                 Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
@@ -128,6 +159,48 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
                 setIsLoadingBackupImages(false);
             });
 
+        const attachmentsRequest = fetch(`/hemeroteca/sources/${source.id}/backup/attachments`, {
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            signal: controller.signal,
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new Error('No se pudo cargar los adjuntos del respaldo.');
+                }
+
+                const payload = await response.json();
+                const attachments = Array.isArray(payload?.attachments) ? payload.attachments : [];
+                const normalized = attachments
+                    .filter((item): item is BackupAttachment => (
+                        item
+                        && typeof item.index === 'number'
+                        && typeof item.name === 'string'
+                        && typeof item.url === 'string'
+                        && typeof item.mimeType === 'string'
+                        && typeof item.sizeBytes === 'number'
+                        && (item.kind === 'video' || item.kind === 'document')
+                    ))
+                    .sort((left, right) => left.index - right.index);
+
+                setBackupAttachments(normalized);
+            })
+            .catch((error: unknown) => {
+                if (error instanceof Error && error.name === 'AbortError') {
+                    return;
+                }
+
+                setBackupAttachments([]);
+            })
+            .finally(() => {
+                setIsLoadingBackupAttachments(false);
+            });
+
+        void Promise.allSettled([imagesRequest, attachmentsRequest]);
+
         return () => {
             controller.abort();
         };
@@ -140,14 +213,38 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
         setEditTitle(source.name);
         setEditDescription(source.description);
         setEditUrl(source.url);
+        setEditOficioNumber(source.oficioNumber ?? '');
         setEditTags(Array.isArray(source.tags) ? source.tags : []);
+        setNewAttachments([]);
         setTagInput('');
         setIsEditing(true);
     };
 
     const cancelEditing = () => {
         setIsEditing(false);
+        setNewAttachments([]);
         setTagInput('');
+    };
+
+    const handleAttachmentSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFiles = Array.from(event.target.files ?? []);
+
+        if (selectedFiles.length === 0) {
+            return;
+        }
+
+        setNewAttachments((previous) => {
+            const existingKeys = new Set(previous.map((file) => `${file.name}-${file.size}-${file.lastModified}`));
+            const dedupedNew = selectedFiles.filter((file) => !existingKeys.has(`${file.name}-${file.size}-${file.lastModified}`));
+
+            return [...previous, ...dedupedNew];
+        });
+
+        event.target.value = '';
+    };
+
+    const removePendingAttachment = (indexToRemove: number) => {
+        setNewAttachments((previous) => previous.filter((_, index) => index !== indexToRemove));
     };
 
     const handleSave = () => {
@@ -158,12 +255,16 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
                 title: editTitle.trim(),
                 description: editDescription.trim(),
                 url: editUrl.trim(),
+                oficioNumber: editOficioNumber.trim(),
                 tags: editTags,
+                attachments: newAttachments,
             },
             {
+                forceFormData: newAttachments.length > 0,
                 onSuccess: () => {
                     setIsSaving(false);
                     setIsEditing(false);
+                    setNewAttachments([]);
                     onClose();
                 },
                 onError: () => {
@@ -194,8 +295,8 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
         const trimmed = tag.trim();
 
         if (!trimmed || editTags.some((t) => t.toLowerCase() === trimmed.toLowerCase())) {
-return;
-}
+            return;
+        }
 
         setEditTags([...editTags, trimmed]);
         setTagInput('');
@@ -211,10 +312,27 @@ return;
         .filter((t) => !editTags.some((et) => et.toLowerCase() === t.toLowerCase()))
         .filter((t) => !tagInput.trim() || t.toLowerCase().includes(tagInput.trim().toLowerCase()));
 
+    const handleBackdropPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+        backdropPointerDownRef.current = event.target === event.currentTarget;
+    };
+
+    const handleBackdropPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+        const shouldClose = backdropPointerDownRef.current && event.target === event.currentTarget;
+        backdropPointerDownRef.current = false;
+
+        if (shouldClose) {
+            onClose();
+        }
+    };
+
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-            onClick={onClose}
+            onPointerDown={handleBackdropPointerDown}
+            onPointerUp={handleBackdropPointerUp}
+            onPointerCancel={() => {
+                backdropPointerDownRef.current = false;
+            }}
         >
             <div
                 className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
@@ -225,15 +343,16 @@ return;
             >
                 {/* Modal header */}
                 <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-6 py-4 dark:border-slate-800">
-                    <div className="flex items-start gap-3">
+                    <div className="flex min-w-0 flex-1 items-start gap-3">
                         <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
                             <FileArchive className="h-4.5 w-4.5 text-primary" />
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                                 <h2
                                     id="source-details-title"
                                     className="truncate text-base font-bold tracking-tight text-foreground"
+                                    title={source.name}
                                 >
                                     {source.name}
                                 </h2>
@@ -355,6 +474,11 @@ return;
                             Cargando imagenes del respaldo...
                         </div>
                     )}
+                    {isLoadingBackupAttachments && (
+                        <div className="border-b border-slate-100 px-4 py-2 text-xs text-muted-foreground dark:border-slate-800">
+                            Cargando adjuntos del respaldo...
+                        </div>
+                    )}
 
                     {isEditing ? (
                         <div className="space-y-5 p-6">
@@ -381,6 +505,20 @@ return;
                                     type="url"
                                     value={editUrl}
                                     onChange={(e) => setEditUrl(e.target.value)}
+                                    className="text-sm"
+                                />
+                            </div>
+
+                            {/* Request letter */}
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground" htmlFor="edit-oficio-number">
+                                    N.º oficio
+                                </label>
+                                <Input
+                                    id="edit-oficio-number"
+                                    value={editOficioNumber}
+                                    onChange={(e) => setEditOficioNumber(e.target.value)}
+                                    placeholder="Opcional"
                                     className="text-sm"
                                 />
                             </div>
@@ -424,12 +562,14 @@ return;
                                         ref={tagInputRef}
                                         value={tagInput}
                                         onChange={(e) => {
- setTagInput(e.target.value); setShowTagSuggestions(true); 
-}}
+                                            setTagInput(e.target.value);
+                                            setShowTagSuggestions(true);
+                                        }}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' || (e.key === 'Tab' && tagInput.trim() !== '')) {
- e.preventDefault(); addEditTag(tagInput); 
-}
+                                                e.preventDefault();
+                                                addEditTag(tagInput);
+                                            }
                                         }}
                                         onFocus={() => setShowTagSuggestions(true)}
                                         onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}
@@ -461,6 +601,42 @@ return;
                                         </div>
                                     )}
                                 </div>
+                            </div>
+
+                            {/* New attachments */}
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground" htmlFor="edit-attachments">
+                                    Adjuntar documentos o videos
+                                </label>
+                                <Input
+                                    id="edit-attachments"
+                                    type="file"
+                                    multiple
+                                    accept=".mp4,.mov,.avi,.mkv,.webm,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                                    onChange={handleAttachmentSelection}
+                                    className="text-sm"
+                                />
+                                {newAttachments.length > 0 && (
+                                    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900/40">
+                                        {newAttachments.map((file, index) => (
+                                            <div key={`${file.name}-${file.size}-${file.lastModified}`} className="flex items-center justify-between gap-2 rounded-md bg-white px-2 py-1.5 dark:bg-slate-950">
+                                                <div className="flex min-w-0 items-center gap-2">
+                                                    {file.type.startsWith('video/') ? <Video className="h-3.5 w-3.5 text-slate-500" /> : <FileText className="h-3.5 w-3.5 text-slate-500" />}
+                                                    <span className="truncate text-xs text-foreground">{file.name}</span>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => removePendingAttachment(index)}
+                                                    className="h-6 px-2 text-xs"
+                                                >
+                                                    Quitar
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : (
@@ -593,6 +769,44 @@ return;
                                     ))
                                 ) : (
                                     <span className="text-sm text-muted-foreground">Sin etiquetas</span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                                Adjuntos
+                            </p>
+                            <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950">
+                                {backupAttachments.length > 0 ? (
+                                    backupAttachments.map((attachment) => (
+                                        <div
+                                            key={`attachment-${source.id}-${attachment.index}`}
+                                            className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/40"
+                                        >
+                                            <div className="flex min-w-0 items-center gap-2">
+                                                {attachment.kind === 'video' ? <Video className="h-4 w-4 text-slate-500" /> : <FileText className="h-4 w-4 text-slate-500" />}
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm text-foreground">{attachment.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{formatFileSize(attachment.sizeBytes)}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Button asChild size="sm" variant="outline" className="h-7 px-2 text-xs">
+                                                    <a href={attachment.url} target="_blank" rel="noreferrer">
+                                                        <ExternalLink className="h-3.5 w-3.5" />
+                                                    </a>
+                                                </Button>
+                                                <Button asChild size="sm" variant="outline" className="h-7 px-2 text-xs">
+                                                    <a href={attachment.url} download>
+                                                        <Download className="h-3.5 w-3.5" />
+                                                    </a>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">Sin adjuntos</p>
                                 )}
                             </div>
                         </div>

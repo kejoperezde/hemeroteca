@@ -23,6 +23,11 @@ use Illuminate\Support\Str;
 
 class HemerotecaController extends Controller
 {
+    public function openReplay(int $sourceId): BaseResponse
+    {
+        return $this->replayAsset($sourceId, 'replay');
+    }
+
     public function openBackup(int $sourceId): BaseResponse
     {
         abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
@@ -241,6 +246,11 @@ class HemerotecaController extends Controller
             height: calc(100% - 52px);
         }
     </style>
+    <script>
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            window.location.replace('https://' + window.location.host + window.location.pathname + window.location.search + window.location.hash);
+        }
+    </script>
     <script src="__UI_ASSET_URL__" type="module"></script>
 </head>
 <body>
@@ -258,7 +268,7 @@ class HemerotecaController extends Controller
             <a class="toolbar-action" href="__DOWNLOAD_URL__">Descargar Respaldo</a>
         </div>
     </div>
-    <replay-web-page source="__DOWNLOAD_URL__" url="__ORIGINAL_URL__"></replay-web-page>
+    <replay-web-page source="__DOWNLOAD_URL__" url="__ORIGINAL_URL__" coll="fuente-__SOURCE_ID__"></replay-web-page>
     <div class="integrity-modal" id="integrity-modal" hidden>
         <div class="integrity-dialog" role="dialog" aria-modal="true" aria-labelledby="integrity-modal-title">
             <div class="integrity-header" id="integrity-modal-title">Resultado de integridad</div>
@@ -527,6 +537,28 @@ HTML;
             ]);
         }
 
+        if ($normalizedAsset === 'replay') {
+            $bootstrapHtml = <<<'HTML'
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Replay</title>
+    <script src="./ui.js" type="module"></script>
+</head>
+<body>
+    <replay-app-main></replay-app-main>
+</body>
+</html>
+HTML;
+
+            return response($bootstrapHtml, 200, [
+                'Content-Type' => 'text/html; charset=UTF-8',
+                'Cache-Control' => 'public, max-age=3600',
+            ]);
+        }
+
         $upstreamUrl = "https://cdn.jsdelivr.net/npm/replaywebpage/{$normalizedAsset}";
         $cacheKey = 'hemeroteca:replay-asset:'.md5($normalizedAsset);
 
@@ -639,6 +671,71 @@ HTML;
         ]);
     }
 
+    public function backupAttachments(int $sourceId): JsonResponse
+    {
+        abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
+
+        $source = DB::table('fuentes')
+            ->select('id', 'ruta_archivo')
+            ->where('id', $sourceId)
+            ->first();
+
+        abort_unless($source && $source->ruta_archivo, 404);
+
+        $attachmentAbsolutePaths = $this->resolveBackupAttachmentAbsolutePaths((string) $source->ruta_archivo);
+
+        $attachments = array_map(
+            function (string $absolutePath, int $index, int $sourceId): array {
+                $mimeType = File::mimeType($absolutePath) ?: 'application/octet-stream';
+                $sizeBytes = File::size($absolutePath) ?: 0;
+                $isVideo = str_starts_with(strtolower($mimeType), 'video/');
+
+                return [
+                    'index' => $index,
+                    'name' => basename($absolutePath),
+                    'url' => route('hemeroteca.sources.backup.attachment', [
+                        'sourceId' => $sourceId,
+                        'attachmentIndex' => $index,
+                    ]),
+                    'mimeType' => $mimeType,
+                    'sizeBytes' => $sizeBytes,
+                    'kind' => $isVideo ? 'video' : 'document',
+                ];
+            },
+            $attachmentAbsolutePaths,
+            array_keys($attachmentAbsolutePaths),
+            array_fill(0, count($attachmentAbsolutePaths), $sourceId),
+        );
+
+        return response()->json([
+            'attachments' => array_values($attachments),
+        ]);
+    }
+
+    public function backupAttachment(int $sourceId, int $attachmentIndex): BaseResponse
+    {
+        abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
+        abort_unless($attachmentIndex >= 0, 404);
+
+        $source = DB::table('fuentes')
+            ->select('id', 'ruta_archivo')
+            ->where('id', $sourceId)
+            ->first();
+
+        abort_unless($source && $source->ruta_archivo, 404);
+
+        $attachmentAbsolutePaths = $this->resolveBackupAttachmentAbsolutePaths((string) $source->ruta_archivo);
+        abort_unless(isset($attachmentAbsolutePaths[$attachmentIndex]), 404);
+
+        $targetPath = $attachmentAbsolutePaths[$attachmentIndex];
+        $mimeType = File::mimeType($targetPath) ?: 'application/octet-stream';
+
+        return response()->file($targetPath, [
+            'Content-Type' => $mimeType,
+            'Cache-Control' => 'private, max-age=300',
+        ]);
+    }
+
     public function storeManual(Request $request): JsonResponse
     {
         abort_unless($request->user()->can('abs_hemeroteca_edit'), 403);
@@ -653,6 +750,8 @@ HTML;
             'tags.*' => ['required', 'string', 'max:100'],
             'images' => ['required', 'array', 'min:1', 'max:20'],
             'images.*' => ['required', 'file', 'max:10240', 'mimes:jpg,jpeg,png,webp'],
+            'attachments' => ['nullable', 'array', 'max:20'],
+            'attachments.*' => ['required', 'file', 'max:51200', 'mimes:mp4,mov,avi,mkv,webm,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv'],
         ]);
 
         $validated['url'] = (string) $request->input('url', '');
@@ -665,6 +764,8 @@ HTML;
 
         /** @var array<int, UploadedFile> $uploadedImages */
         $uploadedImages = $validated['images'];
+        /** @var array<int, UploadedFile> $uploadedAttachments */
+        $uploadedAttachments = $validated['attachments'] ?? [];
 
         $storedRelativePaths = [];
         foreach ($uploadedImages as $index => $uploadedImage) {
@@ -678,6 +779,8 @@ HTML;
 
             $storedRelativePaths[] = str_replace('\\', '/', $storedPath);
         }
+
+        $storedAttachmentPaths = $this->storeSourceAttachments($directory, $uploadedAttachments);
 
         $absoluteImagePaths = array_map(
             fn (string $relativePath): string => Storage::disk('local')->path($relativePath),
@@ -723,6 +826,7 @@ HTML;
             'message' => 'Fuente manual registrada correctamente.',
             'sourceId' => $sourceId,
             'imagesCount' => count($storedRelativePaths),
+            'attachmentsCount' => count($storedAttachmentPaths),
             'ocrTextLength' => mb_strlen($ocrText, 'UTF-8'),
         ], 201);
     }
@@ -898,6 +1002,8 @@ HTML;
             'description' => ['nullable', 'string'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:120'],
+            'attachments' => ['nullable', 'array', 'max:20'],
+            'attachments.*' => ['required', 'file', 'max:51200', 'mimes:mp4,mov,avi,mkv,webm,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv'],
             'draftToken' => ['required', 'string', 'max:120'],
         ]);
 
@@ -947,6 +1053,9 @@ HTML;
             try {
                 $storedBackupPath = $this->storeWaczDraft($sourceId, $draftPayload);
                 $this->storeThumbnailDraft($sourceId, $draftPayload);
+                /** @var array<int, UploadedFile> $uploadedAttachments */
+                $uploadedAttachments = $validated['attachments'] ?? [];
+                $this->storeSourceAttachments("capturas/fuente_{$sourceId}", $uploadedAttachments);
 
                 $absolutePath = $this->resolveLocalBackupAbsolutePath($storedBackupPath);
                 $contentHash = File::exists($absolutePath) ? hash_file('sha256', $absolutePath) : null;
@@ -1169,6 +1278,53 @@ HTML;
     }
 
     /**
+     * @return array<int, string>
+     */
+    private function resolveBackupAttachmentAbsolutePaths(string $backupPath): array
+    {
+        $backupAbsolutePath = $this->resolveLocalBackupAbsolutePath($backupPath);
+        $backupDirectory = dirname($backupAbsolutePath);
+
+        if (!File::isDirectory($backupDirectory)) {
+            return [];
+        }
+
+        $attachmentPaths = [];
+        foreach (['*.mp4', '*.mov', '*.avi', '*.mkv', '*.webm', '*.pdf', '*.doc', '*.docx', '*.xls', '*.xlsx', '*.ppt', '*.pptx', '*.txt', '*.csv'] as $pattern) {
+            $matches = File::glob($backupDirectory.DIRECTORY_SEPARATOR.$pattern) ?: [];
+            $attachmentPaths = [...$attachmentPaths, ...$matches];
+        }
+
+        usort($attachmentPaths, static fn (string $left, string $right): int => strnatcasecmp(basename($left), basename($right)));
+
+        return array_values(array_unique($attachmentPaths));
+    }
+
+    /**
+     * @param  array<int, UploadedFile>  $uploadedAttachments
+     * @return array<int, string>
+     */
+    private function storeSourceAttachments(string $directory, array $uploadedAttachments, int $startIndex = 0): array
+    {
+        $storedAttachmentPaths = [];
+
+        foreach ($uploadedAttachments as $index => $uploadedAttachment) {
+            $extension = strtolower($uploadedAttachment->getClientOriginalExtension() ?: 'bin');
+            $fileNumber = $startIndex + $index + 1;
+            $fileName = 'adjunto_'.str_pad((string) $fileNumber, 3, '0', STR_PAD_LEFT).'.'.$extension;
+            $storedPath = $uploadedAttachment->storeAs($directory, $fileName, ['disk' => 'local']);
+
+            if (!is_string($storedPath) || $storedPath === '') {
+                throw new \RuntimeException('No se pudo guardar uno de los adjuntos del respaldo.');
+            }
+
+            $storedAttachmentPaths[] = str_replace('\\', '/', $storedPath);
+        }
+
+        return $storedAttachmentPaths;
+    }
+
+    /**
      * @param  array<int, string>  $absoluteImagePaths
      */
     private function extractOcrTextFromImages(array $absoluteImagePaths): string
@@ -1309,13 +1465,31 @@ HTML;
             'title'       => ['required', 'string', 'max:500'],
             'description' => ['nullable', 'string', 'max:5000'],
             'url'         => ['required', 'url', 'max:2048'],
+            'oficioNumber' => ['nullable', 'string', 'max:120'],
             'tags'        => ['nullable', 'array', 'max:30'],
             'tags.*'      => ['required', 'string', 'max:100'],
+            'attachments' => ['nullable', 'array', 'max:20'],
+            'attachments.*' => ['required', 'file', 'max:51200', 'mimes:mp4,mov,avi,mkv,webm,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv'],
         ]);
 
         $tagNames = $this->normalizeTags($validated['tags'] ?? []);
+        $oficioNumber = trim((string) ($validated['oficioNumber'] ?? ''));
+        /** @var array<int, UploadedFile> $uploadedAttachments */
+        $uploadedAttachments = $validated['attachments'] ?? [];
 
-        DB::transaction(function () use ($sourceId, $validated, $tagNames): void {
+        $backupPath = trim((string) ($source->ruta_archivo ?? ''));
+        if ($uploadedAttachments !== [] && $backupPath !== '' && !str_contains($backupPath, '..')) {
+            $normalizedPath = ltrim(str_replace('\\', '/', $backupPath), '/');
+            $directory = dirname($normalizedPath);
+
+            if ($directory !== '.' && $directory !== '/') {
+                Storage::disk('local')->makeDirectory($directory);
+                $existingAttachmentCount = count($this->resolveBackupAttachmentAbsolutePaths($normalizedPath));
+                $this->storeSourceAttachments($directory, $uploadedAttachments, $existingAttachmentCount);
+            }
+        }
+
+        DB::transaction(function () use ($sourceId, $validated, $tagNames, $oficioNumber): void {
             DB::table('fuentes')->where('id', $sourceId)->update([
                 'titulo'      => trim($validated['title']),
                 'descripcion' => isset($validated['description']) ? trim($validated['description']) : null,
@@ -1327,6 +1501,22 @@ HTML;
 
             if ($tagNames !== []) {
                 $this->syncSourceTags($sourceId, $tagNames);
+            }
+
+            DB::table('fuente_oficio')->where('fuente_id', $sourceId)->delete();
+
+            if ($oficioNumber !== '') {
+                $oficioId = DB::table('libro_oficios')->insertGetId([
+                    'oficio_peticion' => $oficioNumber,
+                    'fecha_oficio' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('fuente_oficio')->insertOrIgnore([
+                    'fuente_id' => $sourceId,
+                    'oficio_id' => (int) $oficioId,
+                ]);
             }
         });
 

@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { AlertCircle, ArrowLeft, Loader2, Save, Tag, X, ZoomIn } from 'lucide-react';
+import { AlertCircle, ArrowLeft, FileText, Loader2, Paperclip, Save, Tag, Trash2, Video, X, ZoomIn } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +42,7 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
     const [isTagInputFocused, setIsTagInputFocused] = useState(false);
     const [isRequestLetter, setIsRequestLetter] = useState(false);
     const [requestLetterNumber, setRequestLetterNumber] = useState('');
+    const [attachments, setAttachments] = useState<File[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isDiscarding, setIsDiscarding] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -140,6 +141,50 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
         setIsTagInputFocused(true);
     };
 
+    const handleAttachmentsSelected = (fileList: FileList | null) => {
+        if (!fileList) {
+            return;
+        }
+
+        const allowedVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/webm'];
+        const allowedDocumentTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain',
+            'text/csv',
+        ];
+        const allowedExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'];
+
+        const selected = Array.from(fileList).filter((file) => {
+            const extension = file.name.includes('.') ? file.name.split('.').pop()?.toLowerCase() ?? '' : '';
+
+            return allowedVideoTypes.includes(file.type)
+                || allowedDocumentTypes.includes(file.type)
+                || (file.type === '' && allowedExtensions.includes(extension));
+        });
+
+        if (selected.length === 0) {
+            toast.error('Selecciona videos o documentos validos.');
+
+            return;
+        }
+
+        setAttachments((prev) => {
+            const next = [...prev, ...selected];
+
+            return next.slice(0, 20);
+        });
+    };
+
+    const removeAttachment = (index: number) => {
+        setAttachments((prev) => prev.filter((_, idx) => idx !== index));
+    };
+
     const discardDraftAndReturn = () => {
         if (!draftToken) {
             router.visit('/hemeroteca');
@@ -219,6 +264,7 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
                 tags: mergedTags,
                 isRequestLetter,
                 oficioNumber: requestLetterNumber.trim() || null,
+                attachments,
                 draftToken,
             },
             {
@@ -456,6 +502,62 @@ export default function RegisterSource({ prefillDraft, suggestedTags = [] }: Reg
                                             className="h-11 rounded-xl border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="source-attachments" className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                                    <Paperclip className="h-4 w-4 text-slate-400" />
+                                    Adjuntos (videos/documentos)
+                                </Label>
+                                <label
+                                    htmlFor="source-attachments"
+                                    className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/60 px-4 py-3 text-sm text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:border-slate-500"
+                                >
+                                    <Paperclip className="h-4 w-4" />
+                                    Seleccionar adjuntos
+                                </label>
+                                <input
+                                    id="source-attachments"
+                                    type="file"
+                                    multiple
+                                    className="hidden"
+                                    accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,video/webm,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                                    onChange={(event) => {
+                                        handleAttachmentsSelected(event.target.files);
+                                        event.currentTarget.value = '';
+                                    }}
+                                />
+                                <div className="max-h-36 space-y-1.5 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2.5 dark:border-slate-600 dark:bg-slate-900/50">
+                                    {attachments.length > 0 ? (
+                                        attachments.map((attachment, index) => {
+                                            const isVideo = attachment.type.startsWith('video/');
+
+                                            return (
+                                                <div
+                                                    key={`${attachment.name}-${index}`}
+                                                    className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 dark:border-slate-600 dark:bg-slate-800"
+                                                >
+                                                    <div className="flex min-w-0 items-center gap-2">
+                                                        {isVideo ? <Video className="h-3.5 w-3.5 text-slate-500" /> : <FileText className="h-3.5 w-3.5 text-slate-500" />}
+                                                        <span className="truncate text-xs text-slate-600 dark:text-slate-300">{attachment.name}</span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeAttachment(index)}
+                                                        className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+                                                        aria-label={`Quitar ${attachment.name}`}
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="px-1 py-2 text-xs text-slate-500 dark:text-slate-400">
+                                            No hay adjuntos seleccionados.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>

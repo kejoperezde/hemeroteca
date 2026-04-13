@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
-import { Camera, Loader2, Plus, UploadCloud, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Camera, FileText, Loader2, Plus, UploadCloud, Video, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createWorker } from 'tesseract.js';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,12 @@ type PreviewImage = {
     url: string;
 };
 
+type PreviewAttachment = {
+    name: string;
+    sizeBytes: number;
+    kind: 'video' | 'document';
+};
+
 const getCsrfToken = (): string => {
     const xsrfCookie = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1];
 
@@ -35,8 +41,10 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
     const [tags, setTags] = useState<string[]>([]);
     const [isTagInputFocused, setIsTagInputFocused] = useState(false);
     const [images, setImages] = useState<File[]>([]);
+    const [attachments, setAttachments] = useState<File[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isRunningOcr, setIsRunningOcr] = useState(false);
+    const backdropPointerDownRef = useRef(false);
 
     const previewImages = useMemo<PreviewImage[]>(() => {
         return images.map((image) => ({
@@ -44,6 +52,14 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
             url: URL.createObjectURL(image),
         }));
     }, [images]);
+
+    const previewAttachments = useMemo<PreviewAttachment[]>(() => {
+        return attachments.map((attachment) => ({
+            name: attachment.name,
+            sizeBytes: attachment.size,
+            kind: attachment.type.startsWith('video/') ? 'video' : 'document',
+        }));
+    }, [attachments]);
 
     useEffect(() => {
         return () => {
@@ -68,6 +84,19 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
             document.removeEventListener('keydown', onKeyDown);
         };
     }, [open, onClose, isSubmitting]);
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+        };
+    }, [open]);
 
     if (!open) {
         return null;
@@ -121,8 +150,52 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
         });
     };
 
+    const handleAttachmentSelection = (fileList: FileList | null) => {
+        if (!fileList) {
+            return;
+        }
+
+        const allowedVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/webm'];
+        const allowedDocumentTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain',
+            'text/csv',
+        ];
+        const allowedExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'];
+
+        const selected = Array.from(fileList).filter((file) => {
+            const extension = file.name.includes('.') ? file.name.split('.').pop()?.toLowerCase() ?? '' : '';
+
+            return allowedVideoTypes.includes(file.type)
+                || allowedDocumentTypes.includes(file.type)
+                || (file.type === '' && allowedExtensions.includes(extension));
+        });
+
+        if (selected.length === 0) {
+            toast.error('Selecciona videos o documentos validos.');
+
+            return;
+        }
+
+        setAttachments((prev) => {
+            const next = [...prev, ...selected];
+
+            return next.slice(0, 20);
+        });
+    };
+
     const removeImage = (index: number) => {
         setImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const removeAttachment = (index: number) => {
+        setAttachments((prev) => prev.filter((_, i) => i !== index));
     };
 
     const resetForm = () => {
@@ -134,6 +207,7 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
         setTagInput('');
         setTags([]);
         setImages([]);
+        setAttachments([]);
         setIsSubmitting(false);
     };
 
@@ -144,6 +218,19 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
 
         resetForm();
         onClose();
+    };
+
+    const handleBackdropPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+        backdropPointerDownRef.current = event.target === event.currentTarget;
+    };
+
+    const handleBackdropPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+        const shouldClose = backdropPointerDownRef.current && event.target === event.currentTarget;
+        backdropPointerDownRef.current = false;
+
+        if (shouldClose) {
+            closeAndReset();
+        }
     };
 
     const handleSubmit = async () => {
@@ -209,6 +296,9 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
             images.forEach((image, index) => {
                 payload.append(`images[${index}]`, image);
             });
+            attachments.forEach((attachment, index) => {
+                payload.append(`attachments[${index}]`, attachment);
+            });
 
             const csrfToken = getCsrfToken();
             const response = await fetch('/hemeroteca/sources/manual', {
@@ -228,7 +318,7 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
                 throw new Error(typeof data?.message === 'string' ? data.message : 'No se pudo registrar la fuente manual.');
             }
 
-            toast.success(`Fuente registrada (${data.imagesCount ?? images.length} imagenes, OCR ${data.ocrTextLength ?? 0} caracteres).`);
+            toast.success(`Fuente registrada (${data.imagesCount ?? images.length} imagenes, ${data.attachmentsCount ?? attachments.length} adjuntos, OCR ${data.ocrTextLength ?? 0} caracteres).`);
             closeAndReset();
             router.reload({
                 only: ['sources', 'suggestedTags', 'total', 'perPage', 'currentPage', 'lastPage', 'filters'],
@@ -245,7 +335,11 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-            onClick={closeAndReset}
+            onPointerDown={handleBackdropPointerDown}
+            onPointerUp={handleBackdropPointerUp}
+            onPointerCancel={() => {
+                backdropPointerDownRef.current = false;
+            }}
         >
             <div
                 className="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
@@ -276,8 +370,8 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
                     </Button>
                 </div>
 
-                <div className="grid min-h-0 flex-1 gap-0 md:grid-cols-[1.15fr_0.85fr]">
-                    <div className="space-y-5 overflow-y-auto p-6">
+                <div className="grid min-h-0 flex-1 gap-0 overflow-y-auto md:overflow-hidden md:grid-cols-[minmax(0,1fr)_20rem]">
+                    <div className="min-h-0 space-y-5 p-6 md:overflow-y-auto">
                         <div className="space-y-2">
                             <Label htmlFor="manual-source-url">URL/Fuente</Label>
                             <Input
@@ -405,7 +499,7 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
                         </div>
                     </div>
 
-                    <div className="flex min-h-0 flex-col border-t border-slate-100 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-slate-900/30 md:border-l md:border-t-0">
+                    <div className="flex min-h-0 min-w-0 flex-col border-t border-slate-100 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-slate-900/30 md:border-l md:border-t-0">
                         <Label htmlFor="manual-images-input" className="mb-2">
                             Imagenes / capturas
                         </Label>
@@ -428,10 +522,10 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
                             }}
                         />
 
-                        <div className="mt-4 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+                        <div className="mt-4 min-h-[11rem] max-h-[34vh] space-y-2 overflow-x-hidden overflow-y-auto pr-1 md:min-h-0 md:max-h-[52vh] md:flex-1">
                             {previewImages.length > 0 ? (
                                 previewImages.map((preview, index) => (
-                                    <div key={`${preview.name}-${index}`} className="rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-950">
+                                    <div key={`${preview.name}-${index}`} className="min-w-0 rounded-lg border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-950">
                                         <div className="relative h-24 w-full overflow-hidden rounded-md bg-slate-100 dark:bg-slate-800">
                                             <img src={preview.url} alt={preview.name} className="h-full w-full object-cover" />
                                             <button
@@ -451,6 +545,58 @@ export function ManualSourceModal({ open, onClose, suggestedTags = [] }: ManualS
                                     Agrega una o mas imagenes para aplicar OCR.
                                 </div>
                             )}
+                        </div>
+
+                        <div className="mt-5">
+                            <Label htmlFor="manual-attachments-input" className="mb-2 block">
+                                Videos / documentos
+                            </Label>
+                            <label
+                                htmlFor="manual-attachments-input"
+                                className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-slate-600"
+                            >
+                                <UploadCloud className="h-4 w-4" />
+                                Adjuntar archivos
+                            </label>
+                            <input
+                                id="manual-attachments-input"
+                                type="file"
+                                accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,video/webm,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                                multiple
+                                className="hidden"
+                                onChange={(event) => {
+                                    handleAttachmentSelection(event.target.files);
+                                    event.currentTarget.value = '';
+                                }}
+                            />
+
+                            <div className="mt-3 max-h-36 space-y-1.5 overflow-y-auto pr-1">
+                                {previewAttachments.length > 0 ? (
+                                    previewAttachments.map((attachment, index) => (
+                                        <div
+                                            key={`${attachment.name}-${index}`}
+                                            className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2 dark:border-slate-700 dark:bg-slate-950"
+                                        >
+                                            <div className="flex min-w-0 items-center gap-2">
+                                                {attachment.kind === 'video' ? <Video className="h-3.5 w-3.5 text-slate-500" /> : <FileText className="h-3.5 w-3.5 text-slate-500" />}
+                                                <p className="truncate text-xs text-slate-600 dark:text-slate-300">{attachment.name}</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeAttachment(index)}
+                                                className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                                aria-label={`Quitar ${attachment.name}`}
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="rounded-lg border border-dashed border-slate-300 bg-white/70 px-2.5 py-3 text-center text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-950/60 dark:text-slate-400">
+                                        Sin adjuntos adicionales.
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
