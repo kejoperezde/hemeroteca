@@ -27,6 +27,7 @@ El proyecto esta construido con Laravel + Inertia + React, y permite trabajar co
 - [Inicio rapido (desarrollo)](#inicio-rapido-desarrollo)
 - [Scripts utiles](#scripts-utiles)
 - [Pruebas](#pruebas)
+- [Entrega de respaldos por Apache (X-Sendfile)](#entrega-de-respaldos-por-apache-x-sendfile)
 - [Resolucion de problemas](#resolucion-de-problemas)
 
 ## Vision general
@@ -157,6 +158,27 @@ Flujo de test del proyecto (incluye validaciones adicionales definidas en Compos
 ```bash
 composer run test
 ```
+
+## Entrega de respaldos por Apache (X-Sendfile)
+
+Para evitar que PHP transmita archivos grandes de respaldo y mejorar tiempos de respuesta, puedes delegar la transferencia a Apache:
+
+1. En `.env` habilita:
+
+```env
+HEMEROTECA_USE_X_SENDFILE=true
+```
+
+2. Activa y configura `mod_xsendfile` en Apache (ruta de ejemplo para Laragon):
+
+```apache
+XSendFile on
+XSendFilePath "C:/laragon/www/hemeroteca/storage/app"
+```
+
+3. Reinicia Apache.
+
+Con esto, Laravel sigue validando permisos de acceso, pero Apache entrega el archivo fisicamente.
 
 ## Resolucion de problemas
 

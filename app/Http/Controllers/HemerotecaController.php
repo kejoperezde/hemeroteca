@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response as BaseResponse;
 use Symfony\Component\Process\Process;
@@ -459,7 +460,9 @@ HTML;
 
         $mimeType = File::mimeType($absolutePath) ?: 'application/octet-stream';
 
-        return response()->file($absolutePath, ['Content-Type' => $mimeType]);
+        return $this->respondWithAuthorizedFile($absolutePath, [
+            'Content-Type' => $mimeType,
+        ]);
     }
 
     public function verifyBackupIntegrity(int $sourceId): JsonResponse
@@ -541,7 +544,7 @@ HTML;
         ]);
     }
 
-    public function downloadBackup(int $sourceId): BinaryFileResponse
+    public function downloadBackup(int $sourceId): BaseResponse
     {
         abort_unless(auth()->user()?->can('abs_hemeroteca'), 403);
 
@@ -560,7 +563,7 @@ HTML;
             ? "respaldo_fuente_{$sourceId}.{$extension}"
             : "respaldo_fuente_{$sourceId}";
 
-        return response()->download($absolutePath, $downloadName);
+        return $this->respondWithAuthorizedFileDownload($absolutePath, $downloadName);
     }
 
     public function thumbnailBackup(int $sourceId): BinaryFileResponse
@@ -1066,6 +1069,43 @@ HTML;
     private function buildDraftCacheKey(string $draftToken): string
     {
         return 'hemeroteca:draft:'.$draftToken;
+    }
+
+    private function respondWithAuthorizedFile(string $absolutePath, array $headers = []): BaseResponse
+    {
+        if (!$this->shouldUseApacheXSendfile()) {
+            return response()->file($absolutePath, $headers);
+        }
+
+        $sendfileHeader = (string) config('hemeroteca.x_sendfile_header', 'X-Sendfile');
+
+        return response('', 200, array_merge($headers, [
+            $sendfileHeader => $absolutePath,
+        ]));
+    }
+
+    private function respondWithAuthorizedFileDownload(string $absolutePath, string $downloadName): BaseResponse
+    {
+        if (!$this->shouldUseApacheXSendfile()) {
+            return response()->download($absolutePath, $downloadName);
+        }
+
+        $mimeType = File::mimeType($absolutePath) ?: 'application/octet-stream';
+        $sendfileHeader = (string) config('hemeroteca.x_sendfile_header', 'X-Sendfile');
+
+        return response('', 200, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => HeaderUtils::makeDisposition(
+                HeaderUtils::DISPOSITION_ATTACHMENT,
+                $downloadName,
+            ),
+            $sendfileHeader => $absolutePath,
+        ]);
+    }
+
+    private function shouldUseApacheXSendfile(): bool
+    {
+        return (bool) config('hemeroteca.use_x_sendfile', false);
     }
 
     private function resolveLocalBackupAbsolutePath(string $backupPath): string
