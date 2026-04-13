@@ -114,9 +114,6 @@ function SourceDetailsModalContent({ source, onClose, canEdit, canDelete, sugges
             return;
         }
 
-        setIsLoadingBackupImages(true);
-        setIsLoadingBackupAttachments(true);
-
         const controller = new AbortController();
 
         const imagesRequest = fetch(`/hemeroteca/sources/${source.id}/backup/images`, {
